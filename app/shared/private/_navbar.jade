@@ -1,0 +1,17 @@
+form#logoutForm(action="/logout?some", method="post")
+.navbar.navbar-inverse.narbar-fixed-top(role="navigation", style="margin:10px 20px;")
+  .navbar-header
+    a.navbar-brand(href="#") Skin
+
+  .navbar-right
+    ul.nav.navbar-nav
+      li
+        a(href="#", onclick="javascript:document.forms['logoutForm'].submit();return false;") Logout
+
+  .collapse.navbar-collapse
+    ul.nav.navbar-nav
+      li(class=action == 'tasks' ? 'active' : '')
+        a(href="/private/stuff") Stuff
+      li(class=action == 'profile' ? 'active' : '')
+        a(href="#") Profile
+
