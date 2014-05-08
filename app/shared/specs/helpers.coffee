@@ -1,12 +1,12 @@
 process.env.NODE_ENV = 'test'
-should = require('should')
+chai = require('chai')
 
 require('../../../server')
 DatabaseCleaner = require('database-cleaner')
 
 Object.merge global,
   databaseCleaner: new DatabaseCleaner('mongodb')
-  should: require('should')
+  should: chai.should()
 
 request = null
 beforeEach (done) ->
@@ -23,6 +23,7 @@ beforeEach (done) ->
     global.res =
       render: ->
       redirect: ->
+      setHeader: ->
 
     global.next = (err) -> throw err if err
     done()
@@ -65,7 +66,7 @@ global.shouldHaveRoutes = (routes, user, collection) ->
     it "#{method.toUpperCase()} #{url} should match #{routes[key]}", (done) ->
       app.apps[collection].controller[controller][action] = -> done()
       app.apps[collection].routes.route(app)
-      app.router { method: method, url: url, user: user }, {}, ->
+      app.handle Object.merge(req, { method: method, url: url, user: user }), res, next
 
 global.shouldNotHaveRoutes = (routes, user, collection) ->
   app = null
