@@ -42,6 +42,9 @@ Skin.locals.tsjs = Skin.locals.tscss = Date.create().getTime()
 # Environment
 require("./config/environment")
 
+# Applications
+require("./config/applications")
+
 # Run the server
 env = (process.env.NODE_ENV || 'development').capitalize()
 server.listen(Skin.settings.port)
