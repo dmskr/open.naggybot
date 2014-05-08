@@ -1,0 +1,16 @@
+.navbar.navbar-inverse.narbar-fixed-top(role="navigation", style="margin:10px 20px;")
+  .navbar-header
+    a.navbar-brand(href="/") Skin
+
+  .collapse.navbar-collapse.navbar-right
+    ul.nav.navbar-nav
+      li(class=action == 'login' ? 'active' : '')
+        a(href="/login") LogIn
+      li(class=action == 'signup' ? 'active' : '')
+        a(href="/signup") SignUp
+
+  .collapse.navbar-collapse
+    ul.nav.navbar-nav
+      li(class='active')
+        a(href="/") How It Works
+

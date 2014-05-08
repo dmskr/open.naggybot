@@ -1,0 +1,19 @@
+extends layout
+
+block append title
+  title Home | Skin
+
+block content
+  h1 Skin - Basic Node App
+  include _alert.jade
+
+  a.btn.btn-primary(href="/signup") Signup Now
+
+  | &nbsp; &nbsp;
+  span and enjoy the app today
+
+  h3 Already a customer?
+  a.btn.btn-default(href="/login") Login
+  | &nbsp; &nbsp;
+  span it is free
+

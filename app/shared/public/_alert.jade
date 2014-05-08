@@ -1,0 +1,6 @@
+if typeof flash != 'undefined'
+  each type in ['info', 'error', 'success']
+    if flash[type]
+      div(class='alert alert-' + (type == 'error' ? 'danger' : type))
+        span!= flash[type]
+
