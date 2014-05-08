@@ -14,15 +14,15 @@ global.URI = require('url')
 global.Path = require('path')
 global.async = require('async')
 
-global.App = express()
-App.root = __dirname
-App.settings.port = 8081
+global.Skin = express()
+Skin.root = __dirname
+Skin.settings.port = 8081
 
-global.server = require('http').createServer(App)
+global.server = require('http').createServer(Skin)
 global.isServer = true
 
 # Setup SMTP
-App.settings.email = {
+Skin.settings.email = {
   auth: {
     host: "",
     secureConnection: false,
@@ -34,17 +34,17 @@ App.settings.email = {
   }
 }
 
-global.smtp = nodemailer.createTransport("SMTP", App.settings.email.auth)
+global.smtp = nodemailer.createTransport("SMTP", Skin.settings.email.auth)
 
 # Cache timestamps
-App.locals.tsjs = App.locals.tscss = Date.create().getTime()
+Skin.locals.tsjs = Skin.locals.tscss = Date.create().getTime()
 
 # Environment
 require("./config/environment")
 
 # Run the server
 env = (process.env.NODE_ENV || 'development').capitalize()
-server.listen(App.settings.port)
+server.listen(Skin.settings.port)
 console.log("Http server listening on http://0.0.0.0:8081")
-console.log("App server started in #{env} environment")
+console.log("Node Skin server started in #{env} environment")
 

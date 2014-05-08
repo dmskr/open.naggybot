@@ -8,7 +8,7 @@ poweredBy = require('connect-powered-by')
 morgan  = require('morgan')
 methodOverride = require('method-override')
 
-app = App
+app = Skin
 app.set('views', app.root + "/app")
 app.set('view options', { layout: false })
 app.use(bodyParser())
@@ -21,7 +21,8 @@ else if app.settings.env == 'test'
 else
   ['nodeskin_dev', 8081]
 
-App.db = mongo.db("mongodb://localhost:27017/#{database}?auto_reconnect=true", safe: true)
+mongourl = "mongodb://localhost:27017/#{database}?auto_reconnect=true"
+app.db = mongo.db(mongourl, safe: true)
 
 app.set('port', port)
 
@@ -31,7 +32,7 @@ app.use(session(
     maxAge: 86400000000
     expires: (1).yearFromNow()
     httpOnly: false
-  store: new skinstore(App.db)
+  store: new skinstore(app.db)
   secret: "*vr6ylm(4bjeq^xuay@u(q0%@5hevcf=d1-prij_qu2_mg&r1q"
   key: 'nodeskin.sid'
 ))
