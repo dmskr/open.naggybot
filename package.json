@@ -1,0 +1,20 @@
+{
+  "name": "nodeskin",
+  "version": "0.0.1",
+  "description": "Basic NodeJS app",
+  "main": "server.coffee",
+  "dependencies": {
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:dmskr/nodeskin.git"
+  },
+  "author": "Dmitry Skrinnik",
+  "license": "MIT",
+  "devDependencies": {},
+  "engine": "node v0.10.17"
+}
+
