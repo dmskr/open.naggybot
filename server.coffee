@@ -39,6 +39,9 @@ global.smtp = nodemailer.createTransport("SMTP", App.settings.email.auth)
 # Cache timestamps
 App.locals.tsjs = App.locals.tscss = Date.create().getTime()
 
+# Environment
+require("./config/environment")
+
 # Run the server
 env = (process.env.NODE_ENV || 'development').capitalize()
 server.listen(App.settings.port)
