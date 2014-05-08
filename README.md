@@ -1,4 +1,5 @@
-nodeskin
+NodeSkin
 ========
 
 Very basic node js app
+
