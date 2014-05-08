@@ -20,7 +20,8 @@
     "coffee": "0.0.1",
     "mocha": "~1.18.2",
     "database-cleaner": "~0.7.0",
-    "less": "~1.7.0"
+    "less": "~1.7.0",
+    "coffee-script": "~1.7.1"
   },
   "scripts": {
     "test": "make test"
