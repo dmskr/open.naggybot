@@ -78,7 +78,7 @@ global.shouldNotHaveRoutes = (routes, user, collection) ->
     [method, url] = route.split(' ')
     it "#{method.toUpperCase()} #{url} should return error 401", (done) ->
       app.apps[collection].routes.route(app)
-      app.router { method: method, url: url }, {}, (err)->
+      app.handle Object.merge(req, { method: method, url: url }), res, (err) ->
         err.should.eql new Error(401)
         done()
 
