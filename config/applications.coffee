@@ -20,7 +20,7 @@ files.each (name) ->
     require(model)
 
 # Additional controllers out of public/private/admin scheme
-#apps.users.controller.sessions = require("../app/users/sessions_controller")
+apps.users.controller.sessions = require("../app/users/sessions_controller")
 
 # Util function used in routes
 global.require_user = (req, res, next) ->

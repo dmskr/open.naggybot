@@ -1,0 +1,28 @@
+extends ../../shared/public/layout
+
+block append title
+  title Login | Skin
+  - action = 'login'
+
+block content
+  h1 LogIn
+  include ../../shared/public/_alert.jade
+  form.form-horizontal(action='/login', method='post', role="form")
+    .form-group
+      label.col-sm-2.control-label(for='login') Username
+      .col-sm-10
+        input.form-control(type='text', name='username', placehoder='e.g. Vita')
+    .form-group
+      label.col-sm-2.control-label(for='password') Password
+      .col-sm-10
+        input.form-control(type='password', name='password')
+    .form-group
+      .col-sm-offset-2.col-sm-10
+        .checkbox
+          label
+            input(type="checkbox", checked)
+            = 'Remember me'
+    .form-group
+      .col-sm-10.col-sm-offset-2
+        input.btn.btn-primary(type='submit', value='Login')
+

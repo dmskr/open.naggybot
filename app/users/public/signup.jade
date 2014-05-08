@@ -1,0 +1,27 @@
+extends ../../shared/public/layout
+
+block append title
+  title SignUp
+  - action = 'signup'
+
+block content
+  h2 SignUp
+  include ../../shared/public/_alert.jade
+  - var user = locals.user || {}
+  form.form-horizontal(action='/signup', method='post', role='form')
+    .form-group
+      label.col-sm-2.control-label(for='user[username]') Username
+      .col-sm-10
+        input.form-control(type='text', name='user[username]', placeholder='e.g. John Doe', value=user.username)
+    .form-group
+      label.col-sm-2.control-label(for='user[password]') Password
+      .col-sm-10
+        input.form-control(type='password', name='user[password]', placeholder='Type secret password')
+    .form-group
+      label.col-sm-2.control-label(for='user[cofirmationPassword]') Confirm Password
+      .col-sm-10
+        input.form-control(type='password', name='user[confirmationPassword]', placeholder='Confirm secret password')
+    .form-group
+      .col-sm-10.col-sm-offset-2
+        input.btn.btn-primary(type='submit', value='Sign Up')
+
