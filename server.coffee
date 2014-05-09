@@ -5,6 +5,7 @@ global.mongo = require('mongoskin')
 global.fs = require('fs')
 global.passport = require('passport')
 global.LocalStrategy = require('passport-local').Strategy
+global.GitHubStrategy = require('passport-github').Strategy
 global.bcrypt = require('bcrypt')
 global.crypto = require('crypto')
 global.querystring = require('querystring')

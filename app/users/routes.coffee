@@ -24,3 +24,9 @@ exports.route = (app) ->
   app.get '/signup', pub.new
   app.post '/signup', pub.create
 
+  app.get '/auth/github', passport.authenticate('github'), ->
+
+  app.get '/auth/github/callback',
+    passport.authenticate('github', { failureRedirect: '/login' }),
+    (req, res, next) -> res.redirect('/private')
+
