@@ -8,7 +8,7 @@ poweredBy = require('connect-powered-by')
 morgan  = require('morgan')
 methodOverride = require('method-override')
 
-app = Skin
+app = Bot
 app.set('views', app.root + "/app")
 app.set('view options', { layout: false })
 app.use(bodyParser())

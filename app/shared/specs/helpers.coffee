@@ -10,7 +10,7 @@ Object.merge global,
 
 request = null
 beforeEach (done) ->
-  databaseCleaner.clean Skin.db, (err) ->
+  databaseCleaner.clean Bot.db, (err) ->
     return done(err) if(err)
 
     request = global.request
@@ -34,13 +34,13 @@ afterEach (done) ->
 
 global.shouldHaveCreatedAt = (collection) ->
   it "should store createdAt when saved for first time", (done) ->
-    Skin.db[collection].save { something: 'Ya!' }, (err, record) ->
+    Bot.db[collection].save { something: 'Ya!' }, (err, record) ->
       should.exist(record.createdAt)
       done()
 
   it "should not refresh createdAt if already provided", (done) ->
     time = (1).hourFromNow()
-    Skin.db[collection].save { some: 'Yo!', createdAt: time }, (err, record) ->
+    Bot.db[collection].save { some: 'Yo!', createdAt: time }, (err, record) ->
       return done(err) if err
       record.createdAt.should.eql(time)
       done()
@@ -48,7 +48,7 @@ global.shouldHaveCreatedAt = (collection) ->
 global.shouldHaveUpdatedAt = (collection) ->
   it "should always insert updatedAt", (done) ->
     time = (1).hourFromNow()
-    Skin.db[collection].save { some: 'Yo!', updatedAt: time }, (err, record) ->
+    Bot.db[collection].save { some: 'Yo!', updatedAt: time }, (err, record) ->
       return done(err) if err
       should.exist(record.updatedAt)
       record.updatedAt.should.not.eql(time)
@@ -58,7 +58,7 @@ global.shouldHaveRoutes = (routes, user, collection) ->
   app = null
   beforeEach ->
     app = express()
-    app.apps = Object.clone(Skin.apps, true)
+    app.apps = Object.clone(Bot.apps, true)
 
   Object.keys(routes).each (key) ->
     [method, url] = key.split(' ')
@@ -72,7 +72,7 @@ global.shouldNotHaveRoutes = (routes, user, collection) ->
   app = null
   beforeEach ->
     app = express()
-    app.apps = Object.clone(Skin.apps, true)
+    app.apps = Object.clone(Bot.apps, true)
 
   routes.each (route) ->
     [method, url] = route.split(' ')
@@ -90,7 +90,7 @@ global.testPagingFor = (params) ->
     async.times 150, ((index, next) ->
       entity = title: index
       entity[sort] = Date.create(index)
-      Skin.db[collection].save entity, (err, result) ->
+      Bot.db[collection].save entity, (err, result) ->
         return done(err)  if err
         next()
     ), done
@@ -99,31 +99,31 @@ global.testPagingFor = (params) ->
     res.render = (template, options) ->
       options.data.length.should.eql 100
       done()
-    Skin.apps[collection].controller.admin[action] req, res, next
+    Bot.apps[collection].controller.admin[action] req, res, next
 
   it "should show 0 page by default", (done) ->
     res = render: (view, params) ->
       params.data.first()[sort].should.eql Date.create(149)
       done()
-    Skin.apps[collection].controller.admin[action] req, res, next
+    Bot.apps[collection].controller.admin[action] req, res, next
 
   it "should return total number of entities", (done) ->
     res.render = (view, params) ->
       params.total.should.eql 150
       done()
-    Skin.apps[collection].controller.admin[action] req, res, next
+    Bot.apps[collection].controller.admin[action] req, res, next
 
   it "should render requested page", (done) ->
     req.query = page: "1"
     res.render = (view, params) ->
       params.data.length.should.eql 50
       done()
-    Skin.apps[collection].controller.admin[action] req, res, next
+    Bot.apps[collection].controller.admin[action] req, res, next
 
   it "should return currently selected page", (done) ->
     req.query = page: "1"
     res.render = (view, params) ->
       params.page.should.eql 1
       done()
-    Skin.apps[collection].controller.admin[action] req, res, next
+    Bot.apps[collection].controller.admin[action] req, res, next
 

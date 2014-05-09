@@ -1,5 +1,5 @@
-NodeSkin
+NaggyBot
 ========
 
-Very basic node js app
+Naggy Bot, watch out
 

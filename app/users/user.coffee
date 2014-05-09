@@ -1,14 +1,14 @@
-collection = Skin.db.collection('users')
+collection = Bot.db.collection('users')
 skin = save: collection.save
 
 emailRegExp = /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/
 
-Skin.db.bind('users').bind({
+Bot.db.bind('users').bind({
   save: (user, done) ->
     self = this
     user.createdAt ||= new Date()
     user.updatedAt = new Date()
-    Skin.db.keywords.fromText [
+    Bot.db.keywords.fromText [
       user.username
       user.email
     ].join(" "), (err, keywords) ->
@@ -26,8 +26,8 @@ Skin.db.bind('users').bind({
         if !user.username || user.username.isBlank()
           return next(null, "Username is required")
         next()
-      email: (next) -> Skin.db.users.validateEmail(user, next)
-      password: (next) -> Skin.db.users.validatePassword(user, next)
+      email: (next) -> Bot.db.users.validateEmail(user, next)
+      password: (next) -> Bot.db.users.validatePassword(user, next)
     }, (err, results) ->
       return done(err) if err
       keys = Object.keys(results).findAll (key) -> !!results[key]
@@ -51,9 +51,9 @@ Skin.db.bind('users').bind({
     done()
 
   autocomplete: (text, done) ->
-    Skin.db.keywords.toConditions text, (err, conditions) ->
+    Bot.db.keywords.toConditions text, (err, conditions) ->
       return done(err) if err
       return done(null, [])  unless conditions
-      Skin.db.users.find(conditions).limit(10).toArray done
+      Bot.db.users.find(conditions).limit(10).toArray done
 })
 

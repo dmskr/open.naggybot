@@ -15,15 +15,15 @@ global.URI = require('url')
 global.Path = require('path')
 global.async = require('async')
 
-global.Skin = express()
-Skin.root = __dirname
-Skin.settings.port = 8081
+global.Bot = express()
+Bot.root = __dirname
+Bot.settings.port = 8081
 
-global.server = require('http').createServer(Skin)
+global.server = require('http').createServer(Bot)
 global.isServer = true
 
 # Setup SMTP
-Skin.settings.email = {
+Bot.settings.email = {
   auth: {
     host: "",
     secureConnection: false,
@@ -35,10 +35,10 @@ Skin.settings.email = {
   }
 }
 
-global.smtp = nodemailer.createTransport("SMTP", Skin.settings.email.auth)
+global.smtp = nodemailer.createTransport("SMTP", Bot.settings.email.auth)
 
 # Cache timestamps
-Skin.locals.tsjs = Skin.locals.tscss = Date.create().getTime()
+Bot.locals.tsjs = Bot.locals.tscss = Date.create().getTime()
 
 # Environment
 require("./config/environment")
@@ -48,7 +48,7 @@ require("./config/applications")
 
 # Run the server
 env = (process.env.NODE_ENV || 'development').capitalize()
-server.listen(Skin.settings.port)
+server.listen(Bot.settings.port)
 console.log("Http server listening on http://0.0.0.0:8081")
-console.log("Node Skin server started in #{env} environment")
+console.log("NaggyBot App server started in #{env} environment")
 

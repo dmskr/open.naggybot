@@ -1,4 +1,4 @@
-Skin.db.bind("keywords").bind({
+Bot.db.bind("keywords").bind({
   fromText: (text, done) ->
     result = (text or "").toString().split(/[.,\/ !(){}\[\]-\]{}()*+?.,\\^$|#\s\@]/).exclude (w) ->
       not w or w.length is 0
