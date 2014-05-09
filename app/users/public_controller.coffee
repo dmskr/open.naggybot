@@ -22,7 +22,7 @@ exports.create = (req, res, next) ->
           message = "User with the username already exists. Do you want to <a href=\"/forgot?email=#{((user || {}).email || '')}\">reset password</a>?"
           renderError({ _id: message })
         else
-          Skin.db.users.generatePassword user.password, (err, password) ->
+          Skin.db.users.hashPassword user.password, (err, password) ->
             return next(err) if err
             user.password = password
             delete user.confirmationPassword

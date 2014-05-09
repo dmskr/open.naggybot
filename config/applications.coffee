@@ -19,6 +19,9 @@ files.each (name) ->
   if fs.existsSync("#{model}.coffee")
     require(model)
 
+# Additional models
+require "#{Skin.root}/app/shared/keywords"
+
 # Additional controllers out of public/private/admin scheme
 apps.users.controller.sessions = require("../app/users/sessions_controller")
 

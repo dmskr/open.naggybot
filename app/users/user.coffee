@@ -5,42 +5,55 @@ emailRegExp = /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|((
 
 Skin.db.bind('users').bind({
   save: (user, done) ->
+    self = this
     user.createdAt ||= new Date()
     user.updatedAt = new Date()
-    skin.save.call this, user, strict: true, done
+    Skin.db.keywords.fromText [
+      user.username
+      user.email
+    ].join(" "), (err, keywords) ->
+      user.keywords = keywords
+      skin.save.call self, user, strict: true , done
   
-  generatePassword: (password, done) ->
+  hashPassword: (password, done) ->
     return done(null, null) if !password || password.length == 0
     bcrypt.genSalt 10, (err, salt) ->
       bcrypt.hash password.toString(), salt, done
 
   validate: (user, done) ->
-    errors = {}
-    if !user.username || user.username.isBlank()
-      errors.username = "Username is required"
-
-    Skin.db.users.validatePassword user, (err, passerrors) ->
+    async.parallel {
+      username: (next) ->
+        if !user.username || user.username.isBlank()
+          return next(null, "Username is required")
+        next()
+      email: (next) -> Skin.db.users.validateEmail(user, next)
+      password: (next) -> Skin.db.users.validatePassword(user, next)
+    }, (err, results) ->
       return done(err) if err
-      errors = Object.merge(errors, passerrors)
-      done(null, errors)
+      keys = Object.keys(results).findAll (key) -> !!results[key]
+      done(null, Object.select(results, keys))
 
   validateEmail: (user, done) ->
-    errors = {}
     if !user.email || user.email.isBlank()
-      errors.email = "Email is required"
-    else if !user.email.match(emailRegexp)
-      errors.email = "Email '#{user.email}' doesn't look like email. Please check if you have a missprint."
-    done(null, errors)
+      return done(null, "Email is required")
+    if !user.email.match(emailRegExp)
+      return done(null, "Email '#{user.email}' doesn't look like email. Please check if you have a missprint.")
+    done()
 
   validatePassword: (user, done) ->
-    errors = {}
-    if (!user.password || user.password.isBlank())
-      errors.password = "Password is required"
-    else if('confirmationPassword' of user)
+    if !user.password || user.password.isBlank()
+      return done(null, "Password is required")
+    if 'confirmationPassword' of user
       if !user.confirmationPassword
-        errors.confirmationPassword = 'Please confirm your password'
-      else if user.confirmationPassword != user.password
-        errors.confirmationPassword = 'Password confirmation does not match the password itself'
-    done(null, errors)
+        return done(null, 'Please confirm your password')
+      if user.confirmationPassword != user.password
+        return done(null, 'Password confirmation should match the password')
+    done()
+
+  autocomplete: (text, done) ->
+    Skin.db.keywords.toConditions text, (err, conditions) ->
+      return done(err) if err
+      return done(null, [])  unless conditions
+      Skin.db.users.find(conditions).limit(10).toArray done
 })
 
