@@ -23,6 +23,8 @@
     "bootstrap": "~3.1.1",
     "jquery": "~2.1.1",
     "jquery.simplePagination": "*",
-    "sugar": "~1.4.1"
+    "sugar": "~1.4.1",
+    "font-awesome": "~4.0.3",
+    "bootstrap-social": "~4.3.0"
   }
 }
