@@ -29,7 +29,8 @@
     "method-override": "~1.0.0",
     "morgan": "~1.0.1",
     "express-session": "~1.0.4",
-    "chai": "~1.9.1"
+    "chai": "~1.9.1",
+    "gulp": "~3.6.2"
   },
   "scripts": {
     "test": "make test"
