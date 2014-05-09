@@ -1,0 +1,56 @@
+extends ../../shared/admin/layout
+
+block append title
+  title= 'Edit User ' + (man.username || '')
+  - var action = 'users'
+
+block content
+  .container(style="width: 80%")
+    img(src='//www.gravatar.com/avatar/' + man.emailmd5, style='float: right;')
+    h2= 'Edit User ' + (man.username || '')
+
+    form(action='/admin/users/' + man._id, method='post')
+      input(type="hidden", name="_method", value="put")
+      .form-group
+        label= Status
+        = man.status
+      .form-group
+        label= 'Display Name'
+        input.form-control(type='text', name='user[username]', value=man.username)
+      .form-group
+        label= 'Email'
+        input.form-control(type='text', name='user[email]', value=man.email)
+      .checkbox
+        label
+          input(type="checkbox", name='user[access]', checked=man.access ? 'true' : undefined)
+          = 'Access'
+      .form-group
+        label= 'Visited At'
+        p.form-control-static
+          = man.visitedAt || 'never'
+      .form-group
+        label= 'Confirmed At'
+        p.form-control-static
+          = man.confirmedAt || 'never'
+      .form-group
+        label= 'Created At'
+        p.form-control-static
+          = man.createdAt || 'n/a'
+      .form-group
+        label= 'Updated At'
+        p.form-control-static
+          = man.updatedAt || 'n/a'
+      .form-group
+        label= 'Confirmation Token'
+        p.form-control-static
+          = man.confirmationToken || 'n/a'
+      .form-group
+        label= 'Reset Password Token'
+        p.form-control-static
+          = man.resetToken || 'n/a'
+      .form-group
+        input.btn.btn-primary(type="submit", value="Submit")
+        a.btn.btn-link(href='/admin/users', style='padding-top: 25px;') Cancel
+      br
+      br
+

@@ -10,8 +10,15 @@ form#logoutForm(action="/logout?some", method="post")
 
   .collapse.navbar-collapse
     ul.nav.navbar-nav
-      li(class=action == 'tasks' ? 'active' : '')
-        a(href="/private/stuff") Stuff
-      li(class=action == 'profile' ? 'active' : '')
-        a(href="#") Profile
+      li(class=action == 'users' ? 'active' : '')
+        a(href="/admin/users") Users
+      li(class=action == 'reports' ? 'active' : '')
+        a(href="#") Reports
+
+    form.navbar-form(role="search",style="margin-left: 200px;")
+      .form-group
+        input.form-control#search(type='text', placeholder='Start Typing...', style="width: 300px;margin: 0 10px;")
+      button.btn.btn-default.btn-sm#searchBtn(type='submit', onclick="javascript:window.open('/admin/' + $('#action').val() + '/search?term=' + $('#search').val())") Search
+      input#action(type='hidden', value=action)
+        
 

@@ -30,6 +30,10 @@ global.require_user = (req, res, next) ->
   return next(new Error(401)) if !req.user
   next()
 
+global.require_admin = (req, res, next) ->
+  return next(new Error(401)) if !req.user or !req.user.admin
+  next()
+
 # Set routes
 files.each (name) ->
   apps[name].routes = require("../app/#{name}/routes")

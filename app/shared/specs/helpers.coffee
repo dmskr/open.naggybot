@@ -82,3 +82,48 @@ global.shouldNotHaveRoutes = (routes, user, collection) ->
         err.should.eql new Error(401)
         done()
 
+global.testPagingFor = (params) ->
+  collection = params.collection
+  action = params.action or "index"
+  sort = params.sort or "createdAt"
+  beforeEach (done) ->
+    async.times 150, ((index, next) ->
+      entity = title: index
+      entity[sort] = Date.create(index)
+      Skin.db[collection].save entity, (err, result) ->
+        return done(err)  if err
+        next()
+    ), done
+
+  it "should render 100 entities only", (done) ->
+    res.render = (template, options) ->
+      options.data.length.should.eql 100
+      done()
+    Skin.apps[collection].controller.admin[action] req, res, next
+
+  it "should show 0 page by default", (done) ->
+    res = render: (view, params) ->
+      params.data.first()[sort].should.eql Date.create(149)
+      done()
+    Skin.apps[collection].controller.admin[action] req, res, next
+
+  it "should return total number of entities", (done) ->
+    res.render = (view, params) ->
+      params.total.should.eql 150
+      done()
+    Skin.apps[collection].controller.admin[action] req, res, next
+
+  it "should render requested page", (done) ->
+    req.query = page: "1"
+    res.render = (view, params) ->
+      params.data.length.should.eql 50
+      done()
+    Skin.apps[collection].controller.admin[action] req, res, next
+
+  it "should return currently selected page", (done) ->
+    req.query = page: "1"
+    res.render = (view, params) ->
+      params.page.should.eql 1
+      done()
+    Skin.apps[collection].controller.admin[action] req, res, next
+

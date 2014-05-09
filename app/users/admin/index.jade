@@ -1,0 +1,56 @@
+extends ../../shared/admin/layout
+
+block append title
+  title Users
+  - var action = 'users'
+
+block content
+  .container
+    h2 Users
+    ul.nav.nav-tabs
+      each name in ['active', 'blocked', 'all']
+        li(class=name == tab ? 'active' : '')
+          a(href='/admin/users/' + name)= name.capitalize()
+      if tab == 'search'
+        li(class='active')
+          a(href='#') Search
+  
+      button#new_user.btn.btn-primary(style='float:right;margin-right: 30px;')
+        = 'New User'
+  
+    if data.length == 0
+      br
+      .alert.alert-warning
+        = 'No Users Found'
+    else
+      table.table.table-stripped
+        thead
+          tr
+            th= 'ID'
+            th= 'Status'
+            th= 'Username'
+            th= 'Email'
+            th= 'Last Visit'
+            th= 'Created At'
+        tbody
+          - var statuses = { "pending": "", "active": "label-success", "nopassword": "labal-warning", "unconfirmed": "label-info", "noaccess": "label-important" }
+          each man in data
+            tr
+              - var id = man._id.toString()
+              td
+                a(href="/admin/users/#{id}")
+                  = id.slice(0,2) + '..' + id.slice(-3)
+              td
+                - var st = 'noaccess'
+                - if (!man.access) st = 'noaccess'; else if (!man.confirmedAt) st = 'unconfirmed'; else if (!man.password) st = 'nopassword'; else st = 'active';
+                span.label(class=statuses[st] || statuses["pending"])= st || 'unknown'
+              td= man.username
+              td= man.email
+              td= man.visitedAt && man.visitedAt.format('short') || 'never'
+              td= man.createdAt && man.createdAt.format('short') || 'n/a'
+      br
+      input.total(type='hidden', name='total', value=total)
+      input.page(type='hidden', name='total', value=page)
+      .pagination
+      br
+

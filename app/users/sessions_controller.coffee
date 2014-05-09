@@ -18,7 +18,7 @@ passport.use new LocalStrategy (username, password, done) ->
 
     # Load hash from your password DB.
     bcrypt.compare password, user.password, (err, res) ->
-      done(err) if err
+      return done(err) if err
       if !res
         return done(null, false, { user: user, errors: { password: 'Incorrect password'  }})
       else
