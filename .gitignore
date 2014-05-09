@@ -29,3 +29,6 @@ notes
 **/*.swo
 **/*.orig
 .DS_Store
+
+# Bower components
+static/lib

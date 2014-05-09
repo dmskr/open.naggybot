@@ -1,0 +1,26 @@
+{
+  "name": "nodeskin",
+  "version": "0.0.1",
+  "homepage": "https://github.com/dmskr/nodeskin",
+  "authors": [
+    "Dmitry Skrinnik <dmitry@skrinnik.com>"
+  ],
+  "description": "Very basic NodeJS app",
+  "main": "server.coffee",
+  "moduleType": [
+    "node"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.1.1",
+    "jquery": "~2.1.1"
+  }
+}
