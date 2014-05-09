@@ -1,0 +1,7 @@
+--reporter spec
+--ui bdd
+--slow 20
+--growl
+--compilers coffee:coffee-script/register
+--timeout 2000
+
