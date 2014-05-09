@@ -9,6 +9,11 @@ html(lang='en')
       meta(name="description", content="Skin. Basic Node App")
       meta(name="author", content="Dmitry Skrinnik")
       link(rel="stylesheet", type="text/css", href="/bootstrap.css?" + tscss)
+      link(rel="stylesheet", type="text/css", href="/lib/jquery.simplePagination/simplePagination.css?" + tscss)
+
+      script(src='/lib/jquery/dist/jquery.min.js?' + tsjs)
+      script(src='/lib/jquery.simplePagination/jquery.simplePagination.js?' + tsjs)
+      script(src='/lib/sugar/release/sugar-full.min.js?' + tsjs)
 
   body
     include _navbar
