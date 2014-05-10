@@ -1,43 +1,6 @@
 GITHUB_CLIENT_ID = "76f9ddbeb73de6823fab"
 GITHUB_CLIENT_SECRET = "4850ec99a910c8f1a4d654880adebc84dbc243af"
 
-passport.serializeUser (user, done) ->
-  done(null, user._id)
-
-passport.deserializeUser (id, done) ->
-  Bot.db.users.findById(id, done)
-
-#passport.use new LocalStrategy (username, password, done) ->
-  #if (!username || username.length == 0)
-    #return done(null, false, user: null, errors: { username: 'Username is required' })
-
-  #Bot.db.users.find(username: username.toLowerCase()).toArray (err, users) ->
-    #return done(err) if (err)
-
-    #user = users.first()
-    #if !user
-      #message = "The username wasn't found. Do you want to <a href='/signup'>Signup</a>?"
-      #return done(null, false, errors: { username: message })
-
-    ## Load hash from your password DB.
-    #bcrypt.compare password, user.password, (err, res) ->
-      #return done(err) if err
-      #if !res
-        #return done(null, false, { user: user, errors: { password: 'Incorrect password'  }})
-      #else
-        #return done(null, user)
-
-
-passport.use(new GitHubStrategy {
-    clientID: GITHUB_CLIENT_ID
-    clientSecret: GITHUB_CLIENT_SECRET
-    callbackURL: "http://127.0.0.1:3000/auth/github/callback"
-    scope: ['user:email', 'repo', 'admin:repo_hook']
-  },
-  (accessToken, refreshToken, profile, done) ->
-    return done(null, profile)
-)
-
 exports.new = (req, res, next) ->
   res.render Bot.root + '/app/users/public/login.jade'
 
@@ -67,3 +30,30 @@ exports.del = (req, res, next) ->
   req.logout()
   res.redirect '/'
 
+exports.authGitHub = (accessToken, refreshToken, profile, done) ->
+  Bot.db.users.find({ 'provider.github.id': profile.id }).limit(1).toArray (err, users) ->
+    return done(err) if err
+
+    user = users.first() || {}
+    user.provider ||= {}
+    user.provider.github ||= {}
+    user.provider.github.displayName = profile.displayName
+    user.provider.github.username = profile.username
+    user.provider.github.emails = (profile.emails || []).map((email) -> email.value).findAll((email) -> !!email)
+    user.provider.github.avatar_url = (profile._json || {}).avatar_url
+    user.provider.github.gravatar_id = (profile._json || {}).gravatar_id
+    Bot.db.users.save user, (err) ->
+      return done(err, user)
+
+passport.use(new GitHubStrategy {
+    clientID: GITHUB_CLIENT_ID
+    clientSecret: GITHUB_CLIENT_SECRET
+    callbackURL: "http://127.0.0.1:8081/auth/github/callback"
+    scope: ['user:email', 'repo', 'admin:repo_hook']
+  }, exports.authGitHub)
+
+passport.serializeUser (user, done) ->
+  done(null, user._id)
+
+passport.deserializeUser (id, done) ->
+  Bot.db.users.findById(id, done)
