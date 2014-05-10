@@ -40,8 +40,15 @@ describe "Repos Private Controller", ->
     it "should render index.jade template", (done) ->
       res.render = (template, params) ->
         template.should.eql "#{Bot.root}/app/repos/private/index.jade"
-        should.exist params.repos
-        params.repos.length.should.eql 8
+        should.exist params.data
+        params.data.length.should.eql 8
+        done()
+      Bot.apps.repos.controller.private.index req, res, next
+
+    it "shoud provide 'all' tab name to the template", (done) ->
+      res.render = (template, params) ->
+        should.exist params.tab
+        params.tab.should.eql 'all'
         done()
       Bot.apps.repos.controller.private.index req, res, next
 

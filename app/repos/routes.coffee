@@ -7,4 +7,7 @@ exports.route = (app) ->
   app.get '/private', require_user, priv.index
   app.get '/private/repos', require_user, priv.index
   app.get '/private/repos/index', require_user, priv.index
+  app.get '/private/repos/all', require_user, priv.index
+  app.get '/private/repos/watched', require_user, priv.watched
+  app.get '/private/repos/ignored', require_user, priv.ignored
 

@@ -6,5 +6,9 @@ exports.index = (req, res, next) ->
   })
   github.repos.getAll { sort: 'updated' }, (err, result) ->
     return next(err) if err
-    res.render "#{Bot.root}/app/repos/private/index.jade", repos: result
+    res.render "#{Bot.root}/app/repos/private/index.jade", { data: result, tab: 'all' }
+
+exports.ignored = exports.index
+
+exports.watched = exports.index
 
