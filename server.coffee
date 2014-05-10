@@ -14,6 +14,7 @@ global.nodemailer = require('nodemailer')
 global.URI = require('url')
 global.Path = require('path')
 global.async = require('async')
+global.GitHub = require('github')
 
 global.Bot = express()
 Bot.root = __dirname
