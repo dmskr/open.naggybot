@@ -67,6 +67,10 @@ describe "Sessions Controller", ->
           updated.provider.github.avatar_url.should.eql 'https://avatars.githubusercontent.com/u/7523890?'
         it 'gravatar_id', ->
           updated.provider.github.gravatar_id.should.eql 'c05935237e2c7cc96f037085637e90b0'
+        it "accessToken", ->
+          updated.provider.github.accessToken.should.eql accessToken
+        it "refreshToken", ->
+          updated.provider.github.refreshToken.should.eql refreshToken
 
     describe 'new user', ->
       [returned, updated] = [null, null, null]
@@ -99,4 +103,8 @@ describe "Sessions Controller", ->
           updated.provider.github.avatar_url.should.eql 'https://avatars.githubusercontent.com/u/7523890?'
         it 'gravatar_id', ->
           updated.provider.github.gravatar_id.should.eql 'c05935237e2c7cc96f037085637e90b0'
+        it "accessToken", ->
+          updated.provider.github.accessToken.should.eql accessToken
+        it "refreshToken", ->
+          updated.provider.github.refreshToken.should.eql refreshToken
 

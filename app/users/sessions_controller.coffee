@@ -42,6 +42,8 @@ exports.authGitHub = (accessToken, refreshToken, profile, done) ->
     user.provider.github.emails = (profile.emails || []).map((email) -> email.value).findAll((email) -> !!email)
     user.provider.github.avatar_url = (profile._json || {}).avatar_url
     user.provider.github.gravatar_id = (profile._json || {}).gravatar_id
+    user.provider.github.accessToken = accessToken
+    user.provider.github.refreshToken = refreshToken
     Bot.db.users.save user, (err) ->
       return done(err, user)
 
