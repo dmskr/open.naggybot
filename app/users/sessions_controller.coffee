@@ -36,7 +36,7 @@ exports.authGitHub = (accessToken, refreshToken, profile, done) ->
 
     user = users.first() || {}
     user.provider ||= {}
-    user.provider.github ||= {}
+    user.provider.github ||= { id: (profile || {}).id }
     user.provider.github.displayName = profile.displayName
     user.provider.github.username = profile.username
     user.provider.github.emails = (profile.emails || []).map((email) -> email.value).findAll((email) -> !!email)

@@ -93,6 +93,8 @@ describe "Sessions Controller", ->
         returned.should.eql updated
 
       describe "should savee", ->
+        it "github id", ->
+          updated.provider.github.id.should.eql 123
         it "displayName", ->
           updated.provider.github.displayName.should.eql 'Naggy Bot'
         it 'username', ->
