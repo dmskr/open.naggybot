@@ -1,7 +1,7 @@
 {
-  "name": "nodeskin",
+  "name": "naggybot",
   "version": "0.0.1",
-  "description": "Basic NodeJS app",
+  "description": "Naggy Bot. Watch Out!",
   "main": "server.coffee",
   "dependencies": {
     "express": "~4.1.1",
@@ -38,7 +38,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:dmskr/nodeskin.git"
+    "url": "git@github.com:dmskr/naggybot.git"
   },
   "author": "Dmitry Skrinnik",
   "license": "MIT",

@@ -1,11 +1,11 @@
 {
-  "name": "nodeskin",
+  "name": "naggybot",
   "version": "0.0.1",
-  "homepage": "https://github.com/dmskr/nodeskin",
+  "homepage": "https://github.com/dmskr/naggybot",
   "authors": [
     "Dmitry Skrinnik <dmitry@skrinnik.com>"
   ],
-  "description": "Very basic NodeJS app",
+  "description": "Naggy Bot. Watch Out!",
   "main": "server.coffee",
   "moduleType": [
     "node"
