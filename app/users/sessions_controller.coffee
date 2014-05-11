@@ -50,7 +50,7 @@ exports.authGitHub = (accessToken, refreshToken, profile, done) ->
 passport.use(new GitHubStrategy {
     clientID: GITHUB_CLIENT_ID
     clientSecret: GITHUB_CLIENT_SECRET
-    callbackURL: "http://127.0.0.1:8081/auth/github/callback"
+    callbackURL: "http://#{Bot.host}/auth/github/callback"
     scope: ['user:email', 'repo', 'admin:repo_hook']
   }, exports.authGitHub)
 

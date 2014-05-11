@@ -12,11 +12,18 @@ describe "Repos Private Controller", ->
         return done(err) if err
         callback(null, JSON.parse(content))
 
-    req.user =
+    global.GitHub.prototype.repos.createHook = (params, callback) ->
+      callback(null, {})
+
+    Bot.db.users.save {
       provider:
         github:
           accessToken: '321'
-    done()
+          username: 'ghmonkey'
+    }, (err, user) ->
+      return done(err) if err
+      req.user = user
+      done()
 
   afterEach (done) ->
     global.GitHub = originalGitHub
@@ -28,7 +35,7 @@ describe "Repos Private Controller", ->
         args.type.should.eql 'oauth'
         args.token.should.eql '321'
         done()
-        return null
+        return null # Required to properly initialize prototype
       Bot.apps.repos.controller.private.index req, res, next
 
     it "should list all repos belonged to the user sorted by 'updated' date", (done) ->
@@ -51,4 +58,66 @@ describe "Repos Private Controller", ->
         params.tab.should.eql 'all'
         done()
       Bot.apps.repos.controller.private.index req, res, next
+
+  describe 'create', ->
+    beforeEach (done) ->
+      req.host = 'localhost'
+      req.body.repo = full_name: 'monkey/awesome'
+      done()
+
+    it "should authorize on github", (done) ->
+      global.GitHub.prototype.authenticate = (args) ->
+        args.type.should.eql 'oauth'
+        args.token.should.eql '321'
+        done()
+        return null # Required to properly initialize prototype
+      Bot.apps.repos.controller.private.create req, res, next
+
+    it "should create github hooks", (done) ->
+      global.GitHub.prototype.repos.createHook = (args, callback) ->
+        args.should.eql {
+          user: 'ghmonkey'
+          repo: 'monkey/awesome'
+          name: 'web'
+          config:
+            url: "http://localhost/pulls/github/callback"
+            'content-type': 'application/json'
+          events: ['pull_request']
+          active: true
+        }
+        done()
+      Bot.apps.repos.controller.private.create req, res, next
+
+    it "should store the repo in database", (done) ->
+      req.body.repo =
+        id: 456789
+        name: 'naggybot'
+        full_name: 'monkey/naggybot'
+
+      res.json = (status, result) ->
+        Bot.db.repos.findById result.repo._id, (err, repo) ->
+          return next(err) if err
+          Object.select(repo, ['active', 'user', 'provider']).should.eql
+            active: true
+            user: req.user._id
+            provider:
+              github:
+                id: 456789
+                name: 'naggybot'
+                full_name: 'monkey/naggybot'
+          done()
+
+      Bot.apps.repos.controller.private.create req, res, next
+
+  #describe 'del', ->
+    #it "should authorize on github", (done) ->
+      #global.GitHub.prototype.authenticate = (args) ->
+        #args.type.should.eql 'oauth'
+        #args.token.should.eql '321'
+        #done()
+        #return null # Required to properly initialize prototype
+      #Bot.apps.repos.controller.private.del req, res, next
+
+    #it "should remove all hooks"
+    #it "should store the repo in database"
 

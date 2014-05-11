@@ -24,6 +24,7 @@ beforeEach (done) ->
       render: ->
       redirect: ->
       setHeader: ->
+      json: ->
 
     global.next = (err) -> throw err if err
     done()
