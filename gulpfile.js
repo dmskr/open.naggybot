@@ -1,5 +1,2 @@
-﻿var gulp = require('gulp');
-
-gulp.task('default', function() {
-
-});
+require('coffee-script/register');
+require('./gulpfile.coffee');
