@@ -34,7 +34,8 @@
     "passport-github": "~0.1.5",
     "github": "~0.1.16",
     "gulp-coffee": "~1.4.3",
-    "gulp-util": "~2.2.14"
+    "gulp-util": "~2.2.14",
+    "gulp-notify": "~1.2.5"
   },
   "scripts": {
     "test": "make test"
