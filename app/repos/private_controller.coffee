@@ -46,26 +46,29 @@ exports.del = (req, res, next) ->
     type: 'oauth'
     token: req.user.provider.github.accessToken
   })
-  github.repos.getHooks {
-    user: req.user.provider.github.username
-    repo: req.body.repo.full_name
-    per_page: 100
-  }, (err, result) ->
-    return next(err) if (err)
-    async.each result, (hook, callback) ->
-      unless hook.config && hook.config.url && hook.config.url.match(new RegExp("^https?:\/\/" + req.hostname))
-        return callback()
-      github.repos.deleteHook {
-        user: req.user.provider.github.username
-        repo: req.body.repo.full_name
-        id: hook.id
-      }, callback
-    , (err) ->
+
+  Bot.db.repos.findById req.params.id, (err, repo) ->
+    return next(err) if err
+    Bot.db.users.findById repo.user, (err, user) ->
       return next(err) if err
-      Bot.db.repos.findById req.body.repo._id, (err, repo) ->
-        return next(err) if err
-        repo.active = false
-        Bot.db.repos.save repo, (err) ->
+      github.repos.getHooks {
+        user: user.provider.github.username
+        repo: repo.full_name
+        per_page: 100
+      }, (err, result) ->
+        return next(err) if (err)
+        async.each result, (hook, callback) ->
+          unless hook.config && hook.config.url && hook.config.url.match(new RegExp("^https?:\/\/" + req.hostname))
+            return callback()
+          github.repos.deleteHook {
+            user: user.provider.github.username
+            repo: repo.full_name
+            id: hook.id
+          }, callback
+        , (err) ->
           return next(err) if err
-          res.json '200', repo: repo
+          repo.active = false
+          Bot.db.repos.save repo, (err) ->
+            return next(err) if err
+            res.json '200', repo: repo
 

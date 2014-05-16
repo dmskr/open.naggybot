@@ -117,12 +117,14 @@ describe "Repos Private Controller", ->
   describe 'del', ->
     beforeEach (done) ->
       Bot.db.repos.save {
-        id: 456789
+        github_id: 456789
+        provider: 'github'
         name: 'naggybot'
         full_name: 'monkey/naggybot'
+        user: req.user._id
       }, (err, repo) ->
         return done(err) if err
-        req.body.repo = repo
+        req.params.id = repo._id
         done()
 
     it "should authorize on github", (done) ->
