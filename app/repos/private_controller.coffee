@@ -21,7 +21,7 @@ exports.create = (req, res, next) ->
 
   github.repos.createHook {
     user: req.user.provider.github.username
-    repo: req.body.repo.full_name
+    repo: req.body.repo.name
     name: 'web'
     config:
       'url': "http://#{req.host}/pulls/github/callback"
@@ -36,9 +36,10 @@ exports.create = (req, res, next) ->
       provider:
         github: Object.select(req.body.repo, ['id', 'name', 'full_name'])
 
-    Bot.db.repos.save repo, (err) ->
+    Bot.db.repos.save repo, (err, result) ->
       return next(err) if err
-      res.json '200', repo: repo
+      req.flash 'success', 'Watching your repo, Dude.'
+      res.redirect '/private/repos/' + result._id
 
 exports.del = (req, res, next) ->
   github = new GitHub({ version: '3.0.0' })

@@ -26,7 +26,12 @@ exports.route = (app) ->
 
   app.get '/auth/github', passport.authenticate('github'), ->
 
-  app.get '/auth/github/callback',
-    passport.authenticate('github', { failureRedirect: '/login' }),
-    (req, res, next) -> res.redirect('/private')
+  app.get '/auth/github/callback', (req, res, next) ->
+    passport.authenticate('github', (err, user, info) ->
+      return next(err) if err
+      return res.redirect('/login') unless user
+      req.logIn user, (err) ->
+        return next(err) if err
+        res.redirect '/private'
+    )(req, res, next)
 

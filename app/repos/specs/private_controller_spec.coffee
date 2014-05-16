@@ -66,7 +66,7 @@ describe "Repos Private Controller", ->
 
   describe 'create', ->
     beforeEach (done) ->
-      req.body.repo = full_name: 'monkey/awesome'
+      req.body.repo = full_name: 'monkey/awesome', name: 'awesome'
       done()
 
     it "should authorize on github", (done) ->
@@ -81,7 +81,7 @@ describe "Repos Private Controller", ->
       global.GitHub.prototype.repos.createHook = (args, callback) ->
         args.should.eql {
           user: 'ghmonkey'
-          repo: 'monkey/awesome'
+          repo: 'awesome'
           name: 'web'
           config:
             url: "http://localhost/pulls/github/callback"
@@ -99,10 +99,11 @@ describe "Repos Private Controller", ->
         name: 'naggybot'
         full_name: 'monkey/naggybot'
 
-      res.json = (status, result) ->
-        Bot.db.repos.findById result.repo._id, (err, repo) ->
+      res.redirect = (url) ->
+        Bot.db.repos.find('provider.github.name': 'naggybot').toArray (err, repos) ->
           return next(err) if err
-          Object.select(repo, ['active', 'user', 'provider']).should.eql
+          should.exist repos.first()
+          Object.select(repos.first(), ['active', 'user', 'provider']).should.eql
             active: true
             user: req.user._id
             provider:
@@ -110,6 +111,34 @@ describe "Repos Private Controller", ->
                 id: 456789
                 name: 'naggybot'
                 full_name: 'monkey/naggybot'
+          done()
+
+      Bot.apps.repos.controller.private.create req, res, next
+
+    it "should set successfull flash message", (done) ->
+      req.body.repo =
+        id: 456789
+        name: 'naggybot'
+        full_name: 'monkey/naggybot'
+
+      req.flash = (type, message) ->
+        type.should.eql 'success'
+        should.exist message
+        done()
+
+      Bot.apps.repos.controller.private.create req, res, next
+
+    it "should redirect to repo#show page", (done) ->
+      req.body.repo =
+        id: 456789
+        name: 'naggybot'
+        full_name: 'monkey/naggybot'
+
+      res.redirect = (url) ->
+        should.exist url
+        Bot.db.repos.find('provider.github.id': 456789).toArray (err, repos) ->
+          return done(err) if err
+          url.should.eql '/private/repos/' + repos.first()._id
           done()
 
       Bot.apps.repos.controller.private.create req, res, next

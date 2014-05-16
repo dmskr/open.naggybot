@@ -29,6 +29,7 @@ block content
             th= 'Owner'
             th= 'Updated At'
             th= 'Created At'
+            th= 'Watch'
         tbody
           - var statuses = { "pending": "", "active": "label-success", "nopassword": "labal-warning", "unconfirmed": "label-info", "noaccess": "label-important" }
           each repo in data
@@ -42,6 +43,12 @@ block content
               td= repo.owner.login
               td= repo.updated_at && Date.create(repo.updated_at).format('short') || 'never'
               td= repo.created_at && Date.create(repo.created_at).format('short') || 'n/a'
+              td
+                form(method="post" action="/private/repos")
+                  input(type="hidden" name="repo[id]" value=repo.id)
+                  input(type="hidden" name="repo[name]" value=repo.name)
+                  input(type="hidden" name="repo[full_name]" value=repo.full_name)
+                  input.btn.btn-primary.watch(data-id=repo.id type="submit" value="Watch")
       br
       input.total(type='hidden', name='total', value=total)
       input.page(type='hidden', name='total', value=page)

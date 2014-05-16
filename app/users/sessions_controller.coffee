@@ -50,7 +50,7 @@ exports.authGitHub = (accessToken, refreshToken, profile, done) ->
 passport.use(new GitHubStrategy {
     clientID: GITHUB_CLIENT_ID
     clientSecret: GITHUB_CLIENT_SECRET
-    callbackURL: "http://#{Bot.host}/auth/github/callback"
+    callbackURL: "http://#{Bot.settings.host}/auth/github/callback"
     scope: ['user:email', 'repo', 'admin:repo_hook']
   }, exports.authGitHub)
 
@@ -59,3 +59,4 @@ passport.serializeUser (user, done) ->
 
 passport.deserializeUser (id, done) ->
   Bot.db.users.findById(id, done)
+

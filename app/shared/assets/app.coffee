@@ -1,2 +1,2 @@
-console.log('Some')
+$(document).ready ->
 

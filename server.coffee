@@ -19,6 +19,7 @@ global.GitHub = require('github')
 global.Bot = express()
 Bot.root = __dirname
 Bot.settings.port = 8081
+Bot.set('host', 'localhost:' + Bot.settings.port)
 
 global.server = require('http').createServer(Bot)
 global.isServer = true
