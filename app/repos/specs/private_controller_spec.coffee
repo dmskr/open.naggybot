@@ -14,6 +14,11 @@ describe "Repos Private Controller", ->
 
     global.GitHub.prototype.repos.createHook = (params, callback) ->
       callback(null, {})
+    global.GitHub.prototype.repos.getHooks = (args, callback) ->
+      callback(null, {})
+
+    req.host = 'localhost'
+    req.hostname = 'localhost'
 
     Bot.db.users.save {
       provider:
@@ -61,7 +66,6 @@ describe "Repos Private Controller", ->
 
   describe 'create', ->
     beforeEach (done) ->
-      req.host = 'localhost'
       req.body.repo = full_name: 'monkey/awesome'
       done()
 
@@ -86,6 +90,7 @@ describe "Repos Private Controller", ->
           active: true
         }
         done()
+        return null
       Bot.apps.repos.controller.private.create req, res, next
 
     it "should store the repo in database", (done) ->
@@ -109,15 +114,59 @@ describe "Repos Private Controller", ->
 
       Bot.apps.repos.controller.private.create req, res, next
 
-  #describe 'del', ->
-    #it "should authorize on github", (done) ->
-      #global.GitHub.prototype.authenticate = (args) ->
-        #args.type.should.eql 'oauth'
-        #args.token.should.eql '321'
-        #done()
-        #return null # Required to properly initialize prototype
-      #Bot.apps.repos.controller.private.del req, res, next
+  describe 'del', ->
+    beforeEach (done) ->
+      Bot.db.repos.save {
+        id: 456789
+        name: 'naggybot'
+        full_name: 'monkey/naggybot'
+      }, (err, repo) ->
+        return done(err) if err
+        req.body.repo = repo
+        done()
 
-    #it "should remove all hooks"
-    #it "should store the repo in database"
+    it "should authorize on github", (done) ->
+      global.GitHub.prototype.authenticate = (args) ->
+        args.type.should.eql 'oauth'
+        args.token.should.eql '321'
+        done()
+        return null # Required to properly initialize prototype
+      Bot.apps.repos.controller.private.del req, res, next
+
+    it "should request all hooks attached to the repo", (done) ->
+      global.GitHub.prototype.repos.getHooks = (args, callback) ->
+        args.should.eql {
+          user: 'ghmonkey'
+          repo: 'monkey/naggybot'
+          per_page: 100
+        }
+        done()
+        return null
+      Bot.apps.repos.controller.private.del req, res, next
+
+    it "should remove all hooks created by naggybot", (done) ->
+      global.GitHub.prototype.repos.getHooks = (args, callback) ->
+        callback(null, [
+          { id: 321, config: url: 'http://localhost/pulls/github/callback' },
+          { id: 654, config: url: 'http://othersite.com/pulls/github/callback' },
+          { id: 987, config: url: 'http://localhost/pulls/github/callback' }])
+        return null
+
+      removedHooks = []
+      global.GitHub.prototype.repos.deleteHook = (args, callback) ->
+        removedHooks.push args.id
+        callback()
+
+      res.json = (status, result) ->
+        removedHooks.should.eql [321, 987]
+        done()
+      Bot.apps.repos.controller.private.del req, res, next
+
+    it "should remove the repo from database", (done) ->
+      res.json = (status, result) ->
+        Bot.db.repos.findById result.repo._id, (err, repo) ->
+          return done(err) if err
+          repo.active.should.eql false
+          done()
+      Bot.apps.repos.controller.private.del req, res, next
 

@@ -41,16 +41,31 @@ exports.create = (req, res, next) ->
       res.json '200', repo: repo
 
 exports.del = (req, res, next) ->
-  #github = new GitHub({ version: '3.0.0' })
-  #github.authentificate({
-    #type: 'oauth'
-    #token: req.user.provider.github.accessToken
-  #})
-  #github.repos.deleteHook {
-    #user: ''
-    #repo: ''
-    #id: 1
-  #}, (err) ->
-    #return next(err) if err
-  next()
+  github = new GitHub({ version: '3.0.0' })
+  github.authenticate({
+    type: 'oauth'
+    token: req.user.provider.github.accessToken
+  })
+  github.repos.getHooks {
+    user: req.user.provider.github.username
+    repo: req.body.repo.full_name
+    per_page: 100
+  }, (err, result) ->
+    return next(err) if (err)
+    async.each result, (hook, callback) ->
+      unless hook.config && hook.config.url && hook.config.url.match(new RegExp("^https?:\/\/" + req.hostname))
+        return callback()
+      github.repos.deleteHook {
+        user: req.user.provider.github.username
+        repo: req.body.repo.full_name
+        id: hook.id
+      }, callback
+    , (err) ->
+      return next(err) if err
+      Bot.db.repos.findById req.body.repo._id, (err, repo) ->
+        return next(err) if err
+        repo.active = false
+        Bot.db.repos.save repo, (err) ->
+          return next(err) if err
+          res.json '200', repo: repo
 
