@@ -40,6 +40,8 @@ app.use(session(
 app.use(flash())
 app.use(serveStatic("static"))
 app.use(poweredBy(null))
+
+# Set flash messages
 app.use (req, res, next) ->
   original = res.render
   res.render = (template, options, callback) ->

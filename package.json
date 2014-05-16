@@ -32,7 +32,9 @@
     "chai": "~1.9.1",
     "gulp": "~3.6.2",
     "passport-github": "~0.1.5",
-    "github": "~0.1.16"
+    "github": "~0.1.16",
+    "gulp-coffee": "~1.4.3",
+    "gulp-util": "~2.2.14"
   },
   "scripts": {
     "test": "make test"
