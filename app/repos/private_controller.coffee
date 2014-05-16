@@ -20,7 +20,7 @@ exports.create = (req, res, next) ->
   })
 
   github.repos.createHook {
-    user: req.user.provider.github.username
+    user: req.body.repo.owner.login
     repo: req.body.repo.name
     name: 'web'
     config:
@@ -34,7 +34,7 @@ exports.create = (req, res, next) ->
       active: true
       user: req.user._id
       provider:
-        github: Object.select(req.body.repo, ['id', 'name', 'full_name'])
+        github: Object.select(req.body.repo, ['id', 'name', 'full_name', 'owner'])
 
     Bot.db.repos.save repo, (err, result) ->
       return next(err) if err

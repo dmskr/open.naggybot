@@ -66,7 +66,7 @@ describe "Repos Private Controller", ->
 
   describe 'create', ->
     beforeEach (done) ->
-      req.body.repo = full_name: 'monkey/awesome', name: 'awesome'
+      req.body.repo = full_name: 'monkey/awesome', name: 'awesome', owner: { login: 'monkeymaster' }
       done()
 
     it "should authorize on github", (done) ->
@@ -80,7 +80,7 @@ describe "Repos Private Controller", ->
     it "should create github hooks", (done) ->
       global.GitHub.prototype.repos.createHook = (args, callback) ->
         args.should.eql {
-          user: 'ghmonkey'
+          user: 'monkeymaster'
           repo: 'awesome'
           name: 'web'
           config:
@@ -98,6 +98,8 @@ describe "Repos Private Controller", ->
         id: 456789
         name: 'naggybot'
         full_name: 'monkey/naggybot'
+        owner:
+          login: 'monkeymaster'
 
       res.redirect = (url) ->
         Bot.db.repos.find('provider.github.name': 'naggybot').toArray (err, repos) ->
@@ -111,6 +113,8 @@ describe "Repos Private Controller", ->
                 id: 456789
                 name: 'naggybot'
                 full_name: 'monkey/naggybot'
+                owner:
+                  login: 'monkeymaster'
           done()
 
       Bot.apps.repos.controller.private.create req, res, next
@@ -120,6 +124,8 @@ describe "Repos Private Controller", ->
         id: 456789
         name: 'naggybot'
         full_name: 'monkey/naggybot'
+        owner:
+          login: 'monkeymaster'
 
       req.flash = (type, message) ->
         type.should.eql 'success'
@@ -133,6 +139,8 @@ describe "Repos Private Controller", ->
         id: 456789
         name: 'naggybot'
         full_name: 'monkey/naggybot'
+        owner:
+          login: 'monkeymaster'
 
       res.redirect = (url) ->
         should.exist url

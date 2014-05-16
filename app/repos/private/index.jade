@@ -48,6 +48,7 @@ block content
                   input(type="hidden" name="repo[id]" value=repo.id)
                   input(type="hidden" name="repo[name]" value=repo.name)
                   input(type="hidden" name="repo[full_name]" value=repo.full_name)
+                  input(type="hidden" name="repo[owner][login]" value=repo.owner.login)
                   input.btn.btn-primary.watch(data-id=repo.id type="submit" value="Watch")
       br
       input.total(type='hidden', name='total', value=total)
