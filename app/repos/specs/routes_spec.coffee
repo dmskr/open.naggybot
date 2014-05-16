@@ -9,8 +9,22 @@ describe "Users Routes", ->
       'get /private/repos/all': 'repos.private.index'
       'get /private/repos/watched': 'repos.private.watched'
       'get /private/repos/ignored': 'repos.private.ignored'
+      'post /private/repos': 'repos.private.create'
+      'delete /private/repos/:id': 'repos.private.del'
     }, { username: 'dmskr' })
 
   describe "for private", ->
-    shouldNotHaveRoutes([])
+    shouldNotHaveRoutes([], { username: 'monkey' }, 'repos')
+
+  describe "for public", ->
+    shouldNotHaveRoutes [
+      'get /private'
+      'get /private/repos'
+      'get /private/repos/index'
+      'get /private/repos/all'
+      'get /private/repos/watched'
+      'get /private/repos/ignored'
+      'post /private/repos/'
+      'del /private/repos/:id'
+    ], null, 'repos'
 

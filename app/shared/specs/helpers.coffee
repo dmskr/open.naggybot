@@ -70,6 +70,8 @@ global.shouldHaveRoutes = (routes, user, collection) ->
       app.handle Object.merge(req, { method: method, url: url, user: user }), res, next
 
 global.shouldNotHaveRoutes = (routes, user, collection) ->
+  throw new Error('Routes are required as a first param') unless routes
+  throw new Error('Collection is required as a third param') unless collection
   app = null
   beforeEach ->
     app = express()
