@@ -1,0 +1,4 @@
+﻿machine:
+  node:
+      version: v0.10.17
+
