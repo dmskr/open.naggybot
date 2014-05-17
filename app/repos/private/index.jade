@@ -14,45 +14,33 @@ block content
       if tab == 'search'
         li(class='active')
           a(href='#') Search
-  
-    if data.length == 0
-      br
-      .alert.alert-warning
-        = 'No Repositories Found'
-    else
-      table.table.table-stripped
-        thead
-          tr
-            th= 'ID'
-            th= 'Name'
-            th= 'Full Name'
-            th= 'Owner'
-            th= 'Updated At'
-            th= 'Created At'
-            th= 'Watch'
-        tbody
-          - var statuses = { "pending": "", "active": "label-success", "nopassword": "labal-warning", "unconfirmed": "label-info", "noaccess": "label-important" }
-          each repo in data
-            tr
-              - var id = repo.id.toString()
-              td
-                a(href="#")
-                  = id.slice(0,2) + '..' + id.slice(-3)
-              td= repo.name
-              td= repo.full_name
-              td= repo.owner.login
-              td= repo.updated_at && Date.create(repo.updated_at).format('short') || 'never'
-              td= repo.created_at && Date.create(repo.created_at).format('short') || 'n/a'
-              td
-                form(method="post" action="/private/repos")
-                  input(type="hidden" name="repo[id]" value=repo.id)
-                  input(type="hidden" name="repo[name]" value=repo.name)
-                  input(type="hidden" name="repo[full_name]" value=repo.full_name)
-                  input(type="hidden" name="repo[owner][login]" value=repo.owner.login)
-                  input.btn.btn-primary.watch(data-id=repo.id type="submit" value="Watch")
-      br
-      input.total(type='hidden', name='total', value=total)
-      input.page(type='hidden', name='total', value=page)
-      .pagination
-      br
+    
+    table.table.table-stripped
+      thead
+        tr
+          th= 'ID'
+          th= 'Name'
+          th= 'Full Name'
+          th= 'Owner'
+          th= 'Updated At'
+          th= 'Created At'
+          th= 'Watch'
+      tbody
+        - var statuses = { "pending": "", "active": "label-success", "nopassword": "labal-warning", "unconfirmed": "label-info", "noaccess": "label-important" }
+        tr(ng-repeat="repo in repos")
+          td
+            a(href="#")
+              {{repo.id}}
+          td {{repo.name}}
+          td {{repo.full_name}}
+          td {{repo.owner.login}}
+          td {{repo.updated_at}}
+          td {{repo.created_at}}
+          td
+    br
+    input.total(type='hidden', name='total', value=total)
+    input.page(type='hidden', name='total', value=page)
+    .pagination
+    br
+    input.page#token(type='hidden', name='token', value=token, ng-model="token")
 
