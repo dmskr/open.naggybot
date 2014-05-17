@@ -33,4 +33,6 @@ notes
 # Bower components
 static/lib
 static/app.js
+static/controllers.js
+static/repos
 

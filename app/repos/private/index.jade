@@ -5,42 +5,7 @@ block append title
   - var action = 'repos'
 
 block content
-  .container(ng-controller="Repos")
-    h2 Repositories
-    ul.nav.nav-tabs
-      each name in ['watched', 'ignored', 'all']
-        li(class=name == tab ? 'active' : '')
-          a(href='/private/repos/' + name)= name.capitalize()
-      if tab == 'search'
-        li(class='active')
-          a(href='#') Search
-    
-    table.table.table-stripped
-      thead
-        tr
-          th= 'ID'
-          th= 'Name'
-          th= 'Full Name'
-          th= 'Owner'
-          th= 'Updated At'
-          th= 'Created At'
-          th= 'Watch'
-      tbody
-        - var statuses = { "pending": "", "active": "label-success", "nopassword": "labal-warning", "unconfirmed": "label-info", "noaccess": "label-important" }
-        tr(ng-repeat="repo in repos")
-          td
-            a(href="#")
-              {{repo.id}}
-          td {{repo.name}}
-          td {{repo.full_name}}
-          td {{repo.owner.login}}
-          td {{repo.updated_at}}
-          td {{repo.created_at}}
-          td
-    br
-    input.total(type='hidden', name='total', value=total)
-    input.page(type='hidden', name='total', value=page)
-    .pagination
-    br
+  .container
+    div(ng-view)
     input.page#token(type='hidden', name='token', value=token, ng-model="token")
-
+    
