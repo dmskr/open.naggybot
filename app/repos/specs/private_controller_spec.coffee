@@ -7,6 +7,7 @@ describe "Repos Private Controller", ->
     global.GitHub = ->
     global.GitHub.prototype.authenticate = ->
     global.GitHub.prototype.repos = {}
+    global.GitHub.prototype.orgs = {}
     global.GitHub.prototype.repos.getAll = (params, callback) ->
       fs.readFile "#{Bot.root}/app/repos/specs/allRepos.json", (err, content) ->
         return done(err) if err
@@ -15,6 +16,8 @@ describe "Repos Private Controller", ->
     global.GitHub.prototype.repos.createHook = (params, callback) ->
       callback(null, {})
     global.GitHub.prototype.repos.getHooks = (args, callback) ->
+      callback(null, {})
+    global.GitHub.prototype.orgs.getFromUser = (args, callback) ->
       callback(null, {})
 
     req.host = 'localhost'
@@ -46,6 +49,16 @@ describe "Repos Private Controller", ->
     it "should list all repos belonged to the user sorted by 'updated' date", (done) ->
       global.GitHub.prototype.repos.getAll = (args) ->
         args.sort.should.eql 'updated'
+        done()
+      Bot.apps.repos.controller.private.index req, res, next
+
+    it "should list all organizations the user included in", (done) ->
+      global.GitHub.prototype.orgs.getFromUser = (args, callback) ->
+        args.user.should.eql 'ghmonkey'
+        callback(null, [{ login: 'monkeyOrg' }])
+      res.render = (url, params) ->
+        should.exist params.orgs
+        params.orgs.should.eql [{ login: 'monkeyOrg' }]
         done()
       Bot.apps.repos.controller.private.index req, res, next
 

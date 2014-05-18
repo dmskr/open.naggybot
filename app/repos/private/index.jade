@@ -30,7 +30,7 @@ block content
           th= 'Watch'
       tbody
         - var statuses = { "pending": "", "active": "label-success", "nopassword": "labal-warning", "unconfirmed": "label-info", "noaccess": "label-important" }
-        for repo in data
+        for repo in repos
           tr
             td
               a(href="/private/repos/#{repo.owner.login}/#{repo.name}")= repo.id

@@ -4,9 +4,13 @@ exports.index = (req, res, next) ->
     type: 'oauth',
     token: req.user.provider.github.accessToken
   })
-  github.repos.getAll { sort: 'updated' }, (err, result) ->
+
+  async.parallel {
+    repos: (callback) -> github.repos.getAll { sort: 'updated' }, callback
+    orgs: (callback) -> github.orgs.getFromUser { user: req.user.provider.github.username, per_page: 100 }, callback
+  }, (err, result) ->
     return next(err) if err
-    res.render "#{Bot.root}/app/repos/private/index.jade", { tab: 'all', data: result }
+    res.render "#{Bot.root}/app/repos/private/index.jade", result
 
 exports.ignored = exports.index
 
