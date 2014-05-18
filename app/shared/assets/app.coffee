@@ -5,7 +5,7 @@ naggyBotApp.config ['$routeProvider', ($routeProvider) ->
     templateUrl: '/repos/index.html'
     controller: 'RepoIndexCtrl'
   }
-  $routeProvider.when '/repos/:repoId', {
+  $routeProvider.when '/repos/:owner/:repo', {
     templateUrl: '/repos/show.html'
     controller: 'RepoShowCtrl'
   }

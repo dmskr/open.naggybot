@@ -5,7 +5,9 @@ naggyBotControllers.controller 'RepoIndexCtrl', ['$scope', '$http', ($scope, $ht
     $scope.repos = data
 ]
 
-naggyBotControllers.controller 'RepoShowCtrl', ['$scope', '$routeParams', ($scope, $routeParams) ->
-  $scope.repoId = $routeParams.repoId
+naggyBotControllers.controller 'RepoShowCtrl', ['$scope', '$routeParams', '$http', ($scope, $routeParams, $http) ->
+  $http.get("https://api.github.com/repos/#{$routeParams.owner}/#{$routeParams.repo}?access_token=#{$('#token').val()}").success (data) ->
+    $scope.repo = data
 ]
+
 

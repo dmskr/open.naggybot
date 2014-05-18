@@ -21,7 +21,7 @@ table.table.table-stripped
     - var statuses = { "pending": "", "active": "label-success", "nopassword": "labal-warning", "unconfirmed": "label-info", "noaccess": "label-important" }
     tr(ng-repeat="repo in repos")
       td
-        a(href="#/repos/{{repo.id}}") {{repo.id}}
+        a(href="#/repos/{{repo.owner.login}}/{{repo.name}}") {{repo.id}}
       td {{repo.name}}
       td {{repo.full_name}}
       td {{repo.owner.login}}

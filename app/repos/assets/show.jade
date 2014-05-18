@@ -1,2 +1,17 @@
-Repository id: {{repoId}}
+div id: {{repo.id}}
+div
+  | Owner: {{repo.owner.login}}
+  //-img(ng-src="{{repo.owner.avatar_url}}")
+  img(ng-src="//www.gravatar.com/avatar/{{repo.owner.gravatar_id}}")
+  
+div Name: {{repo.name}}
+div Full Name: {{repo.full_name}}
+div Description: {{repo.description}}
+div HomePage: {{repo.homepage}}
+div Size: {{repo.size}}
+div PushedAt: {{Date.create(repo.pushed_at).format('short')}}
+div Organization
+  | Login {{repo.organization.login}}
+  //-img(ng-src="{{repo.organization.avatar_url}}")
+  img(ng-src="//www.gravatar.com/avatar/{{repo.organization.gravatar_id}}")
 
