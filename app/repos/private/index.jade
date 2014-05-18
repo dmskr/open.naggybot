@@ -14,9 +14,9 @@ block content
         | &nbsp;
         span.caret
       ul.dropdown-menu(role="menu" style="background-color: white;")
-        for org in orgs
+        for org in accounts
           li
-            a(tabindex="-1" href="?org=#{org.login}")
+            a(tabindex="-1" href="?#{org.type}=#{org.login}")
               img(src=org.avatar_url,  width="40px", height="40px")
               | &nbsp;
               = org.login

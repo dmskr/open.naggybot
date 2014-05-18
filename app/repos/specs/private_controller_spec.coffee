@@ -61,8 +61,18 @@ describe "Repos Private Controller", ->
         args.user.should.eql 'ghmonkey'
         callback(null, [{ login: 'monkeyOrg' }])
       res.render = (url, params) ->
-        should.exist params.orgs
-        params.orgs.map('login').should.eql ['ghmonkey', 'monkeyOrg']
+        should.exist params.accounts
+        params.accounts.map('login').should.eql ['ghmonkey', 'monkeyOrg']
+        done()
+      Bot.apps.repos.controller.private.index req, res, next
+
+    it "should mark all organizations as orgs and users as 'user'", (done) ->
+      global.GitHub.prototype.orgs.getFromUser = (args, callback) ->
+        args.user.should.eql 'ghmonkey'
+        callback(null, [{ login: 'monkeyOrg' }])
+      res.render = (url, params) ->
+        should.exist params.accounts
+        params.accounts.map('type').should.eql ['user', 'organization']
         done()
       Bot.apps.repos.controller.private.index req, res, next
 
@@ -94,7 +104,7 @@ describe "Repos Private Controller", ->
         Bot.apps.repos.controller.private.index req, res, next
 
       it "should return all repos by requested organization", (done) ->
-        req.query.org = 'superband'
+        req.query.organization = 'superband'
         global.GitHub.prototype.repos.getAll = (args, callback) ->
           throw new Error('Only requested organization\'s repos should be requested')
         global.GitHub.prototype.repos.getFromUser = (args, callback) ->
@@ -109,7 +119,7 @@ describe "Repos Private Controller", ->
         Bot.apps.repos.controller.private.index req, res, next
 
       it "should return requested organization as selected account", (done) ->
-        req.query.org = 'superband'
+        req.query.organization = 'superband'
         global.GitHub.prototype.orgs.getFromUser = (args, callback) ->
           callback(null, [{ login: 'SuperBand' }])
         res.render = (template, params) ->
