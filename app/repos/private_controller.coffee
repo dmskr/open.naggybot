@@ -4,12 +4,21 @@ exports.index = (req, res, next) ->
     type: 'oauth',
     token: req.user.provider.github.accessToken
   })
-
-  async.parallel {
-    repos: (callback) -> github.repos.getAll { sort: 'updated' }, callback
+  query = {
+    repos: (callback) ->
+      github.repos.getAll { sort: 'updated', per_page: 100, type: 'all' }, callback
     orgs: (callback) -> github.orgs.getFromUser { user: req.user.provider.github.username, per_page: 100 }, callback
-  }, (err, result) ->
+  }
+  if req.query.org
+    query.repos = (callback) -> github.repos.getFromOrg { org: req.query.org.toLowerCase(), sort: 'updated', per_page: 100, type: 'all' }, callback
+
+  async.parallel query, (err, result) ->
     return next(err) if err
+    (result.orgs || []).unshift Object.merge(req.user.provider.github, login: req.user.provider.github.username)
+    result.selectedAccount = req.user.provider.github
+    if req.query.org
+      result.selectedAccount = result.orgs.find (org) -> org.login.toLowerCase() == req.query.org.toLowerCase()
+
     res.render "#{Bot.root}/app/repos/private/index.jade", result
 
 exports.ignored = exports.index

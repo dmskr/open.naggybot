@@ -17,8 +17,12 @@ describe "Repos Private Controller", ->
       callback(null, {})
     global.GitHub.prototype.repos.getHooks = (args, callback) ->
       callback(null, {})
-    global.GitHub.prototype.orgs.getFromUser = (args, callback) ->
+    global.GitHub.prototype.repos.getFromUser = (args, callback) ->
       callback(null, {})
+    global.GitHub.prototype.repos.getFromOrg = (args, callback) ->
+      callback(null, {})
+    global.GitHub.prototype.orgs.getFromUser = (args, callback) ->
+      callback(null, [])
 
     req.host = 'localhost'
     req.hostname = 'localhost'
@@ -58,7 +62,7 @@ describe "Repos Private Controller", ->
         callback(null, [{ login: 'monkeyOrg' }])
       res.render = (url, params) ->
         should.exist params.orgs
-        params.orgs.should.eql [{ login: 'monkeyOrg' }]
+        params.orgs.map('login').should.eql ['ghmonkey', 'monkeyOrg']
         done()
       Bot.apps.repos.controller.private.index req, res, next
 
@@ -67,6 +71,51 @@ describe "Repos Private Controller", ->
         template.should.eql "#{Bot.root}/app/repos/private/index.jade"
         done()
       Bot.apps.repos.controller.private.index req, res, next
+
+    describe 'search', ->
+      it "should return all repos of a currently logged in user if no search params provided", (done) ->
+        global.GitHub.prototype.repos.getAll = (args, callback) ->
+          callback(null, [{ login: 'bananas' }])
+        global.GitHub.prototype.repos.getFromUser = (args, callback) ->
+          throw new Error('Only current user\'s repos should be requested')
+        global.GitHub.prototype.repos.getFromOrg = (args, callback) ->
+          throw new Error('Only current user\'s repos should be requested')
+
+        res.render = (template, params) ->
+          params.repos.should.eql [{ login: 'bananas' }]
+          done()
+        Bot.apps.repos.controller.private.index req, res, next
+
+      it "should return currently logged in user as selected account if no search params provided", (done) ->
+        res.render = (template, params) ->
+          should.exist params.selectedAccount
+          params.selectedAccount.login.should.eql 'ghmonkey'
+          done()
+        Bot.apps.repos.controller.private.index req, res, next
+
+      it "should return all repos by requested organization", (done) ->
+        req.query.org = 'superband'
+        global.GitHub.prototype.repos.getAll = (args, callback) ->
+          throw new Error('Only requested organization\'s repos should be requested')
+        global.GitHub.prototype.repos.getFromUser = (args, callback) ->
+          throw new Error('Only requested organization\'s repos should be requested')
+        global.GitHub.prototype.repos.getFromOrg = (args, callback) ->
+          args.org.should.eql 'superband'
+          callback(null, [{ login: 'monkeyrepo' }])
+
+        res.render = (template, params) ->
+          params.repos.should.eql [{ login: 'monkeyrepo' }]
+          done()
+        Bot.apps.repos.controller.private.index req, res, next
+
+      it "should return requested organization as selected account", (done) ->
+        req.query.org = 'superband'
+        global.GitHub.prototype.orgs.getFromUser = (args, callback) ->
+          callback(null, [{ login: 'SuperBand' }])
+        res.render = (template, params) ->
+          params.selectedAccount.login.should.eql 'SuperBand'
+          done()
+        Bot.apps.repos.controller.private.index req, res, next
 
   describe 'create', ->
     beforeEach (done) ->

@@ -5,47 +5,46 @@ block append title
   - var action = 'repos'
 
 block content
-  .container
-    h2 Repositories
-    //-ul
-      //-li
-        //-p.text-left
-          //-b
-            //-a(href="#/repos/{{repo.full_name}}") {{repo.name}}
-          //-i(style="display:block") {{repo.description}}
-          //-a.glyphicon.glyphicon-globe(href='#' style="margin: 0 5px 0 0;")
-            //-span {{repo.url}}
-          //-p.text-left
-            //-span Last Updated {{repo.pushed_at}}
+  h2
+    .btn-group
+      button.btn.btn-default.dropdown-toggle.btn-sm(type="button" id="dropdownMenu1" data-toggle="dropdown" style="background-color: white;")
+        img(src=selectedAccount.avatar_url,  width="40px", height="40px")
+        | &nbsp;
+        = selectedAccount.login
+        | &nbsp;
+        span.caret
+      ul.dropdown-menu(role="menu" style="background-color: white;")
+        for org in orgs
+          li
+            a(tabindex="-1" href="?org=#{org.login}")
+              img(src=org.avatar_url,  width="40px", height="40px")
+              | &nbsp;
+              = org.login
+    | &nbsp;
+    | Repositories
 
-    table.table.table-stripped
-      thead
+  table.table.table-stripped
+    thead
+      tr
+        th= 'ID'
+        th= 'Name'
+        th= 'Full Name'
+        th= 'Watch'
+    tbody
+      - var statuses = { "pending": "", "active": "label-success", "nopassword": "labal-warning", "unconfirmed": "label-info", "noaccess": "label-important" }
+      for repo in repos
         tr
-          th= 'ID'
-          th= 'Name'
-          th= 'Full Name'
-          th= 'Owner'
-          th= 'Updated At'
-          th= 'Created At'
-          th= 'Watch'
-      tbody
-        - var statuses = { "pending": "", "active": "label-success", "nopassword": "labal-warning", "unconfirmed": "label-info", "noaccess": "label-important" }
-        for repo in repos
-          tr
-            td
-              a(href="/private/repos/#{repo.owner.login}/#{repo.name}")= repo.id
-            td= repo.name
-            td= repo.full_name
-            td= repo.owner.login
-            td= repo.updated_at
-            td= repo.created_at
-            td
-              a.glyphicon.glyphicon-globe(href='#')
-    br
-    input.total(type='hidden', name='total', value=total)
-    input.page(type='hidden', name='total', value=page)
-    .pagination
-    br
+          td
+            a(href="/private/repos/#{repo.owner.login}/#{repo.name}")= repo.id
+          td= repo.name
+          td= repo.full_name
+          td
+            a.glyphicon.glyphicon-globe(href='#')
+  br
+  input.total(type='hidden', name='total', value=total)
+  input.page(type='hidden', name='total', value=page)
+  .pagination
+  br
 
 
-        
+      
