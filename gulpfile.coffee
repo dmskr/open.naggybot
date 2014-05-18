@@ -7,8 +7,6 @@ jade = require('gulp-jade')
 paths =
   coffee: 'app/shared/assets/*.coffee'
   static: 'static'
-  templates: 'app/repos/assets/*.jade'
-  templatesDest: 'static/repos'
 
 gulp.task 'default', ->
 
@@ -18,15 +16,6 @@ gulp.task 'coffee', ->
     .pipe gulp.dest(paths.static)
     .pipe(notify("Compiled: <%= file.relative %>!"))
 
-gulp.task 'templates', ->
-  gulp.src(paths.templates)
-    .pipe(jade({
-      locals: {}
-    }))
-    .pipe(gulp.dest(paths.templatesDest))
-    .pipe(notify("Compiled: <%= file.relative %>!"))
-
 gulp.task 'watch', ->
   gulp.watch paths.coffee, ['coffee']
-  gulp.watch paths.templates, ['templates']
 

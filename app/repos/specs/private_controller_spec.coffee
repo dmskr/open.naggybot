@@ -35,19 +35,19 @@ describe "Repos Private Controller", ->
     done()
 
   describe "index", ->
-    #it "should authentificate github request with user's accessToken", (done) ->
-      #global.GitHub.prototype.authenticate = (args) ->
-        #args.type.should.eql 'oauth'
-        #args.token.should.eql '321'
-        #done()
-        #return null # Required to properly initialize prototype
-      #Bot.apps.repos.controller.private.index req, res, next
+    it "should authentificate github request with user's accessToken", (done) ->
+      global.GitHub.prototype.authenticate = (args) ->
+        args.type.should.eql 'oauth'
+        args.token.should.eql '321'
+        done()
+        return null # Required to properly initialize prototype
+      Bot.apps.repos.controller.private.index req, res, next
 
-    #it "should list all repos belonged to the user sorted by 'updated' date", (done) ->
-      #global.GitHub.prototype.repos.getAll = (args) ->
-        #args.sort.should.eql 'updated'
-        #done()
-      #Bot.apps.repos.controller.private.index req, res, next
+    it "should list all repos belonged to the user sorted by 'updated' date", (done) ->
+      global.GitHub.prototype.repos.getAll = (args) ->
+        args.sort.should.eql 'updated'
+        done()
+      Bot.apps.repos.controller.private.index req, res, next
 
     it "should render index.jade template", (done) ->
       res.render = (template, params) ->

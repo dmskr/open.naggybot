@@ -6,6 +6,46 @@ block append title
 
 block content
   .container
-    div(ng-view)
-    input.page#token(type='hidden', name='token', value=token, ng-model="token")
-    
+    h2 Repositories
+    //-ul
+      //-li
+        //-p.text-left
+          //-b
+            //-a(href="#/repos/{{repo.full_name}}") {{repo.name}}
+          //-i(style="display:block") {{repo.description}}
+          //-a.glyphicon.glyphicon-globe(href='#' style="margin: 0 5px 0 0;")
+            //-span {{repo.url}}
+          //-p.text-left
+            //-span Last Updated {{repo.pushed_at}}
+
+    table.table.table-stripped
+      thead
+        tr
+          th= 'ID'
+          th= 'Name'
+          th= 'Full Name'
+          th= 'Owner'
+          th= 'Updated At'
+          th= 'Created At'
+          th= 'Watch'
+      tbody
+        - var statuses = { "pending": "", "active": "label-success", "nopassword": "labal-warning", "unconfirmed": "label-info", "noaccess": "label-important" }
+        for repo in data
+          tr
+            td
+              a(href="/private/repos/#{repo.owner.login}/#{repo.name}")= repo.id
+            td= repo.name
+            td= repo.full_name
+            td= repo.owner.login
+            td= repo.updated_at
+            td= repo.created_at
+            td
+              a.glyphicon.glyphicon-globe(href='#')
+    br
+    input.total(type='hidden', name='total', value=total)
+    input.page(type='hidden', name='total', value=page)
+    .pagination
+    br
+
+
+        
