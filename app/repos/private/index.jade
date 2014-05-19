@@ -30,6 +30,7 @@ block content
         th
         th= 'Name'
         th= 'Full Name'
+        th= 'Updated At'
         th= 'Watch'
     tbody
       - var statuses = { "pending": "", "active": "label-success", "nopassword": "labal-warning", "unconfirmed": "label-info", "noaccess": "label-important" }
@@ -42,9 +43,16 @@ block content
               span.glyphicon.glyphicon-lock
           td
             = repo.name
-          td= repo.full_name
           td
-            a.glyphicon.glyphicon-globe(href='#')
+            a.glyphicon.glyphicon-globe(href=repo.html_url)
+              | &nbsp;
+              = repo.full_name
+          td= Date.create(repo.updated_at).format('short')
+          td
+            form(action='/private/repos/', method='post')
+              input(type='hidden', name='repo[name]', value=repo.name)
+              input(type='hidden', name='repo[owner]', value=repo.owner.login)
+              button.btn.btn-primary.btn-xs(type='submit') Nag It
   br
   input.total(type='hidden', name='total', value=total)
   input.page(type='hidden', name='total', value=page)
