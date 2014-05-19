@@ -36,7 +36,7 @@ describe "Sessions Controller", ->
     describe 'existing user', ->
       [existing, returned, updated] = [null, null, null]
       before (done) ->
-        Bot.db.users.save { provider: { github: id: 123 }}, (err, result) ->
+        Bot.db.users.save { github: id: 123 }, (err, result) ->
           return done(err) if err
           existing = result
           Bot.apps.users.controller.sessions.authGitHub accessToken, refreshToken, profile, (err, result) ->
@@ -58,19 +58,19 @@ describe "Sessions Controller", ->
       
       describe "should update", ->
         it "displayName", ->
-          updated.provider.github.displayName.should.eql 'Naggy Bot'
+          updated.github.displayName.should.eql 'Naggy Bot'
         it 'username', ->
-          updated.provider.github.username.should.eql 'naggybot'
+          updated.github.username.should.eql 'naggybot'
         it 'emails', ->
-          updated.provider.github.emails.should.eql []
+          updated.github.emails.should.eql []
         it 'avatar_url', ->
-          updated.provider.github.avatar_url.should.eql 'https://avatars.githubusercontent.com/u/7523890?'
+          updated.github.avatar_url.should.eql 'https://avatars.githubusercontent.com/u/7523890?'
         it 'gravatar_id', ->
-          updated.provider.github.gravatar_id.should.eql 'c05935237e2c7cc96f037085637e90b0'
+          updated.github.gravatar_id.should.eql 'c05935237e2c7cc96f037085637e90b0'
         it "accessToken", ->
-          updated.provider.github.accessToken.should.eql accessToken
+          updated.github.accessToken.should.eql accessToken
         it "refreshToken", ->
-          updated.provider.github.refreshToken.should.eql refreshToken
+          updated.github.refreshToken.should.eql refreshToken
 
     describe 'new user', ->
       [returned, updated] = [null, null, null]
@@ -94,19 +94,19 @@ describe "Sessions Controller", ->
 
       describe "should savee", ->
         it "github id", ->
-          updated.provider.github.id.should.eql 123
+          updated.github.id.should.eql 123
         it "displayName", ->
-          updated.provider.github.displayName.should.eql 'Naggy Bot'
+          updated.github.displayName.should.eql 'Naggy Bot'
         it 'username', ->
-          updated.provider.github.username.should.eql 'naggybot'
+          updated.github.username.should.eql 'naggybot'
         it 'emails', ->
-          updated.provider.github.emails.should.eql []
+          updated.github.emails.should.eql []
         it 'avatar_url', ->
-          updated.provider.github.avatar_url.should.eql 'https://avatars.githubusercontent.com/u/7523890?'
+          updated.github.avatar_url.should.eql 'https://avatars.githubusercontent.com/u/7523890?'
         it 'gravatar_id', ->
-          updated.provider.github.gravatar_id.should.eql 'c05935237e2c7cc96f037085637e90b0'
+          updated.github.gravatar_id.should.eql 'c05935237e2c7cc96f037085637e90b0'
         it "accessToken", ->
-          updated.provider.github.accessToken.should.eql accessToken
+          updated.github.accessToken.should.eql accessToken
         it "refreshToken", ->
-          updated.provider.github.refreshToken.should.eql refreshToken
+          updated.github.refreshToken.should.eql refreshToken
 

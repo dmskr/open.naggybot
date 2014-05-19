@@ -2,12 +2,12 @@ exports.index = (req, res, next) ->
   github = new global.GitHub({ version: '3.0.0' })
   github.authenticate({
     type: 'oauth',
-    token: req.user.provider.github.accessToken
+    token: req.user.github.accessToken
   })
   query = {
     repos: (callback) ->
       github.repos.getAll { sort: 'updated', per_page: 100, type: 'all' }, callback
-    accounts: (callback) -> github.orgs.getFromUser { user: req.user.provider.github.username, per_page: 100 }, callback
+    accounts: (callback) -> github.orgs.getFromUser { user: req.user.github.username, per_page: 100 }, callback
     nagging: (callback) -> Bot.db.repos.find(user: req.user._id, active: true).toArray callback
   }
   if req.query.organization
@@ -16,8 +16,8 @@ exports.index = (req, res, next) ->
   async.parallel query, (err, result) ->
     return next(err) if err
     result.accounts.each (account) -> account.type = 'organization'
-    (result.accounts || []).unshift Object.merge(req.user.provider.github, { login: req.user.provider.github.username, type: 'user' })
-    result.selectedAccount = req.user.provider.github
+    (result.accounts || []).unshift Object.merge(req.user.github, { login: req.user.github.username, type: 'user' })
+    result.selectedAccount = req.user.github
     if req.query.organization
       result.selectedAccount = result.accounts.find (account) -> account.login.toLowerCase() == req.query.organization.toLowerCase()
 
@@ -37,7 +37,7 @@ exports.create = (req, res, next) ->
   github = new GitHub({ version: '3.0.0' })
   github.authenticate({
     type: 'oauth'
-    token: req.user.provider.github.accessToken
+    token: req.user.github.accessToken
   })
 
   github.repos.createHook {
@@ -80,7 +80,7 @@ exports.del = (req, res, next) ->
   github = new GitHub({ version: '3.0.0' })
   github.authenticate({
     type: 'oauth'
-    token: req.user.provider.github.accessToken
+    token: req.user.github.accessToken
   })
 
   github.repos.getHooks {

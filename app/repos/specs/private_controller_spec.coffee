@@ -28,10 +28,9 @@ describe "Repos Private Controller", ->
     req.hostname = 'localhost'
 
     Bot.db.users.save {
-      provider:
-        github:
-          accessToken: '321'
-          username: 'ghmonkey'
+      github:
+        accessToken: '321'
+        username: 'ghmonkey'
     }, (err, user) ->
       return done(err) if err
       req.user = user

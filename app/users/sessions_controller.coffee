@@ -31,19 +31,19 @@ exports.del = (req, res, next) ->
   res.redirect '/'
 
 exports.authGitHub = (accessToken, refreshToken, profile, done) ->
-  Bot.db.users.find({ 'provider.github.id': profile.id }).limit(1).toArray (err, users) ->
+  Bot.db.users.find({ 'github.id': profile.id }).limit(1).toArray (err, users) ->
     return done(err) if err
 
     user = users.first() || {}
-    user.provider ||= {}
-    user.provider.github ||= { id: (profile || {}).id }
-    user.provider.github.displayName = profile.displayName
-    user.provider.github.username = profile.username
-    user.provider.github.emails = (profile.emails || []).map((email) -> email.value).findAll((email) -> !!email)
-    user.provider.github.avatar_url = (profile._json || {}).avatar_url
-    user.provider.github.gravatar_id = (profile._json || {}).gravatar_id
-    user.provider.github.accessToken = accessToken
-    user.provider.github.refreshToken = refreshToken
+    user ||= {}
+    user.github ||= { id: (profile || {}).id }
+    user.github.displayName = profile.displayName
+    user.github.username = profile.username
+    user.github.emails = (profile.emails || []).map((email) -> email.value).findAll((email) -> !!email)
+    user.github.avatar_url = (profile._json || {}).avatar_url
+    user.github.gravatar_id = (profile._json || {}).gravatar_id
+    user.github.accessToken = accessToken
+    user.github.refreshToken = refreshToken
     Bot.db.users.save user, (err) ->
       return done(err, user)
 
