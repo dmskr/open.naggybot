@@ -14,13 +14,13 @@ describe "Repos Private Controller", ->
         callback(null, JSON.parse(content))
 
     global.GitHub.prototype.repos.createHook = (params, callback) ->
-      callback(null, {})
+      callback(null, [])
     global.GitHub.prototype.repos.getHooks = (args, callback) ->
-      callback(null, {})
+      callback(null, [])
     global.GitHub.prototype.repos.getFromUser = (args, callback) ->
-      callback(null, {})
+      callback(null, [])
     global.GitHub.prototype.repos.getFromOrg = (args, callback) ->
-      callback(null, {})
+      callback(null, [])
     global.GitHub.prototype.orgs.getFromUser = (args, callback) ->
       callback(null, [])
 
@@ -74,6 +74,29 @@ describe "Repos Private Controller", ->
         should.exist params.accounts
         params.accounts.map('type').should.eql ['user', 'organization']
         done()
+      Bot.apps.repos.controller.private.index req, res, next
+
+    it "should mark all nagged repos of the user stored in local db as those", (done) ->
+      Bot.db.repos.save { user: req.user._id, github: { name: 'bananas', owner: { login: 'monkey' }}, active: true }, (err) ->
+        return done(err) if err
+
+        global.GitHub.prototype.repos.getAll = (args, callback) ->
+          callback(null, [{ name: 'bananas', owner: { login: 'monkey' }}])
+
+        res.render = (template, params) ->
+          params.repos.should.eql [{ name: 'bananas', owner: { login: 'monkey' }, nagging: true }]
+          done()
+
+        Bot.apps.repos.controller.private.index req, res, next
+
+    it "should not mark repos of the user not stored in local db as those", (done) ->
+      global.GitHub.prototype.repos.getAll = (args, callback) ->
+        callback(null, [{ name: 'bananas', owner: { login: 'monkey' }}])
+
+      res.render = (template, params) ->
+        params.repos.should.eql [{ name: 'bananas', owner: { login: 'monkey' }}]
+        done()
+
       Bot.apps.repos.controller.private.index req, res, next
 
     it "should render index.jade template", (done) ->

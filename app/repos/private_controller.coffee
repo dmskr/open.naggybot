@@ -8,6 +8,7 @@ exports.index = (req, res, next) ->
     repos: (callback) ->
       github.repos.getAll { sort: 'updated', per_page: 100, type: 'all' }, callback
     accounts: (callback) -> github.orgs.getFromUser { user: req.user.provider.github.username, per_page: 100 }, callback
+    nagging: (callback) -> Bot.db.repos.find(user: req.user._id, active: true).toArray callback
   }
   if req.query.organization
     query.repos = (callback) -> github.repos.getFromOrg { org: req.query.organization.toLowerCase(), sort: 'updated', per_page: 100, type: 'all' }, callback
@@ -19,6 +20,12 @@ exports.index = (req, res, next) ->
     result.selectedAccount = req.user.provider.github
     if req.query.organization
       result.selectedAccount = result.accounts.find (account) -> account.login.toLowerCase() == req.query.organization.toLowerCase()
+
+    result.repos.each (repo) ->
+      nagging = result.nagging.find (n) ->
+        n.github.name == repo.name && n.github.owner.login == repo.owner.login
+      if nagging
+        repo.nagging = true
 
     res.render "#{Bot.root}/app/repos/private/index.jade", result
 
