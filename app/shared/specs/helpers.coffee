@@ -17,6 +17,7 @@ beforeEach (done) ->
     global.req =
       params: {}
       query: {}
+      headers: {}
       body: {}
       flash: ->
 
