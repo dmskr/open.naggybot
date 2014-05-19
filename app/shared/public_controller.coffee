@@ -13,5 +13,6 @@ exports.error = (req, res, next) ->
     res.render(Bot.root + "/app/shared/public/500.jade")
 
 exports.index = (req, res, next) ->
+  return res.redirect('/private') if req.user
   res.render(Bot.root + "/app/shared/public/index.jade")
 
