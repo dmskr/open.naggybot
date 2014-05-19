@@ -237,7 +237,7 @@ describe "Repos Private Controller", ->
 
       Bot.apps.repos.controller.private.create req, res, next
 
-    it "should redirect to repo#show page", (done) ->
+    it "should redirect to repo#index page", (done) ->
       res.redirect = (url) ->
         should.exist url
         url.should.eql '/private/repos/'
@@ -246,16 +246,20 @@ describe "Repos Private Controller", ->
       Bot.apps.repos.controller.private.create req, res, next
 
   describe 'del', ->
+    repo = null
     beforeEach (done) ->
       Bot.db.repos.save {
-        github_id: 456789
-        provider: 'github'
-        name: 'naggybot'
-        full_name: 'monkey/naggybot'
         user: req.user._id
-      }, (err, repo) ->
+        github:
+          name: 'naggybot'
+          owner:
+            login: 'monkey'
+        active: true
+      }, (err, result) ->
         return done(err) if err
-        req.params.id = repo._id
+        repo = result
+        req.params.name = 'naggybot'
+        req.params.owner = 'monkey'
         done()
 
     it "should authorize on github", (done) ->
@@ -269,8 +273,8 @@ describe "Repos Private Controller", ->
     it "should request all hooks attached to the repo", (done) ->
       global.GitHub.prototype.repos.getHooks = (args, callback) ->
         args.should.eql {
-          user: 'ghmonkey'
-          repo: 'monkey/naggybot'
+          user: 'monkey'
+          repo: 'naggybot'
           per_page: 100
         }
         done()
@@ -290,16 +294,33 @@ describe "Repos Private Controller", ->
         removedHooks.push args.id
         callback()
 
-      res.json = (status, result) ->
+      res.redirect = ->
         removedHooks.should.eql [321, 987]
         done()
       Bot.apps.repos.controller.private.del req, res, next
 
-    it "should remove the repo from database", (done) ->
-      res.json = (status, result) ->
-        Bot.db.repos.findById result.repo._id, (err, repo) ->
+    it "should mark the repo as inactive", (done) ->
+      res.redirect = ->
+        Bot.db.repos.findById repo._id, (err, repo) ->
           return done(err) if err
           repo.active.should.eql false
           done()
       Bot.apps.repos.controller.private.del req, res, next
+
+    it "should set successfull flash message", (done) ->
+      req.flash = (type, message) ->
+        type.should.eql 'success'
+        should.exist message
+        done()
+
+      Bot.apps.repos.controller.private.del req, res, next
+
+    it "should redirect to repo#index page", (done) ->
+      res.redirect = (url) ->
+        should.exist url
+        url.should.eql '/private/repos'
+        done()
+
+      Bot.apps.repos.controller.private.del req, res, next
+
 

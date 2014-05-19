@@ -83,28 +83,28 @@ exports.del = (req, res, next) ->
     token: req.user.provider.github.accessToken
   })
 
-  Bot.db.repos.findById req.params.id, (err, repo) ->
-    return next(err) if err
-    Bot.db.users.findById repo.user, (err, user) ->
+  github.repos.getHooks {
+    user: req.params.owner
+    repo: req.params.name
+    per_page: 100
+  }, (err, hooks) ->
+    return next(err) if (err)
+    Bot.db.repos.find('github.name': req.params.name, 'github.owner.login': req.params.owner).toArray (err, repos) ->
       return next(err) if err
-      github.repos.getHooks {
-        user: user.provider.github.username
-        repo: repo.full_name
-        per_page: 100
-      }, (err, result) ->
-        return next(err) if (err)
-        async.each result, (hook, callback) ->
-          unless hook.config && hook.config.url && hook.config.url.match(new RegExp("^https?:\/\/" + req.hostname))
-            return callback()
-          github.repos.deleteHook {
-            user: user.provider.github.username
-            repo: repo.full_name
-            id: hook.id
-          }, callback
-        , (err) ->
+      repo = repos.first()
+      async.each hooks, (hook, callback) ->
+        unless hook.config && hook.config.url && hook.config.url.match(new RegExp("^https?:\/\/" + req.host))
+          return callback()
+        github.repos.deleteHook {
+          user: req.params.owner
+          repo: req.params.name
+          id: hook.id
+        }, callback
+      , (err) ->
+        return next(err) if err
+        repo.active = false
+        Bot.db.repos.save repo, (err) ->
           return next(err) if err
-          repo.active = false
-          Bot.db.repos.save repo, (err) ->
-            return next(err) if err
-            res.json '200', repo: repo
+          req.flash 'success', 'Ok. Stopped Nag You with the repo.'
+          res.redirect '/private/repos'
 

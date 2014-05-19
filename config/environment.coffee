@@ -9,10 +9,6 @@ morgan  = require('morgan')
 methodOverride = require('method-override')
 
 app = Bot
-app.set('views', app.root + "/app")
-app.set('view options', { layout: false })
-app.use(bodyParser())
-app.use(cookieParser())
 
 [database, port] = if app.settings.env == 'production'
   ['naggybot', 8081]
@@ -25,6 +21,12 @@ mongourl = "mongodb://localhost:27017/#{database}?auto_reconnect=true"
 app.db = mongo.db(mongourl, safe: true)
 
 app.set('port', port)
+app.use(serveStatic("static"))
+app.set('views', app.root + "/app")
+app.set('view options', { layout: false })
+app.use(bodyParser())
+app.use(cookieParser())
+app.use(methodOverride())
 
 app.use(session(
   cookie:
@@ -38,7 +40,6 @@ app.use(session(
 ))
 
 app.use(flash())
-app.use(serveStatic("static"))
 app.use(poweredBy(null))
 
 # Set flash messages
@@ -52,5 +53,4 @@ app.use (req, res, next) ->
 app.use(morgan(format: 'dev'))
 app.use(passport.initialize())
 app.use(passport.session())
-app.use(methodOverride())
 

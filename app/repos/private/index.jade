@@ -56,6 +56,12 @@ block content
                 input(type='hidden', name='repo[name]', value=repo.name)
                 input(type='hidden', name='repo[owner][login]', value=repo.owner.login)
                 button.btn.btn-primary.btn-xs(type='submit') Nag It
+            else
+              form(action="/private/repos/#{repo.owner.login}/#{repo.name}", method='post')
+                input(type='hidden', name='_method', value='delete')
+                input(type='hidden', name='repo[name]', value=repo.name)
+                input(type='hidden', name='repo[owner][login]', value=repo.owner.login)
+                button.btn.btn-default.btn-xs(type='submit') Stop Nagging
   br
   input.total(type='hidden', name='total', value=total)
   input.page(type='hidden', name='total', value=page)

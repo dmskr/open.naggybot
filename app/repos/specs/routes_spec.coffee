@@ -10,7 +10,7 @@ describe "Users Routes", ->
       'get /private/repos/watched': 'repos.private.watched'
       'get /private/repos/ignored': 'repos.private.ignored'
       'post /private/repos': 'repos.private.create'
-      'delete /private/repos/:id': 'repos.private.del'
+      'delete /private/repos/:owner/:name': 'repos.private.del'
     }, { username: 'dmskr' })
 
   describe "for private", ->
@@ -25,6 +25,6 @@ describe "Users Routes", ->
       'get /private/repos/watched'
       'get /private/repos/ignored'
       'post /private/repos/'
-      'del /private/repos/:id'
+      'del /private/repos/:owner/:name'
     ], null, 'repos'
 

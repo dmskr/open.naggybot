@@ -11,5 +11,5 @@ exports.route = (app) ->
   app.get '/private/repos/watched', require_user, priv.watched
   app.get '/private/repos/ignored', require_user, priv.ignored
   app.post '/private/repos', require_user, priv.create
-  app.del '/private/repos/:id', require_user, priv.del
+  app.del '/private/repos/:owner/:name', require_user, priv.del
 
