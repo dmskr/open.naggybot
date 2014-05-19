@@ -43,17 +43,31 @@ exports.create = (req, res, next) ->
     events: ['pull_request']
     active: true
   }, (err) ->
-    return next(err) if err
-    repo =
-      active: true
-      user: req.user._id
-      provider:
-        github: Object.select(req.body.repo, ['id', 'name', 'full_name', 'owner'])
+    if err
+      errcode = {
+        "resource": "Hook",
+        "code": "custom",
+        "message": "Hook already exists on this repository"
+      }
+      if (err.errors || []).any((error) -> !Object.equal(error, errcode))
+        return next(err)
 
-    Bot.db.repos.save repo, (err, result) ->
+    Bot.db.repos.find({
+      user: req.user._id
+      'github.name': req.body.repo.name
+      'github.owner.login': req.body.repo.owner.login
+    }).toArray (err, repos) ->
       return next(err) if err
-      req.flash 'success', 'Watching your repo, Dude.'
-      res.redirect '/private/repos/' + result._id
+      repo = repos.first()
+      repo ||=
+        user: req.user._id
+        github: Object.select(req.body.repo, ['name', 'owner'])
+      repo.active = true
+
+      Bot.db.repos.save repo, (err, result) ->
+        return next(err) if err
+        req.flash 'success', 'Nagging your repo. Watch Out!'
+        res.redirect '/private/repos/'
 
 exports.del = (req, res, next) ->
   github = new GitHub({ version: '3.0.0' })

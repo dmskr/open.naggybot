@@ -23,6 +23,8 @@ block content
     | &nbsp;
     | Repositories
 
+  include ../../shared/public/_alert.jade
+
   table.table.table-stripped
     thead
       tr
@@ -51,7 +53,7 @@ block content
           td
             form(action='/private/repos/', method='post')
               input(type='hidden', name='repo[name]', value=repo.name)
-              input(type='hidden', name='repo[owner]', value=repo.owner.login)
+              input(type='hidden', name='repo[owner][login]', value=repo.owner.login)
               button.btn.btn-primary.btn-xs(type='submit') Nag It
   br
   input.total(type='hidden', name='total', value=total)

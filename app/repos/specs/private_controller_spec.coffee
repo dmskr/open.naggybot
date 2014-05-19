@@ -129,7 +129,10 @@ describe "Repos Private Controller", ->
 
   describe 'create', ->
     beforeEach (done) ->
-      req.body.repo = full_name: 'monkey/awesome', name: 'awesome', owner: { login: 'monkeymaster' }
+      req.body.repo =
+        name: 'awesome'
+        owner:
+          login: 'monkeymaster'
       done()
 
     it "should authorize on github", (done) ->
@@ -156,40 +159,54 @@ describe "Repos Private Controller", ->
         return null
       Bot.apps.repos.controller.private.create req, res, next
 
-    it "should store the repo in database", (done) ->
-      req.body.repo =
-        id: 456789
-        name: 'naggybot'
-        full_name: 'monkey/naggybot'
-        owner:
-          login: 'monkeymaster'
+    it "should ignore 'hook already exists' message from github if any", (done) ->
+      global.GitHub.prototype.repos.createHook = (args, callback) ->
+        fs.readFile Bot.root + '/app/repos/specs/hookAlreadyExists.json', (err, content) ->
+          return done(err) if err
+          callback JSON.parse(content)
+        return null
 
+      res.redirect = ->
+        done()
+
+      Bot.apps.repos.controller.private.create req, res, next
+
+    it "should store the repo in database", (done) ->
       res.redirect = (url) ->
-        Bot.db.repos.find('provider.github.name': 'naggybot').toArray (err, repos) ->
+        Bot.db.repos.find('github.name': 'awesome', 'github.owner.login': 'monkeymaster').toArray (err, repos) ->
           return next(err) if err
           should.exist repos.first()
-          Object.select(repos.first(), ['active', 'user', 'provider']).should.eql
+          Object.select(repos.first(), ['active', 'user', 'github']).should.eql
             active: true
             user: req.user._id
-            provider:
-              github:
-                id: 456789
-                name: 'naggybot'
-                full_name: 'monkey/naggybot'
-                owner:
-                  login: 'monkeymaster'
+            github:
+              name: 'awesome'
+              owner:
+                login: 'monkeymaster'
           done()
 
       Bot.apps.repos.controller.private.create req, res, next
 
-    it "should set successfull flash message", (done) ->
-      req.body.repo =
-        id: 456789
-        name: 'naggybot'
-        full_name: 'monkey/naggybot'
-        owner:
-          login: 'monkeymaster'
+    it "should update existing if repo with the same name & owner belonged to the same user already exist in database", (done) ->
+      Bot.db.repos.save { github: req.body.repo, user: req.user._id, active: false }, (err) ->
+        return done(err) if err
 
+        res.redirect = (url) ->
+          Bot.db.repos.find('github.name': 'awesome', 'github.owner.login': 'monkeymaster').toArray (err, repos) ->
+            return next(err) if err
+            repos.length.should.eql 1
+            Object.select(repos.first(), ['active', 'user', 'github']).should.eql
+              active: true
+              user: req.user._id
+              github:
+                name: 'awesome'
+                owner:
+                  login: 'monkeymaster'
+            done()
+
+        Bot.apps.repos.controller.private.create req, res, next
+
+    it "should set successfull flash message", (done) ->
       req.flash = (type, message) ->
         type.should.eql 'success'
         should.exist message
@@ -198,19 +215,10 @@ describe "Repos Private Controller", ->
       Bot.apps.repos.controller.private.create req, res, next
 
     it "should redirect to repo#show page", (done) ->
-      req.body.repo =
-        id: 456789
-        name: 'naggybot'
-        full_name: 'monkey/naggybot'
-        owner:
-          login: 'monkeymaster'
-
       res.redirect = (url) ->
         should.exist url
-        Bot.db.repos.find('provider.github.id': 456789).toArray (err, repos) ->
-          return done(err) if err
-          url.should.eql '/private/repos/' + repos.first()._id
-          done()
+        url.should.eql '/private/repos/'
+        done()
 
       Bot.apps.repos.controller.private.create req, res, next
 
