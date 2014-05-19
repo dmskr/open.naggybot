@@ -27,6 +27,7 @@ block content
     thead
       tr
         th= 'ID'
+        th
         th= 'Name'
         th= 'Full Name'
         th= 'Watch'
@@ -36,7 +37,11 @@ block content
         tr
           td
             a(href="/private/repos/#{repo.owner.login}/#{repo.name}")= repo.id
-          td= repo.name
+          td(width='20px;')
+            if repo.private
+              span.glyphicon.glyphicon-lock
+          td
+            = repo.name
           td= repo.full_name
           td
             a.glyphicon.glyphicon-globe(href='#')
