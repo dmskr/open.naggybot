@@ -8,3 +8,18 @@ exports.create = (req, res, next) ->
 exports.execute = (req, res, next) ->
   res.json status: 'ok'
 
+exports.expire = (req, res, next) ->
+  Bot.db.reviews.find(
+    status: "inprogress"
+    createdAt:
+      $lt: (10).minutesAgo()
+  ).toArray (err, reviews) ->
+    return next(err)  if err
+    async.each reviews or [], ((review, callback) ->
+      review.status = "expired"
+      Bot.db.reviews.save review, callback
+    ), (err) ->
+      return next(err)  if err
+      res.json "200",
+        expired: reviews.length
+

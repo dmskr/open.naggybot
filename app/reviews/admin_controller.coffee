@@ -51,8 +51,8 @@ exports.renderHtml = (req, res, next) ->
     })
 
 exports.show = (req, res, next) ->
-  Bot.db.reviews.findById req.params.id, (err, task) ->
+  Bot.db.reviews.findById req.params.id, (err, review) ->
     return next(err)  if err
     res.render Bot.root + "/app/reviews/admin/show.jade",
-      task: task
+      review: review
 

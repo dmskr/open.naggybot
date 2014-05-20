@@ -24,8 +24,8 @@ describe "Reviews Admin Controller", ->
 
     it "should show recent first", (done) ->
       res.render = (view, params) ->
-        params.data.each (task, index) ->
-          params.data[index + 1] and task.createdAt.should.be.above(params.data[index + 1].createdAt)
+        params.data.each (review, index) ->
+          params.data[index + 1] and review.createdAt.should.be.above(params.data[index + 1].createdAt)
         done()
 
       Bot.apps.reviews.controller.admin.index req, res, next
@@ -68,8 +68,8 @@ describe "Reviews Admin Controller", ->
 
     it "should show recent first", (done) ->
       res.render = (view, params) ->
-        params.data.each (task, index) ->
-          params.data[index + 1] and task.createdAt.should.be.above(params.data[index + 1].createdAt)
+        params.data.each (review, index) ->
+          params.data[index + 1] and review.createdAt.should.be.above(params.data[index + 1].createdAt)
 
         done()
       Bot.apps.reviews.controller.admin[action] req, res, next
@@ -135,8 +135,8 @@ describe "Reviews Admin Controller", ->
 
     it "should show recent first", (done) ->
       res.render = (view, params) ->
-        params.data.each (task, index) ->
-          params.data[index + 1] and task.createdAt.should.be.above(params.data[index + 1].createdAt)
+        params.data.each (review, index) ->
+          params.data[index + 1] and review.createdAt.should.be.above(params.data[index + 1].createdAt)
         done()
       Bot.apps.reviews.controller.admin[action] req, res, next
 
@@ -201,8 +201,8 @@ describe "Reviews Admin Controller", ->
 
     it "should show recent first", (done) ->
       res.render = (view, params) ->
-        params.data.each (task, index) ->
-          params.data[index + 1] and task.createdAt.should.be.above(params.data[index + 1].createdAt)
+        params.data.each (review, index) ->
+          params.data[index + 1] and review.createdAt.should.be.above(params.data[index + 1].createdAt)
 
         done()
       Bot.apps.reviews.controller.admin[action] req, res, next
@@ -268,8 +268,8 @@ describe "Reviews Admin Controller", ->
 
     it "should show recent first", (done) ->
       res.render = (view, params) ->
-        params.data.each (task, index) ->
-          params.data[index + 1] and task.createdAt.should.be.above(params.data[index + 1].createdAt)
+        params.data.each (review, index) ->
+          params.data[index + 1] and review.createdAt.should.be.above(params.data[index + 1].createdAt)
 
         done()
       Bot.apps.reviews.controller.admin[action] req, res, next
@@ -305,21 +305,21 @@ describe "Reviews Admin Controller", ->
 
 
   describe "show", ->
-    task = null
+    review = null
     beforeEach (done) ->
       Bot.db.reviews.save
         type: "some"
       , (err, t) ->
         return done(err)  if err
-        task = t
+        review = t
         done()
 
     it "should render correct template", (done) ->
-      req.params.id = task._id
+      req.params.id = review._id
       res.render = (template, params) ->
         template.should.eql Bot.root + "/app/reviews/admin/show.jade"
-        should.exist params.task
-        params.task._id.should.eql task._id
+        should.exist params.review
+        params.review._id.should.eql review._id
         done()
 
       Bot.apps.reviews.controller.admin.show req, res, next
