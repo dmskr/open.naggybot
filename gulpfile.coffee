@@ -31,7 +31,6 @@ gulp.task 'test', ->
       useInlineDiffs: true
       reporter: 'list'
       compilers: 'coffee:coffee-script/register' }))
-    .pipe(exit())
 
 gulp.task 'watch', ->
   gulp.watch paths.coffee, ['coffee']

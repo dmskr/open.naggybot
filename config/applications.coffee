@@ -24,6 +24,7 @@ require "#{Bot.root}/app/shared/keywords"
 
 # Additional controllers out of public/private/admin scheme
 apps.users.controller.sessions = require("../app/users/sessions_controller")
+apps.reviews.controller.service = require("../app/reviews/service_controller")
 
 # Util function used in routes
 global.require_user = (req, res, next) ->
