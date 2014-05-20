@@ -15,7 +15,7 @@ block content
         li(class='active')
           a(href='#') Search
   
-      button#new_user.btn.btn-primary(style='float:right;margin-right: 30px;')
+      button#new_user.btn.btn-primary.btn-sm(style='float:right;margin-right: 30px;')
         = 'New User'
   
     if data.length == 0
@@ -28,8 +28,8 @@ block content
           tr
             th= 'ID'
             th= 'Status'
+            th= 'Display Name'
             th= 'Username'
-            th= 'Email'
             th= 'Last Visit'
             th= 'Created At'
         tbody
@@ -44,8 +44,8 @@ block content
                 - var st = 'noaccess'
                 - if (!man.access) st = 'noaccess'; else if (!man.confirmedAt) st = 'unconfirmed'; else if (!man.password) st = 'nopassword'; else st = 'active';
                 span.label(class=statuses[st] || statuses["pending"])= st || 'unknown'
-              td= man.username
-              td= man.email
+              td= man.github.displayName
+              td= man.github.username
               td= man.visitedAt && man.visitedAt.format('short') || 'never'
               td= man.createdAt && man.createdAt.format('short') || 'n/a'
       br
