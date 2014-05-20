@@ -24,37 +24,3 @@ describe "Reviews Service Controller", ->
 
       Bot.apps.reviews.controller.service.create req, res, next
 
-  describe "expire", ->
-    it "should expire any review created more than 10 minutes ago in not completed status still", (done) ->
-      Bot.db.reviews.save
-        status: "inprogress"
-        createdAt: (11).minutesAgo()
-      , (err, review) ->
-        res.json = (st, data) ->
-          Bot.db.reviews.findById review._id, (err, review) ->
-            review.status.should.eql "expired"
-            done()
-        Bot.apps.reviews.controller.service.expire req, res, next
-
-    it "should ignore all completed reviews", (done) ->
-      Bot.db.reviews.save
-        status: "completed"
-        createdAt: (11).minutesAgo()
-      , (err, review) ->
-        res.json = (st, data) ->
-          Bot.db.reviews.findById review._id, (err, review) ->
-            review.status.should.eql "completed"
-            done()
-        Bot.apps.reviews.controller.service.expire req, res, next
-
-    it "should ignore all non completed reviews created less than 10 minutes ago", (done) ->
-      Bot.db.reviews.save
-        status: "inprogress"
-        createdAt: (9).minutesAgo()
-      , (err, review) ->
-        res.json = (st, data) ->
-          Bot.db.reviews.findById review._id, (err, review) ->
-            review.status.should.eql "inprogress"
-            done()
-        Bot.apps.reviews.controller.service.expire req, res, next
-
