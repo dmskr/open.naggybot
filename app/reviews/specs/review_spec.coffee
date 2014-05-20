@@ -98,3 +98,51 @@ describe "Review", ->
         executedReviews.all((r) -> r.status == 'pending').should.eql true
         done()
 
+  describe 'execute', ->
+    [pull, analyze, push] = [null, null, null]
+
+    beforeEach (done) ->
+      [pull, analyze, push] = [Bot.db.reviews.pull, Bot.db.reviews.analyze, Bot.db.reviews.push]
+      Bot.db.reviews.pull = Bot.db.reviews.analuze = Bot.db.reviews.push = (review, callback) ->
+        callback(null, review)
+      done()
+
+    afterEach (done) ->
+      [Bot.db.reviews.pull, Bot.db.reviews.analuze, Bot.db.reviews.push] = [pull, analyze, push]
+      done()
+
+    it "should pull data to review first", (done) ->
+      Bot.db.reviews.pull = (review, callback) ->
+        should.exist review
+        done()
+      Bot.db.reviews.analyze = Bot.db.reviews.push = (review, callback) ->
+        throw new Error('Review#pull should be called first')
+      Bot.db.reviews.execute status: 'pending', (err, review) ->
+
+    it "should immediately change review status to inprogress", (done) ->
+      Bot.db.reviews.pull = (review, callback) ->
+        should.exist review
+        should.exist review._id
+        review.status.should.eql 'inprogress'
+        done()
+
+      Bot.db.reviews.execute status: 'pending', (err, review) ->
+
+    it "should analyze data received from pull", (done) ->
+      Bot.db.reviews.pull = (review, callback) ->
+        callback null, review
+      Bot.db.reviews.analyze = (review, callback) ->
+        should.exist review
+        done()
+      Bot.db.reviews.push = (review, callback) ->
+        throw new Error('Review#analyze should be called first')
+      Bot.db.reviews.execute status: 'pending', (err, review) ->
+
+    it "should push resul of an analyze", (done) ->
+      Bot.db.reviews.push = (review, callback) ->
+        should.exist review
+        done()
+      Bot.db.reviews.pull = Bot.db.reviews.analyze = (review, callback) ->
+        callback null, review
+      Bot.db.reviews.execute status: 'pending', (err, review) ->
+
