@@ -1,11 +1,6 @@
 require("../../shared/specs/helpers")
 
 describe "Reviews Routes", ->
-  describe "for public", ->
-    shouldHaveRoutes({
-      'post /reviews/github': 'reviews.service.create'
-    }, null)
-
   describe 'for admin', ->
     shouldHaveRoutes({
       'get /admin/reviews': 'reviews.admin.index'
@@ -17,3 +12,17 @@ describe "Reviews Routes", ->
       'get /admin/reviews/pending': 'reviews.admin.pending'
     }, { username: 'monkey', admin: true }, 'reviews')
 
+  describe "for public", ->
+    shouldHaveRoutes({
+      'post /reviews/github': 'reviews.service.create'
+    }, null)
+
+    shouldNotHaveRoutes([
+      "get /admin/reviews"
+      "get /admin/reviews/index"
+      "get /admin/reviews/all"
+      "get /admin/reviews/active"
+      "get /admin/reviews/error"
+      "get /admin/reviews/completed"
+      "get /admin/reviews/pending"
+    ], null, 'users')

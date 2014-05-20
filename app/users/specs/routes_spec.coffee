@@ -3,6 +3,7 @@ require("../../shared/specs/helpers")
 describe "Users Routes", ->
   describe 'for admin', ->
     shouldHaveRoutes({
+      'get /admin': 'users.admin.index',
       'get /admin/users': 'users.admin.index',
       'get /admin/users/all': 'users.admin.index',
       'get /admin/users/blocked': 'users.admin.blocked',
@@ -16,6 +17,7 @@ describe "Users Routes", ->
 
   describe "for private", ->
     shouldNotHaveRoutes([
+      "get /admin",
       "get /admin/users",
       "get /admin/users/all",
       "get /admin/users/blocked",
@@ -37,6 +39,7 @@ describe "Users Routes", ->
 
   describe "for public", ->
     shouldNotHaveRoutes([
+      "get /admin",
       "get /admin/users",
       "get /admin/users/all",
       "get /admin/users/blocked",

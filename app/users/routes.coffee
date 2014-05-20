@@ -5,6 +5,7 @@ exports.route = (app) ->
   sessions = app.apps.users.controller.sessions
   shared = app.apps.shared.controller.public
 
+  app.get '/admin', require_admin, admin.index
   app.get '/admin/users', require_admin, admin.index
   app.get '/admin/users/all', require_admin, admin.index
   app.get '/admin/users/blocked', require_admin, admin.blocked

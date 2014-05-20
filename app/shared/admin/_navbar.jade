@@ -12,6 +12,8 @@ form#logoutForm(action="/logout?some", method="post")
     ul.nav.navbar-nav
       li(class=action == 'users' ? 'active' : '')
         a(href="/admin/users") Users
+      li(class=action == 'reviews' ? 'active' : '')
+        a(href="/admin/reviews") Reviews
       li(class=action == 'reports' ? 'active' : '')
         a(href="#") Reports
 
