@@ -9,6 +9,7 @@ exit = require('gulp-exit')
 paths =
   coffee: 'app/shared/assets/*.coffee'
   static: 'static'
+  spec: ['app/**/specs/*_spec.coffee', 'app/**/specs/**/*_spec.coffee']
 
 gulp.task 'default', ->
 
@@ -20,7 +21,7 @@ gulp.task 'coffee', ->
 
 # TESTS = app/ app/**/specs/*_spec.coffee app/**/specs/**/*_spec.coffee
 gulp.task 'test', ->
-  return gulp.src(['app/**/specs/*_spec.coffee', 'app/**/specs/**/*_spec.coffee'])
+  return gulp.src(paths.spec)
     .pipe(mocha({
       ui: 'bdd'
       growl: true
@@ -32,4 +33,10 @@ gulp.task 'test', ->
 
 gulp.task 'watch', ->
   gulp.watch paths.coffee, ['coffee']
+  gulp.watch paths.spec, ['test']
+
+gulp.task 'size', ->
+  size = require('gulp-size')
+  gulp.src(['*.coffee', 'app/**/*.coffee',])
+    .pipe(size({ showFiles: true }))
 
