@@ -10,6 +10,7 @@ paths =
   coffee: 'app/shared/assets/*.coffee'
   static: 'static'
   spec: ['app/**/specs/*_spec.coffee', 'app/**/specs/**/*_spec.coffee']
+  sources: ['*.coffee', 'app/**/*.coffee',]
 
 gulp.task 'default', ->
 
@@ -37,6 +38,21 @@ gulp.task 'watch', ->
 
 gulp.task 'size', ->
   size = require('gulp-size')
-  gulp.src(['*.coffee', 'app/**/*.coffee',])
+  gulp.src(paths.sources)
     .pipe(size({ showFiles: true }))
+
+gulp.task 'start_cover', (cb) ->
+  istanbul = require("gulp-istanbul")
+  gulp.src(paths.sources)
+    .pipe(istanbul())
+    .on('end', cb)
+
+gulp.task 'cover', ->
+  mocha = require("gulp-mocha")
+  istanbul = require("gulp-istanbul")
+ 
+  gulp.run 'start_cover', ->
+    gulp.src(testSources)
+      .pipe(mocha())
+      .pipe(istanbul.writeReports())
 
