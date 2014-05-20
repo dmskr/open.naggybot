@@ -60,3 +60,41 @@ describe "Review", ->
             review.status.should.eql "inprogress"
             done()
 
+  describe 'executeAll', ->
+    execute = null
+    executedReviews = []
+    beforeEach (done) ->
+      reviews = [
+        { status: 'inprogress' }
+        { status: 'completed' }
+        { status: 'completed' }
+        { status: 'completed' }
+        { status: 'error' }
+      ]
+      (15).times -> reviews.push({ status: 'pending' })
+      async.each reviews, Bot.db.reviews.save, done
+      execute = Bot.db.reviews.execute
+
+      executedReviews = []
+      Bot.db.reviews.execute = (review, callback) ->
+        executedReviews.push review
+        callback(null, review)
+
+    afterEach (done) ->
+      Bot.db.reviews.execute = execute
+      done()
+
+    it "should find and execute all reviews in pending status", (done) ->
+      Bot.db.reviews.executeAll {}, (err, reviews) ->
+        return done(err) if err
+        executedReviews.length.should.eql 15
+        executedReviews.all((r) -> r.status == 'pending').should.eql true
+        done()
+
+    it "should limit reviews number by 'limit' option", (done) ->
+      Bot.db.reviews.executeAll { limit: 10 }, (err, reviews) ->
+        return done(err) if err
+        executedReviews.length.should.eql 10
+        executedReviews.all((r) -> r.status == 'pending').should.eql true
+        done()
+

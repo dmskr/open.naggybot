@@ -22,4 +22,12 @@ Bot.db.bind('reviews').bind({
     review.status = "expired"
     review.expiredAt = Date.create()
     Bot.db.reviews.save review, done
+
+  executeAll: (options, done) ->
+    Bot.db.reviews.find(status: 'pending').limit(options.limit || 0).toArray (err, reviews) ->
+      return done(err) if err
+      async.map reviews, Bot.db.reviews.execute, done
+
+  execute: (review, done) ->
+    done(null, review)
 })
