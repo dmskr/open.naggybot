@@ -11,6 +11,7 @@ paths =
   static: 'static'
   spec: ['app/**/specs/*_spec.coffee', 'app/**/specs/**/*_spec.coffee']
   sources: ['*.coffee', 'app/**/*.coffee',]
+  sloc: ['*.coffee', 'app/**/*.coffee', 'app/**/*.jade']
 
 gulp.task 'default', ->
 
@@ -55,4 +56,11 @@ gulp.task 'cover', ->
     gulp.src(testSources)
       .pipe(mocha())
       .pipe(istanbul.writeReports())
+
+
+gulp.task 'sloc', ->
+  sloc = require('gulp-sloc')
+ 
+  gulp.src(paths.sloc)
+    .pipe(sloc())
 
