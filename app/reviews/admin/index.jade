@@ -1,0 +1,51 @@
+extends ../../shared/admin/layout
+
+block append title
+	title Reviews
+	- action = 'reviews'
+
+block content
+	.container
+		h2 Reviews
+		ul.nav.nav-tabs
+			each name in ['active', 'error', 'completed', 'pending', 'all']
+				li(class=name == tab ? 'active' : '')
+					a(href='/admin/reviews/' + name)= name.capitalize()
+			if tab == 'search'
+				li(class='active')
+					a(href='#') Search
+
+		if data.length == 0
+			br
+			.alert.alert-warning
+				= 'No Reviews Found'
+		else
+			table.table.table-stripped
+				thead
+					tr
+						th= 'ID'
+						th= 'Status'
+						th= 'Type'
+						th= 'Updated At'
+						th= 'Created At'
+				tbody
+					- var statuses = { "pending": "", "completed": "label-success", "expired": "labal-warning", "inprogress": "label-info", "error": "label-important" }
+					each review in data
+						tr
+							- var id = review._id.toString()
+							td
+								a(href="/admin/reviews/#{id}")
+									= id.slice(0,2) + '..' + id.slice(-3)
+							td
+								span.label(class=statuses[review.status] || statuses["pending"])= review.status || 'unknown'
+							td
+								span= review.type
+							td= review.updatedAt && review.updatedAt.format('short') || 'never'
+							td= review.createdAt && review.createdAt.format('short') || 'n/a'
+			br
+			input.total(type='hidden', name='total', value=total)
+			input.page(type='hidden', name='total', value=page)
+			.pagination
+			br
+			br
+
