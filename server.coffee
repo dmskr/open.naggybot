@@ -48,6 +48,13 @@ require("./config/environment")
 # Applications
 require("./config/applications")
 
+# Nodetime
+if process.env.NODE_ENV == 'production'
+  require('nodetime').profile {
+    accountKey: '99fb39f6d50c88ec2b03c1d18b428e45c58f5da1'
+    appName: 'Node.js Application'
+  }
+
 # Run the server
 env = (process.env.NODE_ENV || 'development').capitalize()
 server.listen(Bot.settings.port)
