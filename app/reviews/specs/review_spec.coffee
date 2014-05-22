@@ -146,3 +146,54 @@ describe "Review", ->
         callback null, review
       Bot.db.reviews.execute status: 'pending', (err, review) ->
 
+  #describe "pull", ->
+    #httprequest = null
+    #review = null
+    #temp = null
+    #writeStream = null
+    #beforeEach (done) ->
+      #httprequest = global.request
+      #temp = global.tmp
+      #writeStream = fs.createWriteStream
+      #fs.readFile Bot.root + '/app/reviews/specs/pullRequest.json', (err, content) ->
+        #return done(err) if err
+        #review =
+          #github:
+            #pull_request: JSON.parse(content)
+        #done()
+
+    #afterEach (done) ->
+      #global.request = httprequest
+      #global.tmp = temp
+      #fs.createWriteStream = writeStream
+      #done()
+
+    #it "should get tarball of a reviewed pull request", (done) ->
+      #global.request = (options) ->
+        #should.exist options
+        #should.exist options.url
+        #options.url.should.eql 'https://api.github.com/repos/octocat/hello-world/tarball/6dcb09b5b57875f334f61aebed695e2e4193db5e'
+        #should.exist options.headers
+        #options.headers['User-Agent'].should.eql 'NodeJS HTTP Client'
+        #done()
+
+      #Bot.db.reviews.pull review, (err, review) ->
+
+    #it "should pipe to correct file path and store the path in review.pull", (done) ->
+      #fs.createWriteStream = (path) ->
+        #path.should.eq '/some/path/ar.tar'
+        #return 'write stream'
+
+      #global.request = (options) ->
+        #return {
+          #pipe: (fileStream) ->
+            #fileStream.should.eql 'write stream'
+            #done()
+        #}
+
+      #tmp.tmpName = (options, callback) ->
+        #options.keep.should.eql true
+        #callback null, '/some/path'
+
+      #Bot.db.reviews.pull review, (err, review) ->
+

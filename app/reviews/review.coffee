@@ -42,8 +42,52 @@ Bot.db.bind('reviews').bind({
             return done(err) if err
             done(null, review)
 
+  download: (url, path, done) ->
+    filestream = fs.createWriteStream path
+    filestream.on 'error', done
+    filestream.on 'finish', done
+
+    requeststream = request url: url, headers: { 'User-Agent': 'NodeJS HTTP Client' }
+    requeststream.on 'error', done
+    requeststream.pipe filestream
+
+  extract: (archive, path, done) ->
+    filestream = fstream.Writer({ path: path })
+    filestream.on 'error', done
+    filestream.on 'finish', done
+
+    tarstream = tar.Extract(path: archive)
+    tarstream.on 'error', done
+    tarstream.pipe filestream
+
+  # Pull a tagbar of reviewes pull request and untar it
   pull: (review, done) ->
-    done(null, review)
+    review.pull ||= {}
+    repo = review.pull_request.head.repo
+    # Get the user's token
+    Bot.db.users.findByRepo repo, (err, user) ->
+      return done(err) if err
+      if !user
+        review.error = "No user for repo #{repos.first().owner.login}/#{repos.first().name} found in database"
+        return Bot.db.reviews.save review, done
+
+      review.pull.url = "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{number}?access_token=#{user.github.accessToken}"
+
+      Bot.db.reviews.save review, (err) ->
+        return done(err) if err
+
+        tmp.tmpName keep: false, (err, path) ->
+          return done(err) if err
+          review.pull.path = path
+          review.pull.archive = path.join(review.pull.path, 'ar.tar')
+
+          Bot.db.reviews.save review, (err) ->
+            return done(err) if err
+            Bot.db.review.download review.pull.archive, path.join(review.pull.path, 'ar.tar'), (err) ->
+              return done(err) if err
+              Bot.db.review.extract review.pull.archive, (err) ->
+                return done(err) if err
+                done(null, review)
 
   analyze: (review, done) ->
     done(null, review)

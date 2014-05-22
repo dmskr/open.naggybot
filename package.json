@@ -42,7 +42,11 @@
     "gulp-size": "~0.3.1",
     "gulp-istanbul": "~0.2.0",
     "gulp-sloc": "~1.0.4",
-    "nodetime": "~0.8.15"
+    "nodetime": "~0.8.15",
+    "request": "~2.36.0",
+    "tmp": "0.0.23",
+    "fstream": "~0.1.25",
+    "tar": "~0.1.19"
   },
   "scripts": {
     "test": "make test",

@@ -15,6 +15,10 @@ global.URI = require('url')
 global.Path = require('path')
 global.async = require('async')
 global.GitHub = require('github')
+global.request = require('request')
+global.tmp = require 'tmp'
+global.tar = require 'tar'
+global.fstream = require 'fstream'
 
 global.Bot = express()
 Bot.root = __dirname
