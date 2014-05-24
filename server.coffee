@@ -2,7 +2,7 @@ global.express = require('express')
 global.connect = require('connect')
 global.sugar = require("sugar")
 global.mongo = require('mongoskin')
-global.fs = require('fs')
+global.fs = require('fs-extra')
 global.passport = require('passport')
 global.LocalStrategy = require('passport-local').Strategy
 global.GitHubStrategy = require('passport-github').Strategy
@@ -19,6 +19,7 @@ global.request = require('request')
 global.tmp = require 'tmp'
 global.tar = require 'tar'
 global.fstream = require 'fstream'
+global.pathUtil = require 'path'
 
 global.Bot = express()
 Bot.root = __dirname

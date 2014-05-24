@@ -57,7 +57,7 @@ Bot.db.bind('users').bind({
       Bot.db.users.find(conditions).limit(10).toArray done
 
   findByRepo: (repo, done) ->
-    Bot.db.repos.find({ 'github.name': repo.name, 'github.owner.login': repo.owner.login }).toArray (err, repos) ->
+    Bot.db.repos.find({ 'github.name': repo.name, 'github.owner.login': repo.owner.login, active: true }).toArray (err, repos) ->
       return done(err) if err
       return done() if !repos || !repos.first() || !repos.first().user
       Bot.db.users.findById repos.first().user, done

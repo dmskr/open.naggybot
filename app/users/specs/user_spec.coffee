@@ -147,12 +147,23 @@ describe "User", ->
     it "should find user by repo name & owner's login if exist", (done) ->
       Bot.db.users.save { username: 'monkey' }, (err, user) ->
         return done(err) if err
-        Bot.db.repos.save { user: user._id, github: { name: 'super', owner: { login: 'mastermonkey' }}}, (err, repo) ->
+        Bot.db.repos.save { user: user._id, github: { name: 'super', owner: { login: 'mastermonkey' }}, active: true}, (err, repo) ->
           return done(err) if err
 
           Bot.db.users.findByRepo { name: 'super', owner: { login: 'mastermonkey' }}, (err, result) ->
             return done(err) if err
             should.exist result
             result._id.should.eql user._id
+            done()
+
+     it "should only look through active repos", (done) ->
+      Bot.db.users.save { username: 'monkey' }, (err, user) ->
+        return done(err) if err
+        Bot.db.repos.save { user: user._id, github: { name: 'super', owner: { login: 'mastermonkey' }}, active: false }, (err, repo) ->
+          return done(err) if err
+
+          Bot.db.users.findByRepo { name: 'super', owner: { login: 'mastermonkey' }}, (err, result) ->
+            return done(err) if err
+            should.not.exist result
             done()
 
