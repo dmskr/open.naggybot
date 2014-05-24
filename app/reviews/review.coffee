@@ -87,13 +87,15 @@ Bot.db.bind('reviews').bind({
                     return done(err) if err
                     request {
                       headers: { 'Accept': 'application/vnd.github.diff', 'User-Agent': 'NodeJS HTTP Client' }
-                      url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.number}?access_token=#{user.github.accessToken}"
+                      url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}?access_token=#{user.github.accessToken}"
                     }, (err, response, body) ->
                       return done(err) if err
-                      review.pull.diff = body
-                      Bot.db.reviews.save review, (err) ->
+                      review.pull.diff = review.pull.path + '/git.diff'
+                      fs.writeFile review.pull.diff, (body || '').toString(), (err) ->
                         return done(err) if err
-                        done(null, review)
+                        Bot.db.reviews.save review, (err) ->
+                          return done(err) if err
+                          done(null, review)
 
   analyze: (review, done) ->
     done(null, review)

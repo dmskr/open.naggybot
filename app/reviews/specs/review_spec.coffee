@@ -147,7 +147,7 @@ describe "Review", ->
       Bot.db.reviews.execute status: 'pending', (err, review) ->
 
   describe "pull", ->
-    [review, temp, child_exec, findByRepo] = [null, null, null, null]
+    [review, temp, child_exec, findByRepo, lrequest] = [null, null, null, null, null]
     beforeEach (done) ->
       temp = global.tmp
       child_exec = global.exec
@@ -155,16 +155,22 @@ describe "Review", ->
       Bot.db.users.findByRepo = (repo, callback) ->
         callback(null, { github: { accessToken: '567890' }})
 
+      lrequest = global.request
+      global.request = (options, callback) -> callback(null, {}, '')
+      global.exec = (command, callback) -> callback(null)
+
       fs.readFile Bot.root + '/app/reviews/specs/pullRequest.json', (err, content) ->
         return done(err) if err
         review =
           github:
+            number: 2
             pull_request: JSON.parse(content)
         done()
 
     afterEach (done) ->
       global.tmp = temp
       global.exec = child_exec
+      global.request = lrequest
       Bot.db.users.findByRepo = findByRepo
       done()
 
@@ -209,4 +215,22 @@ describe "Review", ->
         done()
       Bot.db.reviews.pull review, (err, review) ->
 
+    it "should request the diff", (done) ->
+      global.request = (options, callback) ->
+        options.headers.should.eql { 'Accept': 'application/vnd.github.diff', 'User-Agent': 'NodeJS HTTP Client' }
+        options.url.should.eql "https://api.github.com/repos/octocat/Hello-World/pulls/2?access_token=567890"
+        done()
+      Bot.db.reviews.pull review, (err, review) ->
+
+    it "should store returned diff in a file", (done) ->
+      global.request = (options, callback) ->
+        callback null, {}, 'this is the diff'
+
+      Bot.db.reviews.pull review, (err, review) ->
+        should.exist review.pull.diff
+        review.pull.diff.should.eql review.pull.path + '/git.diff'
+        fs.readFile review.pull.diff, (err, content) ->
+          return done(err) if err
+          content.toString().should.eql 'this is the diff'
+          done()
 
