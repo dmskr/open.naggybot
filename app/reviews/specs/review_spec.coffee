@@ -146,54 +146,67 @@ describe "Review", ->
         callback null, review
       Bot.db.reviews.execute status: 'pending', (err, review) ->
 
-  #describe "pull", ->
-    #httprequest = null
-    #review = null
-    #temp = null
-    #writeStream = null
-    #beforeEach (done) ->
-      #httprequest = global.request
-      #temp = global.tmp
-      #writeStream = fs.createWriteStream
-      #fs.readFile Bot.root + '/app/reviews/specs/pullRequest.json', (err, content) ->
-        #return done(err) if err
-        #review =
-          #github:
-            #pull_request: JSON.parse(content)
-        #done()
+  describe "pull", ->
+    [review, temp, child_exec, findByRepo] = [null, null, null, null]
+    beforeEach (done) ->
+      temp = global.tmp
+      child_exec = global.exec
+      findByRepo = Bot.db.users.findByRepo
+      Bot.db.users.findByRepo = (repo, callback) ->
+        callback(null, { github: { accessToken: '567890' }})
 
-    #afterEach (done) ->
-      #global.request = httprequest
-      #global.tmp = temp
-      #fs.createWriteStream = writeStream
-      #done()
+      fs.readFile Bot.root + '/app/reviews/specs/pullRequest.json', (err, content) ->
+        return done(err) if err
+        review =
+          github:
+            pull_request: JSON.parse(content)
+        done()
 
-    #it "should get tarball of a reviewed pull request", (done) ->
-      #global.request = (options) ->
-        #should.exist options
-        #should.exist options.url
-        #options.url.should.eql 'https://api.github.com/repos/octocat/hello-world/tarball/6dcb09b5b57875f334f61aebed695e2e4193db5e'
-        #should.exist options.headers
-        #options.headers['User-Agent'].should.eql 'NodeJS HTTP Client'
-        #done()
+    afterEach (done) ->
+      global.tmp = temp
+      global.exec = child_exec
+      Bot.db.users.findByRepo = findByRepo
+      done()
 
-      #Bot.db.reviews.pull review, (err, review) ->
+    it "should get tarball of a reviewed pull request", (done) ->
+      global.exec = (command, callback) ->
+        matches = command.match(/^wget -O (\S+) .+/)
+        should.exist matches
+        done()
+      Bot.db.reviews.pull review, (err, review) ->
 
-    #it "should pipe to correct file path and store the path in review.pull", (done) ->
-      #fs.createWriteStream = (path) ->
-        #path.should.eq '/some/path/ar.tar'
-        #return 'write stream'
+    it "should download a tarbar into existing directory", (done) ->
+      global.exec = (command, callback) ->
+        matches = command.match(/^wget -O (\S+) .+/)
+        should.exist matches[1]
+        fs.exists pathUtil.dirname(matches[1]), (exists) ->
+          exists.should.eql true
+          done()
+      Bot.db.reviews.pull review, (err, review) ->
 
-      #global.request = (options) ->
-        #return {
-          #pipe: (fileStream) ->
-            #fileStream.should.eql 'write stream'
-            #done()
-        #}
+    it "should store pull.path & pull.archive for future use", (done) ->
+      global.exec = (command, callback) ->
+        matches = command.match(/^wget -O (\S+) .+/)
+        should.exist review.pull
+        should.exist review.pull.path
+        review.pull.archive.should.eql matches[1]
+        review.pull.path.should.eql pathUtil.dirname(matches[1])
+        done()
+      Bot.db.reviews.pull review, (err, review) ->
 
-      #tmp.tmpName = (options, callback) ->
-        #options.keep.should.eql true
-        #callback null, '/some/path'
+    it "should wget the correct url", (done) ->
+      global.exec = (command, callback) ->
+        matches = command.match(/^wget -O (\S+) (.+)/)
+        should.exist matches[2]
+        matches[2].should.eql 'https://api.github.com/repos/octocat/Hello-World/tarball/6dcb09b5b57875f334f61aebed695e2e4193db5e?access_token=567890'
+        done()
+      Bot.db.reviews.pull review, (err, review) ->
 
-      #Bot.db.reviews.pull review, (err, review) ->
+    it "should extract tarball into sources folder", (done) ->
+      global.exec = (command, callback) ->
+        return callback(null) if command.match /^wget/
+        command.should.eql "tar -xf #{review.pull.archive} -C #{review.pull.path}/source --strip-components=1"
+        done()
+      Bot.db.reviews.pull review, (err, review) ->
+
 

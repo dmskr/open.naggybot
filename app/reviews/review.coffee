@@ -55,7 +55,8 @@ Bot.db.bind('reviews').bind({
   # Pull a tagbar of reviewes pull request and untar it
   pull: (review, done) ->
     review.pull ||= {}
-    repo = review.pull_request.head.repo
+    repo = review.github.pull_request.head.repo
+
     # Get the user's token
     Bot.db.users.findByRepo repo, (err, user) ->
       return done(err) if err
@@ -63,7 +64,7 @@ Bot.db.bind('reviews').bind({
         review.error = "No user for repo #{repo.owner.login}/#{repo.name} found in database"
         return Bot.db.reviews.save review, done
 
-      review.pull.url = "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/tarball/#{review.pull_request.head.sha}?access_token=#{user.github.accessToken}"
+      review.pull.url = "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/tarball/#{review.github.pull_request.head.sha}?access_token=#{user.github.accessToken}"
       Bot.db.reviews.save review, (err) ->
         return done(err) if err
 

@@ -20,6 +20,7 @@ global.tmp = require 'tmp'
 global.tar = require 'tar'
 global.fstream = require 'fstream'
 global.pathUtil = require 'path'
+global.os = require 'os'
 
 global.Bot = express()
 Bot.root = __dirname
