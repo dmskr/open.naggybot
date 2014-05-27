@@ -4,7 +4,7 @@ describe "Reviews Service Controller", ->
   describe "create", ->
     beforeEach (done) ->
       req.headers['X-GitHub-Event'] = 'PullRequestEvent'
-      fs.readFile Bot.root + '/app/reviews/specs/pullRequestEvent.json', (err, content) ->
+      fs.readFile Bot.root + '/app/reviews/specs/samples/pullRequestEvent.json', (err, content) ->
         req.body = JSON.parse(content)
         done()
 

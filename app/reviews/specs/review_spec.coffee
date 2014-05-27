@@ -159,7 +159,7 @@ describe "Review", ->
       global.request = (options, callback) -> callback(null, {}, '')
       global.exec = (command, callback) -> callback(null)
 
-      fs.readFile Bot.root + '/app/reviews/specs/pullRequest.json', (err, content) ->
+      fs.readFile Bot.root + '/app/reviews/specs/samples/pullRequest.json', (err, content) ->
         return done(err) if err
         review =
           github:
