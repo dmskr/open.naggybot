@@ -234,3 +234,7 @@ describe "Review", ->
           content.toString().should.eql 'this is the diff'
           done()
 
+  describe 'analyze', ->
+    it "should run coffeelint on all coffee files", (done) ->
+      done()
+

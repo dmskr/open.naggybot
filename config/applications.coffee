@@ -26,6 +26,7 @@ require "#{Bot.root}/app/shared/keywords"
 apps.users.controller.sessions = require("../app/users/sessions_controller")
 apps.reviews.controller.service = require("../app/reviews/service_controller")
 apps.reviews.adviser = require("../app/reviews/adviser")
+apps.reviews.unidiff = require("../app/reviews/unidiff")
 
 # Util function used in routes
 global.require_user = (req, res, next) ->
