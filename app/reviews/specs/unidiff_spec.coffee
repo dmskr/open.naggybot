@@ -68,25 +68,31 @@ describe "UniDiff", ->
             worker.ranges.last().added.total.should.eql 8
             done()
 
-          it "should include original lines in a range", (done) ->
+          it "should include lines in a range", (done) ->
             should.exist pack.ranges.first().lines
             pack.ranges.first().lines.length.should.eql 10
             done()
 
-          it "should include appropriate lines in 'removed' & 'added' blocks", (done) ->
-            pack.ranges.first().removed.lines.length.should.eql 7
-            pack.ranges.first().added.lines.length.should.eql 8
-            pack.ranges.first().added.lines.map((line) ->
-              line.diffindex + ":" + line.action + line.text
-            ).should.eql [
-              "2:   \"readmeFilename\": \"README.md\","
-              "3:   \"dependencies\": {"
-              "4:     \"jshint\": \"~2.5.0\","
-              "6:+    \"sugar\": \"~1.4.1\","
-              "7:+    \"github\": \"~0.1.16\""
-              "8:   },"
-              "9:   \"strider\": {"
-              "10:     \"id\": \"jshint\","
-            ]
+          it "should set text field for each line", (done) ->
+            pack.ranges.first().lines.map('text').each (text) ->
+              should.exist text
+            done()
+
+          it "should set text field without predicating symbols", (done) ->
+            pack.ranges.first().lines.map('text').each (text) ->
+              if text && text.length > 0
+                text[0].should.not.eql '+'
+                text[0].should.not.eql '-'
+            done()
+
+          it "should set an action field for each line", (done) ->
+            pack.ranges.first().lines.map('action').should.eql [null, null, null, null, '-', '+', '+', null, null, null]
+            worker.ranges[1].lines.map('action').should.eql [null, null, null, null, '+', '+', null, null, null, null]
+            done()
+
+          it "should set uniline", (done) ->
+            pack.ranges.first().lines.map('uniline').should.eql [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+            worker.ranges.first().lines.map('uniline').should.eql [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+            worker.ranges[1].lines.map('uniline').should.eql [13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
             done()
 

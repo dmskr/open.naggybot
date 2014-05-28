@@ -18,19 +18,16 @@ exports.parseFile = (lines, done) ->
     return done(err)  if err
     diffindex = 0
     result.each (range) ->
-      range.removed.lines.each (line) ->
-        line.diffindex = diffindex + line.diffindex
-      range.added.lines.each (line) ->
-        line.diffindex = diffindex + line.diffindex
+      range.lines.each (line) ->
+        line.uniline = diffindex + line.uniline
       diffindex += range.lines.length
 
     done null,
       name: name
       ranges: result
 
-
 exports.parseRange = (lines, done) ->
-  matches = lines.first().match(/^(@@.+@@\s?)(.+)?/)
+  matches = lines.first().match(/^(@@.+@@)(.+)?/)
   lines[0] = matches[2] or null
   
   scopes = matches[1].match(/^@@\s\-(\d+),(\d+)\s\+(\d+),(\d+)\s@@\s?$/)
@@ -38,28 +35,19 @@ exports.parseRange = (lines, done) ->
     removed:
       from: scopes[1].toNumber()
       total: scopes[2].toNumber()
-      lines: []
     added:
       from: scopes[3].toNumber()
       total: scopes[4].toNumber()
-      lines: []
     lines: lines
 
   [result.removed, result.added].each (s) ->
     s.to = s.from + s.total
 
-  lines.each (line, index) ->
-    if line
-      blocks = [result.removed, result.added]
-      if line[0] is "+"
-        blocks = [result.added]
-      else if line[0] is "-"
-        blocks = [result.removed]
-      blocks.each (block) ->
-        block.lines.push
-          action: line[0]
-          diffindex: index + 1
-          text: line.slice(1)
+  result.lines = lines.map (line, index) ->
+    line ||= ''
+    action: if line[0] && line[0] != ' ' then line[0] else null
+    text: line.slice(1)
+    uniline: index + 1
 
   done null, result
 
