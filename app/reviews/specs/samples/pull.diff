@@ -1,0 +1,39 @@
+diff --git a/package.json b/package.json
+index 2b05bd4..15fb59f 100644
+--- a/package.json
++++ b/package.json
+@@ -19,7 +19,8 @@
+   "readmeFilename": "README.md",
+   "dependencies": {
+     "jshint": "~2.5.0",
+-    "sugar": "~1.4.1"
++    "sugar": "~1.4.1",
++    "github": "~0.1.16"
+   },
+   "strider": {
+     "id": "jshint",
+diff --git a/worker.js b/worker.js
+index f0cb8c9..0df2a71 100644
+--- a/worker.js
++++ b/worker.js
+@@ -18,6 +18,11 @@ module.exports = {
+         exec('git rev-parse HEAD', function(err, stdout) {
+           if(err) return done(err)
+ 
++          if (!context.job.plugin_data || !context.job.plugin_data.github || !context.job.plugin_data.github.pull_request) {
++            context.out('No github PR data', context.job.plugin_data)
++            return callback(null, {})
++          }
++
+           var commit = stdout.toString().replace(/\n$/, '')
+           var base = commit + '~1'
+ 
+@@ -41,6 +46,8 @@ module.exports = {
+             options.verbose = true;
+             options.reporter = function(results) {
+               context.out('Warnings Total: ' + results.length);
++              context.out('Updating GitHub... (Pull Request: ' + context.job.plugin_data.github.pull_request + ')')
++
+               done(null)
+             }
+

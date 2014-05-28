@@ -1,0 +1,3428 @@
+diff --git a/static/assets/js/lib/xmp.js b/static/assets/js/lib/xmp.js
+new file mode 100644
+index 0000000..242cb95
+--- /dev/null
++++ b/static/assets/js/lib/xmp.js
+@@ -0,0 +1,315 @@
++(function (root, factory) {
++	if (typeof define === 'function' && define.amd) {
++		// AMD. Register as an anonymous module.
++		define([''], factory);
++	}else{
++		// Browser globals
++		root.xmp = factory(root.b);
++	}
++}(this, function (b) {
++	var xmpClass = function(){
++	
++		var baseStruct = ['<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 5.5-c002 1.148022, 2012/07/15-18:06:45        ">',
++				'<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">',
++					'<rdf:Description rdf:about="" ',
++					'xmlns:crs="http://ns.adobe.com/camera-raw-settings/1.0/">',
++					/*'xmlns:tiff="http://ns.adobe.com/tiff/1.0/"\n',
++					'xmlns:exif="http://ns.adobe.com/exif/1.0/"\n' ,
++					'xmlns:xmp="http://ns.adobe.com/xap/1.0/"\n',
++					'xmlns:aux="http://ns.adobe.com/exif/1.0/aux/"\n',
++					'xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/"\n',
++					'xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/"\n',
++					'xmlns:stEvt="http://ns.adobe.com/xap/1.0/sType/ResourceEvent#"\n',
++					'xmlns:dc="http://purl.org/dc/elements/1.1/"\n',
++					'tiff:Make="NIKON CORPORATION"\n',
++					'exif:PixelYDimension="4032"\n',
++					'xmp:CreatorTool="Ver.1.00"\n',
++					'xmp:ModifyDate="2008-12-01T14:52:13.00"\n',
++					'aux:ApproximateFocusDistance="133/100"\n',
++					'photoshop:DateCreated="2008-12-01T14:52:13.00"\n',
++					'xmpMM:DocumentID="E9E1A536652676A2D7675D687FCF9CAE"\n',
++					'dc:format="image/x-nikon-nef">',*/
++					
++					'</rdf:Description>',
++				'</rdf:RDF>',
++			'</x:xmpmeta>'].join('');
++
++		var NS = {
++			'x': 'adobe:ns:meta/',
++			'xmptk': 'Adobe XMP Core 5.5-c002 1.148022, 2012/07/15-18:06:45        ',
++			'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
++			'tiff': 'http://ns.adobe.com/tiff/1.0/',
++			'exif': 'http://ns.adobe.com/exif/1.0/',
++			'xmp': 'http://ns.adobe.com/xap/1.0/',
++			'aux': 'http://ns.adobe.com/exif/1.0/aux/',
++			'photoshop': 'http://ns.adobe.com/photoshop/1.0/',
++			'xmpMM': 'http://ns.adobe.com/xap/1.0/mm/',
++			'stEvt': 'http://ns.adobe.com/xap/1.0/sType/ResourceEvent#',
++			'dc': 'http://purl.org/dc/elements/1.1/',
++			'crs': 'http://ns.adobe.com/camera-raw-settings/1.0/'
++		};
++
++		var NSRdf = {
++			'value': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#value'
++		};
++
++		var jsonSubmision = {};
++		
++		var parser = new DOMParser();
++		var doc = parser.parseFromString(baseStruct, 'text/xml');
++		var description = doc.getElementsByTagNameNS('http://www.w3.org/1999/02/22-rdf-syntax-ns#', 'Description')[0];
++
++		var rdfVocabulary = {
++			value: function(value){
++				var description = createDescriptionNode();
++				var element = doc.createElement(['rdf', 'value'].join(':'));
++				element.appendChild(document.createTextNode(value));
++				description.appendChild(element);
++				return description;
++			}
++		};
++
++		var createDescriptionNode = function(attrs){
++			var element = doc.createElementNS(NS['rdf'], ['rdf', 'Description'].join(':'));
++			element.setAttribute("rdf:about","");
++			
++			if(attrs && typeof attrs === 'object'){
++				for(var item in attrs){
++					element.setAttribute(['crs', item].join(':'), attrs[item]);
++				}
++			}
++			return element;
++		};
++
++		var insertXmpObject = function(propertyName, nsKey, value){
++			
++			var element, descriptionNode;
++
++			if(propertyName){
++				element = doc.createElement([nsKey, propertyName].join(':'));
++			}
++			
++			descriptionNode = createDescriptionNode();
++			
++			if(isLastBrunchInTree(value)){
++				for(var i in value){
++					var innerElement = insertXmpAsKeyValue(i, nsKey, value[i]);
++					descriptionNode.appendChild(innerElement);
++				}
++			}else{
++				var child;
++				for(var j in value){
++					
++					if(typeof value[j] === 'object'){
++						if(Object.prototype.toString.call(value[j]) === '[object Array]'){
++							child = insertXmpObjectAsArray(j, nsKey, value[j]);
++						}else{
++							child = insertXmpObject(j, nsKey, value[j]);
++						}
++					}else{
++						child = insertXmpAsKeyValue(j, nsKey, value[j]);
++					}
++					
++					descriptionNode.appendChild(child);
++				}
++			}
++
++			if(propertyName){
++				element.appendChild(descriptionNode);
++			}else{
++				element = descriptionNode;
++			}
++
++			return element;
++		};
++
++		var isLastBrunchInTree = function(tree){
++			for(var key in tree){
++				if(typeof tree[key] === 'object'){
++					if( Object.prototype.toString.call(tree[key]) === '[object Array]'){
++						for(var i = 0; i < tree[key].length; i++){
++							if(typeof tree[key][i] === 'object' && Object.prototype.toString.call(tree[key][i]) !== '[object Array]'){
++								return false;
++							}
++						}
++						return true;
++					}
++					return false;
++				}
++			}
++
++			return true;
++		};
++
++		var insertXmpObjectAsArray = function(propertyName, nsKey, value){
++			var element,
++				seqRoot = doc.createElement(['rdf', 'Seq'].join(':')),
++				seqItemNode;
++
++			if(propertyName){
++				element = doc.createElement([nsKey, propertyName].join(':'));
++			}
++
++			for(var i = 0; i < value.length; i++){
++				seqItemNode = doc.createElementNS(NS['rdf'], ['rdf', 'li'].join(':'));
++				
++				if(Object.prototype.toString.call(value[i]) === '[object Array]'){
++					seqItemNode.appendChild(document.createTextNode(value[i].join(',')));
++				}else if(typeof value[i] === 'object'){
++					seqItemNode.appendChild(insertXmpObject(null, nsKey, value[i]));
++				}else{
++					seqItemNode.appendChild(document.createTextNode(value[i]));
++				}
++				
++				
++				seqRoot.appendChild(seqItemNode);
++			}
++
++			if(propertyName){
++				element.appendChild(seqRoot);
++			}else{
++				element = seqRoot;
++			}
++			
++
++			return element;
++		};
++
++		var insertXmpAsKeyValue = function(propertyName, nsKey, value){
++			var element = doc.createElementNS(NS[nsKey], [nsKey, propertyName].join(':'));
++			//debugger;
++			if(Object.prototype.toString.call(value) !== '[object Array]'){
++				var RdfNode = rdfVocabulary.value(value);
++				element.appendChild(RdfNode);
++			}else{
++				element.appendChild(insertXmpObjectAsArray(null, nsKey, value));
++			}
++			
++			return element;
++		};
++
++		this.insertXmpProperty = function(propertyName, nsKey, value){
++			var node = insertXmpObjectAsArray.apply(this, arguments);
++			description.appendChild(node);
++			return doc.childNodes[0].outerHTML;
++		};
++
++		
++		var isKey = function(NS){
++			return (NS !== 'rdf') ? true : false;
++		};
++
++		var isValue = function(node){
++			return (node.childNodes.length === 1 && node.childNodes[0].tagName === 'rdf:value') ? true : false;
++		};
++
++		var isDescNode = function(node){
++			return (node.tagName === 'rdf:Description') ? true : false;
++		};
++
++		var isSeqNode = function(node){
++			return (node.tagName === 'rdf:Seq') ? true : false;
++		};
++
++		var getValue = function(node){
++			var res;
++			if(node.nodeType === 3){
++				res = node.textContent;
++				res = (res.indexOf(',') !== -1) ? res.split(',').map(function(item){ return parseFloat(item, 10); }) : parseFloat(res, 10);
++			}else{
++				var valueNode = node.childNodes[0];
++				res = parseFloat(valueNode.textContent, 10);
++			}
++			return res;
++		};
++
++		var parseDesc = function(node){
++			var res = {},
++				childNodes = node.childNodes;
++			
++			for(var i = 0; i < childNodes.length; i++){
++				var tagName = childNodes[i].tagName.split(':'),
++					descriptor = {
++						ns: tagName[0],
++						key: tagName[1]
++					};
++
++				if(descriptor.ns !== 'rdf'){
++					var nextNode = childNodes[i].childNodes[0];
++					
++					if(isValue(nextNode)){
++						res[descriptor.key] = getValue(nextNode);
++					}else if(isDescNode(nextNode)){
++						res[descriptor.key] = parseDesc(nextNode);
++					}else if(isSeqNode(nextNode)){
++						res[descriptor.key] = parseSeq(nextNode.childNodes);
++					}
++				}
++			}
++		
++			return res;
++		};
++
++		var parseSeq = function(arrayNodes){
++			var res = [];
++			for(var i=0; i < arrayNodes.length; i++){
++				if(arrayNodes[i].childNodes[0].nodeType === 3){
++					res.push(getValue(arrayNodes[i].childNodes[0]));
++				}else{
++					res.push(parseDesc(arrayNodes[i].childNodes[0]));
++				}
++			}
++			return res;
++		};
++
++		var parseXmpData = function(nodes){
++			var res;
++			var node = nodes[0];
++			var tagName = node.tagName.split(':'),
++				descriptor = {
++					ns: tagName[0],
++					key: tagName[1]
++				};
++			
++			if(descriptor.key === 'Seq'){
++				res = parseSeq(node.childNodes);
++			}
++
++			return res;
++		};
++
++		this.getXmpProperties = function(str){
++			var parser = new DOMParser();
++
++			var rdf = parser.parseFromString(str,"text/xml");
++			
++			var root = rdf.getElementsByTagNameNS('http://www.w3.org/1999/02/22-rdf-syntax-ns#', 'Description')[0].childNodes[0];
++			var rdfJSON = {};
++
++			var parentNode = rdfJSON;
++
++			function getMetaList(node){
++				
++				var tagName = node.tagName.split(':'),
++					descriptor = {
++						ns: tagName[0],
++						key: tagName[1]
++					};
++
++				if(isKey(descriptor.ns)){
++					
++					return parseXmpData(node.childNodes);
++				}
++				
++			}
++
++			return getMetaList(root);
++		};
++
++		this.toString = function(){
++			return doc.childNodes[0].outerHTML;
++		};
++	};
++	
++	return new xmpClass();
++}));
+\ No newline at end of file
+diff --git a/static/assets/js/services/ErrorsHandlingService.js b/static/assets/js/services/ErrorsHandlingService.js
+index 87dc4a4..624ab4d 100644
+--- a/static/assets/js/services/ErrorsHandlingService.js
++++ b/static/assets/js/services/ErrorsHandlingService.js
+@@ -13,7 +13,7 @@
+ 	var document = global.document,
+ 		ErrorsHandlingService;
+ 
+-	ErrorsHandlingService = function(LoggingService) {
++	ErrorsHandlingService = function() {
+ 
+ 		var prodHosts = ['edit.pics.io', 'raw.pics.io', 'live.pics.io', 'pics.io'];
+ 		var hName = window.location.hostname;
+@@ -76,8 +76,8 @@
+ 
+ 	// AMD and window support
+ 	if (typeof define === "function") {
+-		define(['LoggingService'], function(LoggingService) {
+-			return new ErrorsHandlingService(LoggingService);
++		define([], function() {
++			return new ErrorsHandlingService();
+ 		});
+ 	} else {
+ 		if (typeof global.ErrorsHandlingService === "undefined") {
+diff --git a/static/assets/js/shared/extensions.js b/static/assets/js/shared/extensions.js
+index 9fda61a..8f6cb3b 100644
+--- a/static/assets/js/shared/extensions.js
++++ b/static/assets/js/shared/extensions.js
+@@ -5,8 +5,8 @@
+ 
+ 
+ 		global.noop = function() {}; // empty function
+-
+-		var saveAs = saveAs
++		
++		window.saveAs = saveAs
+ 		// IE 10+ (native saveAs)
+ 		|| (navigator.msSaveOrOpenBlob && navigator.msSaveOrOpenBlob.bind(navigator))
+ 		// Everyone else
+@@ -316,7 +316,7 @@
+ 						exportName += ("." + extension);
+ 					}
+ 				}
+-				saveAs(blob, exportName);
++				window.saveAs(blob, exportName);
+ 			}, mimeType, quality);
+ 		};
+ 
+diff --git a/static/picsio-edit/main.js b/static/picsio-edit/main.js
+index 67fe4f6..16a506f 100644
+--- a/static/picsio-edit/main.js
++++ b/static/picsio-edit/main.js
+@@ -109,7 +109,9 @@ require.config({
+ 		pluginGradient: 'src/plugins/gradient/plugin',
+ 		gradientGenerator: 'src/lib/gradientGenerator',
+ 		ua: 'assets/js/ua',
+-		detect: 'assets/js/lib/detect.min'
++		detect: 'assets/js/lib/detect.min',
++		xmp: 'assets/js/lib/xmp',
++		pluginXmp: 'src/plugins/xmp/plugin'
+ 	},
+ 
+ 	callback: function(){
+@@ -152,8 +154,10 @@ require([
+ 'picsEdit',
+ 'decode',
+ 'resizeImage',
++'config',
+ 'errHandler'
+-], function(editor, decoder, resizeImage){
++], function(editor, decoder, resizeImage, config){
++
+ 	window.editor = editor;
+ 
+ 	var img  = new Image();
+@@ -161,14 +165,14 @@ require([
+ 	img.onload = function(){
+ 		
+ 		var rgba = resizeImage(img, {
+-				orientation:1,
+-				width: 2500,
+-				height: 2500
++				orientation: config.drawingImageSize.orientation,
++				width: config.drawingImageSize.width,
++				height: config.drawingImageSize.height
+ 			}
+ 		);
+ 
+ 		var real = resizeImage(img, {
+-				orientation:1,
++				orientation: config.drawingImageSize.orientation,
+ 				width: img.width,
+ 				height: img.height
+ 			}
+@@ -178,7 +182,7 @@ require([
+ 			container: document.querySelector('#picsioEditor'),
+ 			
+ 			name: 'sample.png',
+-			mimeType: 'image/jpeg',
++			mimeType: 'image/png',
+ 			logo: true,
+ 			rgba: {
+ 				width: rgba.width,
+@@ -191,18 +195,8 @@ require([
+ 				data: decoder.fromClampedArray8ToFloatArray32(real.data)
+ 			}
+ 		});
+-		 
+-
+-		window.picsEdit = editor;
+ 	};
+ 
+ 	img.src = "sampleImages/3.jpg";
+- 
+-	window.imgObj = img;
+-	
+-	/*console.log(editor);
+-	$(document).click(function(e){
+-		console.log(e.clientX, e.clientY);
+-	});*/
+ 	
+ });
+diff --git a/static/picsio-edit/spec/init.js b/static/picsio-edit/spec/init.js
+index 451f11c..bf6f48a 100644
+--- a/static/picsio-edit/spec/init.js
++++ b/static/picsio-edit/spec/init.js
+@@ -1,39 +1,116 @@
+ require.config({
+ 	baseUrl: '../',
+ 	paths: {
+-		signal: 'src/mediator/signal',
+-		undoManager: 'src/core/undoManager',
+-		canvas: 'src/core/canvas',
+-		slicer: 'src/core/slicer',
+-		rgba: 'src/core/rgba',
+-		pluginManager: 'src/core/pluginManager',
+-		ui: 'src/ui/ui',
+-		utils: 'src/utils/utils',
+-		editor: 'src/core/editor',
+-		picsEdit: 'src/core/picsEdit',
+-		taskManager: 'src/core/taskManager',
+-		slicedImage: 'src/core/slicedImage',
+-		resizeImage: 'src/core/resizeImage',
+-		indexeddb: 'src/lib/indexeddb',
+-		pluginContrast: 'src/plugins/contrast/plugin',
+-		pluginCrop: 'src/plugins/crop/plugin',
+-		pluginCurves: 'src/plugins/curves/plugin',
+-		pluginEmpty: 'src/plugins/empty/plugin',
+-		pluginInvert: 'src/plugins/invert/plugin',
+-		pluginSaturation: 'src/plugins/saturation/plugin',
+-		pluginSaver: 'src/plugins/saver/plugin',
+-		pluginSepia: 'src/plugins/sepia/plugin',
+-		pluginUndo: 'src/plugins/undo/plugin',
+-		pluginColorPicker: 'src/plugins/colorpicker/plugin',
+-		pluginBrightness: 'src/plugins/brightness/plugin',
+-		pluginGrayscale: 'src/plugins/grayscale/plugin',
+-		pluginTemperature: 'src/plugins/temperature/plugin',
+-		//
+-		decode: 'src/decoder/decode',
+-		// ui
+-		button: 'src/ui/button',
+-		inputRange: 'src/ui/inputRange',
+-		dialog: 'src/ui/inputRange'
++		config: '../src/core/configuration',
++		jquery: '../assets/js/lib/jquery/2.0.3/jquery.min',
++		Parallel: '../assets/js/lib/parallel',
++		Canvas2Blob: "../assets/js/lib/Canvas2Blob",
++		mustache: '../assets/js/lib/mustache',
++		sugar: '../assets/js/lib/sugar/1.3.9/sugar.min',
++		contextPrototype: '../src/lib/context.prototype',
++		histogram: '../src/lib/histogram',
++		colorSpace: '../src/lib/colorSpace',
++		signal: '../src/mediator/signal',
++		undoManager: '../src/core/undoManager',
++		canvas: '../src/core/canvas',
++		slicer: '../src/core/slicer',
++		rgba: '../src/core/rgba',
++		extensions: '../assets/js/shared/extensions',
++		less: '../assets/js/lib/less/less-1.6.1.min',
++		pluginManager: '../src/core/pluginManager',
++		ui: '../src/ui/ui',
++		utils: '../assets/js/shared/utils',
++		TrackingService: '../assets/js/services/TrackingService',
++		editor: '../src/core/editor',
++		picsEdit: '../src/core/picsEdit',
++		taskManager: '../src/core/taskManager',
++		slicedImage: '../src/core/slicedImage',
++		imageSlices: '../src/core/imageSlices',
++		resizeImage: '../src/core/resizeImage',
++		converter: '../src/core/converter',
++		indexeddb: '../src/lib/indexeddb',
++		cornerMatrix: '../src/core/helpers/cornerMatrix',
++		analitics: '../src/services/TrackingService',
++		errHandler: '../src/services/ErrorsHandlingService',
++		// plugins
++		pluginContrast: '../src/plugins/contrast/plugin',
++		pluginCrop: '../src/plugins/crop/plugin',
++		pluginCurves: '../src/plugins/curves/plugin',
++		pluginEmpty: '../src/plugins/empty/plugin',
++		pluginInvert: '../src/plugins/invert/plugin',
++		pluginSaturation: '../src/plugins/saturation/plugin',
++		pluginSaver: '../src/plugins/saver/plugin',
++		pluginSepia: '../src/plugins/sepia/plugin',
++		pluginUndo: '../src/plugins/undo/plugin',
++		pluginColorPicker: '../src/plugins/colorpicker/plugin',
++		pluginBrightness: '../src/plugins/brightness/plugin',
++		pluginGrayscale: '../src/plugins/grayscale/plugin',
++		pluginTemperature: '../src/plugins/temperature/plugin',
++		pluginTransform: '../src/plugins/transform/plugin',
++		pluginHsl: '../src/plugins/hsl/plugin',
++		pluginOpenFile: '../src/plugins/openFile/plugin',
++		pluginAbout: '../src/plugins/about/plugin',
++		pluginFullscreen: '../src/plugins/fullscreen/plugin',
++		pluginExternalCaller: '../src/plugins/externalCaller/plugin',
++		pluginRedEyes: '../src/plugins/redEyes/plugin',
++		pluginShortcuts: '../src/plugins/shortcuts/plugin',
++		//decode
++		decode: '../src/decoder/decode',
++		q: '../src/lib/q',
++		pep: '../src/lib/jquery.pep',
++		rangeslider: '../src/lib/rangeslider.min',
++		button: '../src/ui/button',
++		inputRange: '../src/ui/inputRange',
++		dialog: '../src/ui/dialog',
++		confirmationDialog: '../src/ui/confirmationDialog',
++		Histogram: '../src/lib/histogram',
++		ColorCurve: '../src/plugins/curves/ui/ColorCurve',
++		dialogButton: '../src/ui/dialogButton',
++		inputFile: '../src/ui/inputFile',
++		checkbox: '../src/ui/checkbox',
++		select: '../src/ui/select',
++		uiObject: '../src/ui/uiObject',
++		tabControl: '../src/ui/tabControl',
++		toolbar: '../src/ui/toolbar',
++		menu: '../src/ui/menu',
++		spin: '../src/lib/spin',
++		spinner: '../src/core/helpers/spin',
++		facebook: '//connect.facebook.net/en_US/all',
++		Deferred: '../assets/js/shared/deferred',
++		alertify: '../assets/js/lib/alertify/alertify',
++		jqueryCookie: '../assets/js/lib/jquery.cookie',
++		chromeAnal: '../empty',
++		environment: '../assets/js/environment',
++		convolutionBase: '../src/plugins/tools/convolutionBase',
++		pluginSharpen: '../src/plugins/convolutionPlugins/sharpen/plugin',
++		pluginBlur: '../src/plugins/convolutionPlugins/blur/plugin',
++		pluginEmboss: '../src/plugins/convolutionPlugins/emboss/plugin',
++		pluginEdge: '../src/plugins/convolutionPlugins/edge/plugin',
++		crop: '../src/core/crop',
++		canvasUi: '../src/ui/canvas',
++		modal: '../src/core/helpers/modal',
++		lang: '../src/lang/en',
++		keypress: '../assets/js/lib/keypress',
++		shortcut: '../src/shortcut/shortcut',
++		inputText: '../src/ui/inputText',
++		text: '../src/ui/text',
++		hr: '../src/ui/hr',
++		pProgress: '../src/core/helpers/pProgress',
++		tooltip: '../assets/js/lib/opentip',
++		color: '../src/core/color',
++		colorDropperUi: '../src/plugins/colorpicker/colorDropper',
++		colorBox: '../src/plugins/colorpicker/colorBox',
++		pluginColorGetter: '../src/plugins/colorgetter/plugin',
++		colorjoe: '../assets/js/lib/colorjoe/colorjoe',
++		onecolor: '../assets/js/lib/colorjoe/onecolor',
++		colorPickerBox: '../src/ui/colorPickerBox',
++		gradientFilterUi: '../src/ui/gradientFilter',
++		pluginGradient: '../src/plugins/gradient/plugin',
++		gradientGenerator: '../src/lib/gradientGenerator',
++		ua: '../assets/js/ua',
++		detect: '../assets/js/lib/detect.min',
++		xmp: '../assets/js/lib/xmp',
++		pluginXmp: '../src/plugins/xmp/plugin'
+ 	},
+ 
+ 	shim: {
+@@ -44,7 +121,6 @@ require.config({
+ 					'src/lib/FileSaver',
+ 					'src/lib/sugar.min',
+ 					'src/lib/context.prototype',
+-					'src/lib/tmpl',
+ 			]
+ 		}
+ 	}
+@@ -69,10 +145,10 @@ require([
+ 
+ 	var img  = new Image();
+ 
+-	require(['spec/core/rgba.spec',
++	require([//'spec/core/rgba.spec',
+ 			//'spec/core/editor.spec',
+-			'spec/core/canvas.spec',
+-			//'spec/core/undoManager.spec',
++			//'spec/core/canvas.spec',
++			'spec/core/undoManager.spec',
+ 			], function(){
+ 		mocha.run();
+ 	});
+diff --git a/static/picsio-edit/src/core/canvas.js b/static/picsio-edit/src/core/canvas.js
+index 191094d..ad5fbd4 100644
+--- a/static/picsio-edit/src/core/canvas.js
++++ b/static/picsio-edit/src/core/canvas.js
+@@ -14,10 +14,34 @@ define(['signal', 'utils', 'slicedImage', 'slicer', 'cornerMatrix', 'resizeImage
+ 	* @class Canvas
+ 	* @constructor
+ 	*/
++
++	
++
+ 	var Canvas = function(){
+ 
+-		var self = this;
+-			
++		var self = this,
++			rotate = 0,
++			addRotate = function(){
++				rotate+=90;
++				if(rotate===360) rotate = 0;
++			},
++			resetRotate = function(){
++				rotate = 0;
++			};
++		
++		/*$(document).on('mousemove', function(e){
++			var x = event.offsetX || (event.pageX - canvas.offsetLeft);
++			var y = event.offsetY || (event.pageY - canvas.offsetTop);
++			var imageSlices = editor.getImageData();
++			var pt = ctx.transformedPoint(x, y);
++			var pixel = imageSlices.getPixel(x, y);
++			//console.log(pixel);
++			pixel[0] = 0;
++			pixel[1] = 0;
++			pixel[2] = 0;
++			pixel[3] = 1;
++		});*/
++
+ 		this.e = signal;
+ 		this.wasCropped = false;
+ 		this.isCropMode = false;
+@@ -102,7 +126,6 @@ define(['signal', 'utils', 'slicedImage', 'slicer', 'cornerMatrix', 'resizeImage
+ 				//console.log(x,y);
+ 
+ 				var pt = ctx.transformedPoint(self.lastX,self.lastY);
+-
+ 				var deltaX = pt.x-self.dragStart.x;
+ 				var deltaY = pt.y-self.dragStart.y;
+ 				
+@@ -148,6 +171,28 @@ define(['signal', 'utils', 'slicedImage', 'slicer', 'cornerMatrix', 'resizeImage
+ 			return evt.preventDefault() && false;
+ 		};
+ 
++		var onResize = function(){
++			var x = self.vScale,
++				y = self.hScale;
++			var rotate = self.getRotate();
++
++			ctx.clear();
++			canvas.height = window.innerHeight;
++			canvas.width = window.innerWidth;
++			ctx.resetTransform();
++			self.cornerMatrix.reset();
++			
++			resetRotate();
++			self.setRotate(rotate);
++			ctx.clear();
++			self.vScale = self.hScale = 1;
++				
++			ctx.scale(x, y);
++			
++			self.centerImage();
++			ctx.drawImage(cachedCanvas, 0, 0);
++		};
++
+ 		(function(window) {
+ 			var currentOrientation, debounce, dispatchResizeEndEvent, document, events, getCurrentOrientation, initialOrientation, resizeDebounceTimeout;
+ 				document = window.document;
+@@ -185,34 +230,7 @@ define(['signal', 'utils', 'slicedImage', 'slicer', 'cornerMatrix', 'resizeImage
+ 			return window.addEventListener('resize', debounce, false);
+ 		})(window);
+ 
+-		window.addEventListener('resize:end', function(event) {
+-				if(!ctx) return;
+-				ctx.clear();
+-				canvas.height = window.innerHeight;
+-				canvas.width = window.innerWidth;
+-				ctx.resetTransform();
+-				//self.e.publish("resetScale");
+-				/*var center = self.getRelativeCenterCoordinate();
+-				var pt = ctx.transformedPoint(center.x, center.y);
+-				
+-				self.centerImage();*/
+-				//self.quickDraw();
+-				ctx.clear();
+-
+-				var x = self.vScale,
+-					y = self.hScale;
+-
+-				self.vScale = self.hScale = 1;
+-					
+-				ctx.scale(x, y);
+-				
+-				self.centerImage();
+-				ctx.drawImage(cachedCanvas, 0, 0);
+-				console.log(ctx.getTransform());
+-				
+-		}, false);
+-
+-
++		window.addEventListener('resize:end', onResize.bind(self), false);
+ 
+ 		this.e.subscribe("setCanvasColor", function(e, data){
+ 			self.setColor(data.color);
+@@ -220,21 +238,7 @@ define(['signal', 'utils', 'slicedImage', 'slicer', 'cornerMatrix', 'resizeImage
+ 
+ 		this.e.subscribe("editor.execute.save", function(e, data){
+ 			self.save(data);
+-		});
+-
+-		this.e.subscribe("drawUndo", function(event, data){
+-			var slices;
+-			if(data.slices == null){
+-				slices = imageSlices.getRecentSlices()
+-			}else{
+-				slices = data.slices;
+-			}
+-			self.cachedDraw({
+-				width: slices.width,
+-				height: slices.height,
+-				slices: utils.float32ToClamped8ArraySlices(slices.slices)
+-			});
+-		});
++		});		
+ 
+ 		/**
+ 		 * Saves the image, not matter cropped or not
+@@ -243,45 +247,36 @@ define(['signal', 'utils', 'slicedImage', 'slicer', 'cornerMatrix', 'resizeImage
+ 		 */
+ 		this.save = function(params){
+ 			var cachedContex = self.getCachedContext();
+-
++			
+ 			if(self.wasResized && !self.wasCropped){
+ 				// get real clampedArray
+ 				// draw on virtual canvas
+ 				// save context
+ 				self.e.publish("loadingStart");
+-				console.time("slice real image");
+-				var imageSlices = new SlicedImage(slicer.sliceRGBA(picsEdit.real, 300),
+-					picsEdit.real.width,
+-					picsEdit.real.height);
+-
+-				console.timeEnd("slice real image");
+-
+-				var cachedContex = self.getCachedContext();
+-
+-				console.time('apply filters');
++				
++				var imageSlices = new SlicedImage(slicer.sliceRGBA(editor.real, 300),
++					editor.real.width,
++					editor.real.height);
+ 
+-				picsEdit.taskManager.executeQueue('', {
++				editor.taskManager.executePixelOperationQueue({
+ 					slices: imageSlices.data, 
+-					queue: picsEdit.undoManager.getQueue().slice(1),
+-					next: function(data){
+-						console.timeEnd('apply filters');
+-						console.time('save');
+-						
+-						var ctxToSave = self.virtualCachedDraw(data);
+-						
+-						if(params.resize){
+-							ctxToSave = resizeImage(ctxToSave.canvas, {
+-								orientation:1,
+-								width: params.resize.width,
+-								height: params.resize.height
+-							}, 'ctx');
+-						}
+-
+-						ctxToSave.downloadAs(params.fileName, params.mimeType, params.quality, self.cornerMatrix.getCorner());
+-						ctxToSave = null;
+-						self.e.publish("loadingFinish");
++					queue: editor.undoManager.getQueue().slice(1)
++				}, false).then(function(data){
++					
++					var ctxToSave = self.virtualCachedDraw(data);
++					
++					if(params.resize){
++						ctxToSave = resizeImage(ctxToSave.canvas, {
++							orientation:1,
++							width: params.resize.width,
++							height: params.resize.height
++						}, 'ctx');
+ 					}
+-				}, false);
++
++					ctxToSave.downloadAs(params.fileName, params.mimeType, params.quality, self.cornerMatrix.getCorner());
++					ctxToSave = null;
++					self.e.publish("loadingFinish");
++				});
+ 			}else if(!self.wasCropped){
+ 				// saved context from cached canvas
+ 
+@@ -298,47 +293,43 @@ define(['signal', 'utils', 'slicedImage', 'slicer', 'cornerMatrix', 'resizeImage
+ 			}else if(self.wasCropped && !self.wasResized){
+ 				cachedContex.downloadAs(params.fileName, params.mimeType, params.quality, self.cornerMatrix.getCorner());
+ 			}else if(self.wasCropped && self.wasResized){
+-				var imageSlices = new SlicedImage(slicer.sliceRGBA(picsEdit.real, 300),
+-					picsEdit.real.width,
+-					picsEdit.real.height);
+-
+-				console.timeEnd("slice real image");
++				var imageSlices = new SlicedImage(slicer.sliceRGBA(editor.real, 300),
++					editor.real.width,
++					editor.real.height);
+ 
+ 				var cachedContex = self.getCachedContext();
+ 
+-				console.time('apply filters');
+-
+-				picsEdit.taskManager.executeQueue('', {
++				editor.taskManager.executePixelOperationQueue({
+ 					slices: imageSlices.data,
+-					queue: picsEdit.undoManager.getQueue().slice(1),
+-					next: function(data){
+-						console.timeEnd('apply filters');
+-						console.time('save');
+-						
+-						var ctxToSave = self.virtualCachedDraw(data);
+-						
+-						var koef = data.width / editor.getImageData().data.width;
+-						
+-						var imageDataToSave = ctxToSave.getImageData(
+-							self.floatCoords.x * koef,
+-							self.floatCoords.y * koef,
+-							self.floatCoords.w * koef,
+-							self.floatCoords.h * koef
+-						);
+-
+-						var canvas = document.createElement('canvas');
+-						var rCtx = canvas.getContext('2d');
+-
+-						canvas.width = imageDataToSave.width;
+-						canvas.height = imageDataToSave.height;
+-						rCtx.putImageData(imageDataToSave, 0, 0);
+-						rCtx.downloadAs(params.fileName, params.mimeType, params.quality, self.cornerMatrix.getCorner());
+-						
+-						self.e.publish("loadingFinish");
+-					}
+-				}, false);
++					queue: editor.undoManager.getQueue().slice(1)
++				}, false).then(function(data){
++					console.log(data.slices[6].data[0]);
++					var ctxToSave = self.virtualCachedDraw(data);
++					
++					var koef = data.width / editor.getImageData().data.width;
++					
++					var imageDataToSave = ctxToSave.getImageData(
++						Math.round(self.floatCoords.x * koef),
++						Math.round(self.floatCoords.y * koef),
++						Math.round(self.floatCoords.w * koef),
++						Math.round(self.floatCoords.h * koef)
++					);
++
++					console.log(imageDataToSave.data[0]);
++
++					var canvas = document.createElement('canvas');
++					var rCtx = canvas.getContext('2d');
++
++					canvas.width = imageDataToSave.width;
++					canvas.height = imageDataToSave.height;
++					rCtx.putImageData(imageDataToSave, 0, 0);
++					console.log(rCtx.getImageData(0,0,1,1).data[0]);
++					rCtx.downloadAs(params.fileName, params.mimeType, params.quality, self.cornerMatrix.getCorner());
++					
++					self.e.publish("loadingFinish");
++				});
+ 			}
+-		}
++		};
+ 
+ 		this.setColor = function(colorArray){
+ 			self.color = colorArray;
+@@ -467,6 +458,18 @@ define(['signal', 'utils', 'slicedImage', 'slicer', 'cornerMatrix', 'resizeImage
+ 			}
+ 		};
+ 
++		this.getRotate = function(){
++			return rotate;
++		};
++
++		this.setRotate = function(angle){
++			var count = angle/90;
++			while(count){
++				this.rotate();
++				count--;
++			}
++		};
++
+ 		/**
+ 		 * Rotate image clockwise
+ 		 * @method rotate
+@@ -479,65 +482,34 @@ define(['signal', 'utils', 'slicedImage', 'slicer', 'cornerMatrix', 'resizeImage
+ 			var centerPoint = this.getRelativeCenterCoordinate();
+ 			var rImageSize = this.getRelativeImageSize();
+ 			var bCoord = this.getBeginOfCoordinates();
+-			
++			var pt;
+ 
+ 			if(this.cornerMatrix.getCorner() == "TL"){
+-				if(this.cornerMatrix.originalR){
+-					var pt = ctx.transformedPoint(rImageSize.width/2 + transform.e, rImageSize.height/2 + transform.f);
++					pt = ctx.transformedPoint(rImageSize.width/2 + transform.e, rImageSize.height/2 + transform.f);
+ 					ctx.translate(pt.x, pt.y);
+ 					ctx.rotate(Math.PI/2);
+ 					ctx.translate(-pt.x, -pt.y);	
+-				}else{
+-					var pt = ctx.transformedPoint(rImageSize.height/2 + transform.e, rImageSize.width/2 + transform.f);
+-					ctx.translate(pt.x, pt.y);
+-					ctx.rotate(Math.PI/2);
+-					ctx.translate(-pt.x, -pt.y);	
+-				}
+-				
+ 			}else if(this.cornerMatrix.getCorner() == "TR"){
+-				if(this.cornerMatrix.originalR){
+-					var pt = ctx.transformedPoint(transform.e + rImageSize.width/2, transform.f + rImageSize.height/2);
++					pt = ctx.transformedPoint(transform.e + rImageSize.height/2, transform.f + rImageSize.width/2);
+ 					ctx.translate(pt.x, pt.y);
+ 					ctx.rotate(Math.PI/2);
+ 					ctx.translate(-pt.x, -pt.y);		
+-				}else{
+-					var pt = ctx.transformedPoint(transform.e + rImageSize.height/2, transform.f + rImageSize.width/2);
+-					ctx.translate(pt.x, pt.y);
+-					ctx.rotate(Math.PI/2);
+-					ctx.translate(-pt.x, -pt.y);		
+-				}
+-				
+ 			}else if(this.cornerMatrix.getCorner() == "BR"){
+-				if(this.cornerMatrix.originalR){
+-					var pt = ctx.transformedPoint(transform.e + rImageSize.width/2, transform.f + rImageSize.height/2);
++					pt = ctx.transformedPoint(transform.e + rImageSize.width/2, transform.f + rImageSize.height/2);
+ 					ctx.translate(pt.x, pt.y);
+ 					ctx.rotate(Math.PI/2);
+ 					ctx.translate(-pt.x, -pt.y);
+-				}else{
+-					var pt = ctx.transformedPoint(transform.e + rImageSize.height/2, transform.f + rImageSize.width/2);
+-					ctx.translate(pt.x, pt.y);
+-					ctx.rotate(Math.PI/2);
+-					ctx.translate(-pt.x, -pt.y);
+-				}
+ 			}else if(this.cornerMatrix.getCorner() == "BL"){
+-				if(this.cornerMatrix.originalR){
+-					var pt = ctx.transformedPoint(transform.e + rImageSize.width/2, transform.f + rImageSize.height/2);
++					pt = ctx.transformedPoint(transform.e + rImageSize.height/2, transform.f + rImageSize.width/2);
+ 					ctx.translate(pt.x, pt.y);
+ 					ctx.rotate(Math.PI/2);
+ 					ctx.translate(-pt.x, -pt.y);	
+-				}else{
+-					var pt = ctx.transformedPoint(transform.e + rImageSize.height/2, transform.f + rImageSize.width/2);
+-					ctx.translate(pt.x, pt.y);
+-					ctx.rotate(Math.PI/2);
+-					ctx.translate(-pt.x, -pt.y);	
+-				}
+-				
+ 			}
+ 			
+ 			// draw the previows image, now rotated
+ 			this.quickDraw();
+ 			this.cornerMatrix.rotateC();
+-
++			addRotate();
+ 		}
+ 
+ 
+@@ -725,7 +697,6 @@ define(['signal', 'utils', 'slicedImage', 'slicer', 'cornerMatrix', 'resizeImage
+ 				
+ 				this.hScale = 1;
+ 				this.vScale = 1;
+-				console.log(this.minScale, this.minScale);
+ 				ctx.scale(this.minScale, this.minScale);
+ 				
+ 			}else if(this.hScale<1 && this.hScale < this.vScale){
+@@ -746,13 +717,7 @@ define(['signal', 'utils', 'slicedImage', 'slicer', 'cornerMatrix', 'resizeImage
+ 			ctx.drawImage(cachedCanvas, 0, 0);
+ 		};
+ 
+-		/**
+-		 * Draw on cached canvas and after on main. Very common method use it for major drawing
+-		 * @method cachedDraw
+-		 * @param {} imageSlices
+-		 * @return 
+-		 */
+-		this.cachedDraw = function(imageSlices){
++		this.fillCachedCanvas = function(imageSlices){
+ 			var canvas = getCachedCanvas(),
+ 				ctx = getCachedContext(),
+ 				offsetH = 0,
+@@ -771,6 +736,18 @@ define(['signal', 'utils', 'slicedImage', 'slicer', 'cornerMatrix', 'resizeImage
+ 				}
+ 			}
+ 
++			return canvas;
++		};
++
++		/**
++		 * Draw on cached canvas and after on main. Very common method use it for major drawing
++		 * @method cachedDraw
++		 * @param {} imageSlices
++		 * @return 
++		 */
++		this.cachedDraw = function(imageSlices){
++			var canvas = this.fillCachedCanvas(imageSlices);
++
+ 			this.getContext().clear();
+ 			this.getContext().drawImage(canvas, 0, 0);	
+ 		};
+diff --git a/static/picsio-edit/src/core/configuration.js b/static/picsio-edit/src/core/configuration.js
+index 48e2bab..6c70483 100644
+--- a/static/picsio-edit/src/core/configuration.js
++++ b/static/picsio-edit/src/core/configuration.js
+@@ -101,6 +101,10 @@ define([], function(){
+ 						},
+ 						{
+ 							type: 'text',
++							action: 'xmp'
++						},
++						{
++							type: 'text',
+ 							action: 'hotkeys'
+ 						},
+ 					]
+@@ -213,6 +217,14 @@ define([], function(){
+ 		},
+ 		converter: {
+ 			RAW_PER_SLICE: 300
++		},
++		drawingImageSize:{
++			width: 2500,
++			height: 2500,
++			orientation: 1
++		},
++		ui: {
++			canvasContainer: '#picsEdit-canvas'
+ 		}
+ 	};
+ 
+diff --git a/static/picsio-edit/src/core/crop.js b/static/picsio-edit/src/core/crop.js
+index 8a4f86c..53cb939 100644
+--- a/static/picsio-edit/src/core/crop.js
++++ b/static/picsio-edit/src/core/crop.js
+@@ -17,11 +17,10 @@ define(['signal',
+ 			isBottomLeft = false;
+ 		var divOffset = 1;
+ 
+-		const WIDTH = $(window).width();
+-		const HEIGHT = $(window).height();
+-		const BOTTOM_OFFSET = 400;
+-		const ESCAPE_KEYCODE = 27;
+-		const ENTER_KEYCODE = 13;
++		var WIDTH = $(window).width();
++		var HEIGHT = $(window).height();
++		var ESCAPE_KEYCODE = 27;
++		var ENTER_KEYCODE = 13;
+ 
+ 		var selector,
+ 			tlCorner,
+@@ -40,7 +39,6 @@ define(['signal',
+ 		var image;
+ 
+ 		var r;
+-		var pos = [0, 0];
+ 		
+ 		var x, y, xLength, yLength, xSelector, ySelector;
+ 		var lastTop, lastLeft, lastHeight, lastWidth;
+@@ -53,7 +51,6 @@ define(['signal',
+ 		 */
+ 		var crop = function(virtualContext, callback){
+ 			confirmationDialog.hide();
+-			console.log('crop');
+ 			
+ 			var image = canvas.getImageCoordinates();
+ 
+@@ -157,11 +154,43 @@ define(['signal',
+ 			canvas.yLength = yDifBig;
+ 		};
+ 
++		var cropByCoords = function(coords){
++			
++			var imageData = editor.getImageData().getClamped8SliceList();
++			canvas.fillCachedCanvas(imageData);
++
++			var ctx = canvas.getCachedContext();
++
++			var croppedData = ctx.getImageData(coords.x, coords.y, coords.w, coords.h);
++			var self = this;
++
++			this.drawCoords = {
++				x: coords.x,
++				y: coords.y,
++				w: coords.w,
++				h: coords.h
++			};
++
++			canvas.floatCoords = {
++				x: coords.x,
++				y: coords.y,
++				w: coords.w,
++				h: coords.h
++			};
++
++			canvas.isCropMode = true;           
++			canvas.wasCropped = true;
++			self.state = !self.state;
++			
++			signal.publish('drawImageData', croppedData, true);
++			signal.publish('editor.update.imageData');
++		};
++
+ 		return {
+ 			
+ 			state: true,
+ 
+-			//crop: null,
++			cropByCoords: cropByCoords,
+ 
+ 			drawCoords: undefined,
+ 
+@@ -266,10 +295,17 @@ define(['signal',
+ 					self.startCropEventHandler();
+ 				});
+ 
+-				signal.subscribe("editor.crop.end", function(data){
++				signal.subscribe("editor.crop.end", function(ev, params){
+ 					self.endCropEventHandler();
+ 				});
+ 
++				signal.subscribe("restoreCrop", self.restoreCrop.bind(self));
++				signal.subscribe("cropByCoords", function(e, params){
++					var coords = params.coords;
++					self.cropByCoords(coords);
++				});
++				
++
+ 				signal.subscribe("editor.crop.stop.crop.mode", function(data){
+ 					confirmationDialog.hide();
+ 					self.stopCropModeHandler();
+@@ -282,6 +318,7 @@ define(['signal',
+ 					},
+ 					onCancel: function(){
+ 						self.stopCropModeHandler();
++						signal.publish('CloseCropMode');
+ 					},
+ 					title: "ok",
+ 					class: "confirmationOk"
+@@ -524,17 +561,14 @@ define(['signal',
+ 
+ 			stopCropModeHandler: function(){
+ 				var self = this;
+-				console.log(self.state);
++				var clientRect = selector.getBoundingClientRect();
++				
+ 				isCrop = self.state;
+ 				confirmationDialog.hide();
+-				var clientRect = selector.getBoundingClientRect();
+ 
+ 				selector.style.width = '0px';
+ 				selector.style.display = 'none';
+ 
+-				editor.switchToSlices();
+-
+-				console.log('switch state');
+ 				self.state = !self.state;
+ 
+ 				self.selectorWasPlaced = false;
+@@ -549,22 +583,28 @@ define(['signal',
+ 			 */
+ 			endCropEventHandler: function(){
+ 				var self = this;
++				self.restoreCrop();
+ 				confirmationDialog.show();
++				self.placeSelectorAndOverlays();
++				canvas.isCropMode = true;
++			},
++
++			restoreCrop: function(){
++				var self = this;
++				
+ 				isCrop = self.state;
+ 				
+ 				var clientRect = selector.getBoundingClientRect();
+ 
+ 				editor.switchToSlices();
+ 				signal.publish('resetScale', {}, true);
+-				
+-				self.placeSelectorAndOverlays();
+-
+-				canvas.isCropMode = true;           
++				canvas.isCropMode = false;           
+ 				canvas.wasCropped = false;
+-				console.log('state switch');
+ 				self.state = !self.state;
+ 			},
+ 
++
++
+ 			/**
+ 			* What to do logic for keydowns
+ 			* @method keyPressedHandler
+diff --git a/static/picsio-edit/src/core/editor.js b/static/picsio-edit/src/core/editor.js
+index 2b6d1f1..ae11f93 100644
+--- a/static/picsio-edit/src/core/editor.js
++++ b/static/picsio-edit/src/core/editor.js
+@@ -7,14 +7,14 @@ define(['signal',
+ 		'utils',
+ 		'decode',
+ 		'taskManager',
+-		'imageSlices',
+ 		'q',
+ 		'toolbar',
+ 		'spinner',
+ 		'TrackingService',
+ 		'config',
+ 		'converter',
+-		'pProgress'], function(
++		'pProgress',
++		'xmp'], function(
+ 			signal,
+ 			UndoManager,
+ 			canvasInstance,
+@@ -24,24 +24,19 @@ define(['signal',
+ 			utils,
+ 			decoder,
+ 			taskManager,
+-			imageSlices,
+ 			Q,
+ 			Toolbar,
+ 			spinner,
+ 			analitics,
+ 			config,
+ 			converter,
+-			pProgress){
++			pProgress,
++			xmp){
+ 
+-	const RAW_PER_SLICE = 300;
+-	const maxWidth = 2500;
+-	const maxHeight = 2500;
++	const RAW_PER_SLICE = config.converter.RAW_PER_SLICE;
++	const maxWidth = config.drawingImageSize.width;
++	const maxHeight = config.drawingImageSize.height;
+ 
+-	/**
+-	 * Description
+-	 * @method Editor
+-	 * @return 
+-	 */
+ 	var Editor = function(){
+ 
+ 		var imageSlices = [],
+@@ -85,50 +80,31 @@ define(['signal',
+ 			if(!self.canvas.wasCropped){
+ 				var imageData = self.canvas.getCachedImageData();
+ 				imageSlices.updateFromImageData(imageData);
+-				
+-			}else if(typeof data == 'object' && data.title != 'crop' ){
+-				console.log("strange condition");
++				next && next();
++			}else if(typeof data == 'object' && data.title != 'crop' && data.title != 'transform' ){
+ 
+ 				var croppedImageData = self.canvas.getCachedImageData();
+ 				imageSlices.setCroppedDataFromImageData(croppedImageData);
+ 
+ 				// TODO: refactor this code
+-				var cb = editor.getPlugin(data.title).apply;
++				var plugin = editor.getPlugin(data.title);
++				var cb = plugin.apply;
+ 				
+-				if(data.prepare){
+-					if(data.gradient){
+-						data.gradient.size.width = imageSlices.data.width;
+-						data.gradient.size.height = imageSlices.data.height;
+-					}
+-					var plugin = editor.getPlugin(data.title);
+-					data = plugin.prepare(data);
+-
+-					var dataToParalel = self.taskManager.mergeSlices(imageSlices.getSliceList(), data);
+-				}else{
+-					var dataToParalel = self.taskManager.prepareDataToProcessing(imageSlices.getSliceList(), data);
+-				}
++				var dataToParalel = plugin.prepare(imageSlices.getSliceList(), data);
+ 				
+ 				var p = new Parallel(dataToParalel);
+ 
+ 				p.map(cb).then(function(slices){
+-
++					next && next();
+ 				});
+ 			}else{
+ 				var croppedImageData = self.canvas.getCachedImageData();
+ 				// Need to save 32bit data
+ 				imageSlices.setCroppedDataFromImageData(croppedImageData);
++				next && next();
+ 			}
+-			
+-			next && next();
+ 		});
+ 
+-		this.prepareDataToProcessing = function(slices, params){
+-			for(var i = 0; i < slices.length; i++){
+-				slices[i]["params"] = params;
+-			}
+-
+-			return slices;
+-		};
+ 
+ 		this.e.subscribe('state.cancel', function(){
+ 			if(!self.canvas.wasCropped){
+@@ -147,12 +123,8 @@ define(['signal',
+ 		});
+ 
+ 		this.e.subscribe("editor.execute.start", function(data){
+-			console.log("editor.execute.start");
+-			
+ 			var clonedImageSlices = imageSlices.clone();
+-
+ 			self.e.publish("task.imageData", imageSlices);
+-
+ 		});
+ 
+ 		this.e.subscribe("editor.insertLocal", function(event, data){
+@@ -165,12 +137,12 @@ define(['signal',
+ 		 * @param {} config
+ 		 * @return 
+ 		 */
+-		this.init = function(config){
+-			realSize.width = config.real.width;
+-			realSize.height = config.real.height;
++		this.init = function(params){
++			realSize.width = params.real.width;
++			realSize.height = params.real.height;
+ 
+-			this.name = config.name;
+-			this.mimeType = config.mimeType;
++			this.name = params.name;
++			this.mimeType = params.mimeType;
+ 
+ 			this.e.publish("saveToAnalitics", ['Edit','Start']);
+ 			
+@@ -190,30 +162,30 @@ define(['signal',
+ 			this.e.publish("loadingStart");
+ 
+ 			this.ui = new ui({
+-				container: config.container,
+-				logo: config.logo
++				container: params.container,
++				logo: params.logo
+ 			});
+-
++			
+ 			this.canvas.create({
+-				container: this.ui.$getCanvasContainer()[0]
++				container: this.ui.find(config.ui.canvasContainer)[0]
+ 			});
+ 			
+-			imageSlices = new SlicedImage(this.slicer.sliceRGBA(config.rgba, RAW_PER_SLICE),
+-				config.rgba.width, config.rgba.height);
++			imageSlices = new SlicedImage(this.slicer.sliceRGBA(params.rgba, RAW_PER_SLICE),
++				params.rgba.width, params.rgba.height);
+ 
+-			if(config.real.width > maxWidth || config.real.height > maxHeight){
+-				this.real = config.real;
++			if(params.real.width > maxWidth || params.real.height > maxHeight){
++				this.real = params.real;
+ 				this.canvas.wasResized = true;
+ 			}else{
+-				delete config.real;
++				delete params.real;
+ 			}
+ 			
+ 
+-			if(!config.testEnv){
++			if(!params.testEnv){
+ 				this.undoManager = new UndoManager(imageSlices, function(){});
+ 			}
+ 
+-			this.updateToolbar(config.toolbar);
++			this.updateToolbar(params.toolbar);
+ 			this.initToolbars(this.ui.getToolbarContainers());
+ 			
+ 			this.canvas.draw(imageSlices.getClamped8SliceList());
+@@ -254,7 +226,33 @@ define(['signal',
+ 			this.canvas.draw(imageSlices.getClamped8SliceList());
+ 
+ 			this.e.publish('loadingFinish');
+-		}
++		};
++
++		this.reset = function(){
++			var self = this;
++			var deferred = Q.defer();
++			var index = this.undoManager.getQueue().slice(0,1)[0].timestamp;
++
++			this.undoManager.getSnapshot(index, function(e){
++				var rgb = e.target.result,
++					ctx = self.canvas.getContext();
++
++				if(!rgb){
++					deferred.reject(e);
++				}
++
++				imageSlices.update(rgb);
++				ctx.resetTransform();
++				ctx.scale(self.canvas.vScale, self.canvas.vScale);
++				self.canvas.resetCrop();
++				self.canvas.cornerMatrix.reset();
++				self.canvas.centerImage();
++				self.canvas.draw(imageSlices.getClamped8SliceList());
++				self.undoManager.reset(imageSlices).then(deferred.resolve);
++			});
++
++			return deferred.promise;
++		};
+ 
+ 		this.checkSize = function(resize, real){
+ 			return (resize.height === real.height) && (resize.width === real.width);
+@@ -488,6 +486,59 @@ define(['signal',
+ 		this.getFileName = function(){
+ 			return this.name;
+ 		};
++
++		this.saveXmp = function(){
++			var undoM = this.undoManager,
++				queue = undoM.getQueueToJson();
++
++			var	xmpString = xmp.insertXmpProperty('test', 'crs', queue);
++			
++			var blob = new Blob([xmpString], {type: "text/xml"});
++			
++			saveAs(blob, this.getFileName().split('.')[0] + '.xmp');
++		};
++
++		this.loadXmp = function(str){
++			var metadataQueue = xmp.getXmpProperties(str);
++			var res = [];
++			for(var i = 0; i < metadataQueue.length; i++){
++				var operation = metadataQueue[i];
++				var item;
++				for(var j in operation){
++					item = operation[j];
++					item.title = j;
++				}
++				res.push(item);
++			}
++
++			return res;
++		};
++
++		var runCommandStack = function(queue){
++			signal.publish("runCommandStack", {queue: queue}, true);
++		};
++
++		this.applyXmp = function(queue){
++			var self = this;
++			self.reset().then(function(){
++				self.undoManager.setTaskQueue(queue);
++				runCommandStack(queue);
++			});
++		};
++
++		var hold = false;
++
++		this.hold = function(){
++			hold = true;
++		};
++
++		this.unhold = function(){
++			hold = false;
++		};
++
++		this.isHold = function(){
++			return hold;
++		};
+ 	};
+ 	return new Editor();
+ });
+diff --git a/static/picsio-edit/src/core/imageSlices.js b/static/picsio-edit/src/core/imageSlices.js
+deleted file mode 100644
+index e60c7cd..0000000
+--- a/static/picsio-edit/src/core/imageSlices.js
++++ /dev/null
+@@ -1,38 +0,0 @@
+-	
+-	/**
+-	* ImageSlices class
+-	*
+-	* @class ImageSlices
+-	* @constructor
+-	*/
+-	
+-	var ImageSlices = function(slices, croppedImageSlices){
+-		this.recentSlices = slices;
+-		this.croppedImageSlices = croppedImageSlices;
+-
+-	}
+-
+-	ImageSlices.prototype.getSlices = function(){
+-		return this.recentSlices
+-	}
+-
+-	ImageSlices.prototype.getCroppedSlices = function(){
+-		return this.croppedImageSlices
+-	}
+-
+-	// ImageSlices.prototype.setRecentSlices = function(recentSlices){
+-	// 	this.recentSlices.slices = recentSlices
+-	// }
+-
+-	// ImageSlices.prototype.setOriginalSlices = function(croppedImageSlices){
+-	// 	this.croppedImageSlices.slices = croppedImageSlices
+-	// }
+-
+-	// ImageSlices.prototype.isOriginalSlicesPresent = function(){
+-	// 	return this.croppedImageSlices != null
+-	// }
+-
+-	define([], function(){
+-		return ImageSlices;
+-	});
+-	
+\ No newline at end of file
+diff --git a/static/picsio-edit/src/core/picsEdit.js b/static/picsio-edit/src/core/picsEdit.js
+index dd1ace9..72da8c9 100644
+--- a/static/picsio-edit/src/core/picsEdit.js
++++ b/static/picsio-edit/src/core/picsEdit.js
+@@ -25,7 +25,8 @@ define(['editor',
+ 		'pluginEdge',
+ 		'pluginColorGetter',
+ 		'pluginGradient',
+-		'pluginShortcuts'],
++		'pluginShortcuts',
++		'pluginXmp'],
+ 
+ 		function(editor,
+ 		Invert,
+@@ -54,7 +55,8 @@ define(['editor',
+ 		Edge,
+ 		ColorGetter,
+ 		Gradient,
+-		Hotkeys){
++		Hotkeys,
++		Xmp){
+ 
+ 		
+ 	"use strict";
+@@ -86,7 +88,8 @@ define(['editor',
+ 		edge: Edge,
+ 		colorGetter: ColorGetter,
+ 		gradient: Gradient,
+-		hotkeys: Hotkeys
++		hotkeys: Hotkeys,
++		xmp: Xmp
+ 	};
+ 
+ 	editor.plugins = plugins;
+diff --git a/static/picsio-edit/src/core/pluginManager.js b/static/picsio-edit/src/core/pluginManager.js
+index fe8e3fe..3a99b81 100644
+--- a/static/picsio-edit/src/core/pluginManager.js
++++ b/static/picsio-edit/src/core/pluginManager.js
+@@ -25,8 +25,7 @@ define(['utils', 'signal', 'keypress'], function(utils, signal, keypress){
+ 	};
+ 
+ 	pluginManager.prototype.open = function(){
+-		// COupled need to think how to fix it!!
+-		if(!this.isOpened && !editor.isPluginOpen()){
++		if(!editor.isPluginOpen() && !editor.isHold()){
+ 			this.isOpened = true;
+ 			this.start();
+ 		}
+@@ -71,6 +70,56 @@ define(['utils', 'signal', 'keypress'], function(utils, signal, keypress){
+ 		
+ 	};
+ 
++	// Common preparation method for common plugins
++	pluginManager.prototype.prepareDataToProcessing = function(slices, params){
++		for(var i = 0; i < slices.length; i++){
++			slices[i]["params"] = utils.deepCopy(params);
++		}
++		// Some filters need additional lines for ariphmetic operation
++		if(params.additionalLines){
++			for(var i = 0; i < slices.length; i++){
++				var topLine, bottomLine;
++				slices[i]["params"].lineList = {};
++
++				if(i === 0){
++					topLine = null;
++				}else{
++					var prevSlice = slices[i-1];
++					topLine = prevSlice.data.subarray((prevSlice.data.length - prevSlice.width * 4), prevSlice.data.length);
++				}
++
++				if(i === slices.length - 1){
++					bottomLine = null;
++				}else{
++					var nextSlice = slices[i+1];
++					bottomLine = nextSlice.data.subarray(0, nextSlice.width*4);
++				}
++
++				slices[i]["params"].lineList = {
++					top: topLine,
++					bottom: bottomLine
++				};
++			}
++		}
++
++		return slices;
++	};
++
++	pluginManager.prototype.prepare = function(slices, params){
++		return this.prepareDataToProcessing(slices, params);
++	};
++
++	// worker, mainThread
++	pluginManager.prototype.runningMode = 'worker';
++
++	pluginManager.prototype.getRunningMode = function(){
++		return this.runningMode;
++	};
++
++	pluginManager.prototype.isStateOperation = function(){
++		return (this.modificationType === 'state') ? true : false;
++	};
++
+ 	/**
+ 	 * Used for make extension(plugin)
+ 	 * @method extend
+diff --git a/static/picsio-edit/src/core/slicedImage.js b/static/picsio-edit/src/core/slicedImage.js
+index e22a375..4da6d54 100644
+--- a/static/picsio-edit/src/core/slicedImage.js
++++ b/static/picsio-edit/src/core/slicedImage.js
+@@ -217,11 +217,9 @@ define(['decode', 'slicer'], function(decoder, slicer){
+ 				var position = iWidth * 4 * y + x*4 - sliceNumber*300*iWidth*4;
+ 				//debugger;
+ 				return [this.data.slices[sliceNumber].data[position],
+-								this.data.slices[sliceNumber].data[position + 1],
+-								this.data.slices[sliceNumber].data[position + 2],
+-								this.data.slices[sliceNumber].data[position + 3]];
+-					
+-				
++						this.data.slices[sliceNumber].data[position + 1],
++						this.data.slices[sliceNumber].data[position + 2],
++						this.data.slices[sliceNumber].data[position + 3]];
+ 			}
+ 		};
+ 	};
+diff --git a/static/picsio-edit/src/core/taskManager.js b/static/picsio-edit/src/core/taskManager.js
+index d99c470..1309a6d 100644
+--- a/static/picsio-edit/src/core/taskManager.js
++++ b/static/picsio-edit/src/core/taskManager.js
+@@ -4,13 +4,16 @@ define(['utils',
+ 		'canvas',
+ 		'slicedImage',
+ 		'converter',
+-		'crop'],
+-		function(utils,
+-				signal,
+-				canvas,
+-				slicedImage,
+-				converter,
+-				crop){
++		'crop',
++		'q'],
++		function(
++		utils,
++		signal,
++		canvas,
++		slicedImage,
++		converter,
++		crop,
++		Q){
+ 
+ 	/**
+ 	* Run major commands for execute operation with imageData 
+@@ -30,6 +33,34 @@ define(['utils',
+ 
+ 		var self = this;
+ 
++		var progressCallback = function(total, length){
++			var progress = 1-total/length;
++			signal.publish('progressSet', {value: progress*100});
++		};
++
++		var updateImageData = function(imageData){
++			var clonnedSlices = utils.cloneSlices(imageData);
++			editor.getImageData().update(clonnedSlices);
++		};
++
++		var finishExecuteQueue = function(imageSlices, next){
++			var p = new Parallel(imageSlices.slices);
++			p.map(utils.float32ToClamped8Array).then(function(slices){
++				next && next({
++					width: imageSlices.width,
++					height: imageSlices.height,
++					slices: slices
++				});
++			});
++		};
++
++		var finishExecuteItteration = function(imageSlices, next, shouldStoreToImageSlices){
++			if(shouldStoreToImageSlices){
++				updateImageData(imageSlices);
++			}
++			finishExecuteQueue(imageSlices, next);
++		};
++
+ 		/**
+ 		 * Description
+ 		 * @method execute
+@@ -38,256 +69,246 @@ define(['utils',
+ 		 * @return 
+ 		 */
+ 		this.execute = function(cb, params){
+-			var self = this;
++			var self = this, deferred = Q.defer();
+ 			
+ 			if(!self.started){
+-				self.startWorker(cb, params);
++				self.startSingleTask(cb, params).then(deferred.resolve);
+ 			}else{
+ 				self.task[0] = {
+ 					cb: cb,
+ 					params: params
+ 				};
+ 			}
++			return deferred.promise;
+ 		};
+ 
++		this.taskDictionary = {
++			worker: function(cb, params){
++				var self = this,
++					imageSlices = editor.getImageData(),
++					plugin = editor.getPlugin(params.title),
++					runningMode = plugin.getRunningMode(),
++					progressCallback = function(progress){
++						signal.publish('progressSet', {value: progress*100});
++					},
++					clonnedSlices = imageSlices.clone(),
++					data = plugin.prepare(clonnedSlices.slices, params),
++					p = new Parallel(data),
++					deferred = Q.defer();
+ 
+-		this.getProcessedImageData = function(cb, imageSlices, params, middleware, next){
+-			if(!self.started){
+-				var slices = utils.cloneSlices(imageSlices);
+-				var PreparedImageSlices = self.prepareDataToProcessing(slices.slices, params);
+-				var paralelForOriginalCanvas = new Parallel(PreparedImageSlices);
++				signal.publish('progressStart');
+ 				
+-				paralelForOriginalCanvas
+-				.map(cb)
+-				.then(middleware)
+-				.map(utils.float32ToClamped8Array)
+-				.then(next);
++				p.map(cb,progressCallback).map(utils.float32ToClamped8Array).then(function(slices){
+ 
+-			}else{
+-				self.task[0] = {
+-					cb: cb,
+-					params: params
+-				};
++					var imageData = {
++						width: clonnedSlices.width,
++						height: clonnedSlices.height,
++						slices: slices
++					};
++					
++					if(editor.canvas.wasCropped){
++						imageData = crop.cropSlicedImageData(imageData, crop.drawCoords);
++					}
++
++					signal.publish('drawImageData', imageData, true);
++					
++					
++					p = null;
++					clonnedSlices = null;
++					
++					if(self.task.length){
++						var task = self.task.pop();
++						self.startSingleTask(task.cb, task.params);
++					}else{
++						self.started = false;
++						deferred.resolve();
++					}
++
++					
++
++				});
++				return deferred.promise;
++			},
++
++			mainThread: function(cb, params){
++				var deferred = Q.defer();
++				var plugin = editor.getPlugin(params.title);
++				cb.apply(plugin,[]);
++				self.started = false;
++				deferred.resolve();
++				return deferred.promise;
+ 			}
+ 		};
+ 
+ 		/**
+ 		 * Description
+-		 * @method startWorker
++		 * @method startTask
+ 		 * @param {} cb
+ 		 * @param {} params
+ 		 * @return 
+ 		 */
+-		this.startWorker = function(cb, params){
+-
++		this.startSingleTask = function(cb, params){
+ 			var self = this,
+-				imageSlices = editor.getImageData();
+-
+-			self.started = true;
+-			
+-			var callback = params.callback || function(){};
+-			delete params.callback;
+-
+-			var progressCallback = function(progress){
+-				signal.publish('progressSet', {value: progress*100});
+-			};
+-
+-			signal.publish('progressStart');
+-			
+-			var recentSlices = imageSlices.clone();
+-
+-			if(params.prepare){
+-				var plugin = editor.getPlugin(params.title);
+-				params = plugin.prepare(params, crop.drawCoords);
+-				var data = self.mergeSlices(recentSlices.slices, params);
+-			}else{
+-				var data = self.prepareDataToProcessing(recentSlices.slices, params);
+-			}
+-			
+-			var p = new Parallel(data);
+-			
+-			p.map(cb,progressCallback)
+-			.map(utils.float32ToClamped8Array)
+-			.then(function(slices){
+-
+-				var imageData = {
+-					width: recentSlices.width,
+-					height: recentSlices.height,
+-					slices: slices
+-				};
+-				
+-				if(editor.canvas.wasCropped){
+-					imageData = crop.cropSlicedImageData(imageData, crop.drawCoords);
+-				}
+-
+-				// drawing
+-				signal.publish('drawImageData', imageData, true);
+-				
+-				
+-				// really need?
+-				callback();
+-				// clear memory
+-				p = null;
+-				recentSlices = null;
+-				
+-				if(self.task.length){
+-					var task = self.task.pop();
+-					self.startWorker(task.cb, task.params);
+-					 
+-				}else{
+-					console.log("finished"); 
+-					self.started = false;
+-				}
+-
+-			});
+-
+-			console.timeEnd("mainThread");
+-			
++				plugin = editor.getPlugin(params.title),
++				runningMode = plugin.getRunningMode(),
++				deferred = Q.defer();
+ 				
++			self.started = true;
++			self.taskDictionary[runningMode].apply(self, arguments).then(deferred.resolve);
++			return deferred.promise;
+ 		};
+ 
+ 		/**
+-		 * Description
+-		 * @method getWorkerData
+-		 * @param {} callback
++		 * Use to apply task queue to setted ImageSlice
++		 * @method executeQueue
++		 * @param {} data
++		 * @param {} shouldStoreToImageSlices
+ 		 * @return 
+ 		 */
+-		this.getWorkerData = function(callback){
+-			var self = this;
+-
+-			self.e.publish( 'editor.execute.start');
+-			var token = self.e.subscribe( 'task.imageData', function(event, imageSlices){
+-				self.e.unsubscribe(token);
+-				callback.call(self, imageSlices);
+-			});
+-		};
++		this.executeMultiTaskQueue = function(data, shouldStoreToImageSlices){
++			if(typeof shouldStoreToImageSlices != 'boolean') shouldStoreToImageSlices = true;
++			
++			var next = data.next;
++			delete data.next;
+ 
+-		this.mergeSlices = function(slices, additionalS){
+-			if(slices.length !== additionalS.length){
+-				console.error('Incorrect merged data');
+-				return;
+-			}
++			var queue = data.queue,
++				imageSlices = data.slices,
++				latestOperation = data.latest,
++				length,
++				self = this,
++				temporaryImageSlices,
++				runTask = function(queue, imageSlices){
++					var operation = queue.shift();
++					var plugin = editor.getPlugin(operation.title),
++						cb = plugin.apply;
++					
++					progressCallback(queue.length, length);
++					
++					if(plugin.isStateOperation()){
++						if(queue.length){
++							runTask(queue, imageSlices);
++							p = null;
++						}else{
++							finishExecuteItteration(imageSlices, next, shouldStoreToImageSlices);
++						}
++						return;
++					}
++					
++					// need to be inside of method
+ 
+-			for(var i = 0; i < slices.length; i++){
+-				slices[i]['params'] = {};
+-				slices[i]['params']['gradient'] = additionalS[i].data;
+-			}
++					//If need additional preparation for sending data into worker
++					// Make it in the condition
++					var data = plugin.prepare(imageSlices.slices, operation);
++					
++					var p = new Parallel(data);
+ 
+-			return slices;
+-		},
++					p.map(cb).then(function(slices){
++						
++						for(var i = 0; i < slices.length; i++){
++							delete slices[i].params;
++						}
++						
++						if(queue.length){
++							runTask(queue, imageSlices);
++							p = null;
++						}else{
++							var iData = {
++								width: imageSlices.width,
++								height: imageSlices.height,
++								slices: slices
++							};
++							if(shouldStoreToImageSlices){
++								updateImageData(iData);
++							}
+ 
+-		/**
+-		 * Description
+-		 * @method prepareDataToProcessing
+-		 * @param {} slices
+-		 * @param {} params
+-		 * @return slices
+-		 */
+-		this.prepareDataToProcessing = function(slices, params){
+-			for(var i = 0; i < slices.length; i++){
+-				slices[i]["params"] = utils.deepCopy(params);
++							finishExecuteQueue(imageSlices, next);
++						}
++					});
++				},
++				reverseTask = function(operation){
++					var plugin = editor.getPlugin(operation.title);
++					plugin.apply.call(plugin,[true]);
++				};
++			
++			// Latest operation in stack.
++			if(!data.queue){
++				var plugin = editor.getPlugin(latestOperation.title);
++				if(latestOperation && plugin.isStateOperation()){
++					reverseTask(latestOperation);
++				}
++				finishExecuteItteration(imageSlices, next, shouldStoreToImageSlices);
++				return;
+ 			}
+-			// Some filters need additional lines for ariphmetic operation
+-			if(params.additionalLines){
+-				for(var i = 0; i < slices.length; i++){
+-					var topLine, bottomLine;
+-					slices[i]["params"].lineList = {};
+-
+-					if(i === 0){
+-						topLine = null;
+-					}else{
+-						var prevSlice = slices[i-1];
+-						topLine = prevSlice.data.subarray((prevSlice.data.length - prevSlice.width * 4), prevSlice.data.length);
+-					}
+ 
+-					if(i === slices.length - 1){
+-						bottomLine = null;
+-					}else{
+-						var nextSlice = slices[i+1];
+-						bottomLine = nextSlice.data.subarray(0, nextSlice.width*4);
+-					}
++			// If stack is full needs call recurcively runTask to apply all operations
++			if(queue.length){
+ 
+-					slices[i]["params"].lineList = {
+-						top: topLine,
+-						bottom: bottomLine
+-					};
++				length = queue.length;
++
++				signal.publish('progressStart');
++				var plugin = editor.getPlugin(latestOperation.title);
++				if(latestOperation && plugin.isStateOperation()){
++					progressCallback(0, queue.length);
++					reverseTask(latestOperation);
++				}else{
++					runTask(queue, imageSlices);	
+ 				}
+-			}
+ 
+-			return slices;
++			}else{
++				var to8 = new Parallel(imageSlices.slices);
++				to8.map(utils.float32ToClamped8Array).then(function(slices){
++					next && next({
++						width: imageSlices.width,
++						height: imageSlices.height,
++						slices: slices
++					});
++				});
++			}
+ 		};
+ 
+ 		/**
+ 		 * Description
+ 		 * @method executeQueue
+-		 * @param {} event
+ 		 * @param {} data
++		 * @param {} shouldStoreToImageSlices
+ 		 * @return 
+ 		 */
+-		this.executeQueue = function(event, data, shouldStoreToImageSlices){
+-			if(typeof shouldStoreToImageSlices != 'boolean') shouldStoreToImageSlices = true;
++		this.executePixelOperationQueue = function(data){
+ 			var next = data.next;
++			var deferred = Q.defer();
+ 			delete data.next;
+ 
+-			var progressCallback = function(progress){
+-				signal.publish('progressSet', {value: progress*100});
+-			};
+-			
+-
+ 			var queue = data.queue,
+ 				imageSlices = data.slices,
+-				length = queue.length,
++				length,
+ 				self = this,
+ 				temporaryImageSlices,
+ 				runTask = function(queue, imageSlices){
+-
+-					var operation = params = queue.shift();
+-					var cb = editor.getPlugin(operation.title).apply;
+-					progressCallback(1-queue.length/length);
+-					// need to be inside of method
+-					if(operation.coords){
+-						var imageData = utils.slicesListF32ToImageData(imageSlices.slices),
+-							coords = operation.coords;
+-						var canvas = document.createElement('canvas'),
+-							ctx = canvas.getContext('2d');
+-						canvas.width = imageData.width;
+-						canvas.height = imageData.height;
+-						ctx.putImageData(imageData, 0, 0);
+-						var localImageData = ctx.getImageData(coords.x, coords.y, coords.w, coords.h);
+-						temporaryImageSlices = utils.cloneSlices(imageSlices);
+-						//imageSlices = null;
+-						imageSlices = converter.imageDataToSlicedFloat32(localImageData);
+-					}
+-
+-					if(params.prepare){
+-						var plugin = editor.getPlugin(params.title);
+-						if(params.gradient){
+-							params.gradient.size.width = imageSlices.width;
+-							params.gradient.size.height = imageSlices.height;
++					var operation = queue.shift();
++					var plugin = editor.getPlugin(operation.title),
++						cb = plugin.apply;
++					
++					if(plugin.isStateOperation()){
++						if(queue.length){
++							runTask(queue, imageSlices);
++							p = null;
++						}else{
++							finishExecuteItteration(imageSlices, deferred.resolve, false);
+ 						}
+-						params = plugin.prepare(params);
+-						var data = self.mergeSlices(imageSlices.slices, params);
+-					}else{
+-						var data = self.prepareDataToProcessing(imageSlices.slices, params);
++						return;
+ 					}
++					
++					progressCallback(queue.length, length);
++					// need to be inside of method
+ 
+-					//data.length = 6
++					//If need additional preparation for sending data into worker
++					// Make it in the condition
++					var data = plugin.prepare(imageSlices.slices, operation);
+ 					
+ 					var p = new Parallel(data);
+ 
+-					//debugger;
+ 					p.map(cb).then(function(slices){
+ 						
+-						if(slices[0].params && slices[0].params.coords){
+-							imageSlices = utils.cloneSlices(editor.insertLocal(slices[0].params.coords, {
+-								slices: slices,
+-								width: coords.w,
+-								height: coords.h
+-							}, temporaryImageSlices));
+-							
+-							temporaryImageSlices = undefined;
+-						}
+-						
+ 						for(var i = 0; i < slices.length; i++){
+ 							delete slices[i].params;
+ 						}
+@@ -296,31 +317,16 @@ define(['utils',
+ 							runTask(queue, imageSlices);
+ 							p = null;
+ 						}else{
+-							console.log(imageSlices);
+-							if(shouldStoreToImageSlices){
+-								var clonnedSlices = utils.cloneSlices({
+-									width: imageSlices.width,
+-									height: imageSlices.height,
+-									slices: slices
+-								});
+-								editor.getImageData().update(clonnedSlices);
+-							}
+-
+-							var p = new Parallel(imageSlices.slices);
+-							p.map(utils.float32ToClamped8Array).then(function(slices){
+-								next && next({
+-									width: imageSlices.width,
+-									height: imageSlices.height,
+-									slices: slices
+-								});
+-							});
++							finishExecuteItteration(imageSlices, deferred.resolve, false);
+ 						}
+ 					});
+ 				};
+ 
++			// If stack is full needs call recurcively runTask to apply all operations
+ 			if(queue.length){
++				length = queue.length;
+ 				signal.publish('progressStart');
+-				runTask(queue, imageSlices);	
++				runTask(queue, imageSlices);
+ 			}else{
+ 				var to8 = new Parallel(imageSlices.slices);
+ 				to8.map(utils.float32ToClamped8Array).then(function(slices){
+@@ -331,7 +337,9 @@ define(['utils',
+ 					});
+ 				});
+ 			}
+-		}
++
++			return deferred.promise;
++		};
+ 
+ 		/**
+ 		 * Description
+@@ -340,43 +348,96 @@ define(['utils',
+ 		 * @param {} command
+ 		 * @return 
+ 		 */
+-		this.runCommand = function(event, command){
+-
++		this.runCommand = function(event, command, next){
++			
+ 			var imageSlices = editor.getImageData().clone();
+ 
+-			var operation = params = command.task;
+-			var cb = editor.getPlugin(operation.title).apply;
++			var operation = command;
++
++			var plugin = editor.getPlugin(operation.title);
++
++			var cb = plugin.apply;
++
++			var data;
+ 			
+-			if(params.prepare){
+-				var plugin = editor.getPlugin(params.title);
+-				params = plugin.prepare(params, crop.drawCoords);
+-				var data = self.mergeSlices(imageSlices.slices, params);
+-			}else{
+-				var data = self.prepareDataToProcessing(imageSlices.slices, params);
++			if(operation.coords && operation.title === 'redEyes'){
++				var imageData = utils.slicesListF32ToImageData(imageSlices.slices),
++					coords = operation.coords;
++				var canvas = document.createElement('canvas'),
++					ctx = canvas.getContext('2d');
++				canvas.width = imageData.width;
++				canvas.height = imageData.height;
++				ctx.putImageData(imageData, 0, 0);
++				var localImageData = ctx.getImageData(coords.x, coords.y, coords.w, coords.h);
++				temporaryImageSlices = utils.cloneSlices(imageSlices);
++				//imageSlices = null;
++				imageSlices = converter.imageDataToSlicedFloat32(localImageData);
+ 			}
+ 
++			var data = plugin.prepare(imageSlices.slices, operation);
++
+ 			var p = new Parallel(data);
+ 			
+-			p.map(cb).map(utils.float32ToClamped8Array).then(function(slices){
+-				
+-				imageSlices.slices = slices;
+-
+-				picsEdit.canvas.cachedDraw({
+-					width: imageSlices.width,
+-					height: imageSlices.height,
+-					slices: slices
++			if(plugin.isStateOperation()){
++				plugin.apply.apply(plugin, [false, operation]);
++				next && next();
++			}else{
++				p.map(cb).map(utils.float32ToClamped8Array).then(function(slices){
++					var imageData = {
++						width: imageSlices.width,
++						height: imageSlices.height,
++						slices: slices
++					};
++					if(editor.canvas.wasCropped){
++						imageData = crop.cropSlicedImageData(imageData, crop.drawCoords);
++					}
++					signal.publish('drawImageData', imageData, true);
++					self.e.publish('editor.update.imageData');
++					p = null;
++					next && next();
+ 				});
++			}
++		};
+ 
+-				self.e.publish('editor.update.imageData');
++		this.runCommandStack = function(e, data){
++			var stack = data.queue,
++				operation = stack.shift(), self = this;
+ 
+-				p = null;
++			if(operation){
++				self.runCommand(null, operation, function(){
++					self.runCommandStack(e, {queue: stack});
++				});
++			}
++		};
++
++		this.getProcessedImageData = function(cb, imageSlices, params, middleware, next){
++			// fall
++			if(!self.started){
++				var slices = utils.cloneSlices(imageSlices);
++				var PreparedImageSlices = self.prepareDataToProcessing(slices.slices, params);
++				var paralelForOriginalCanvas = new Parallel(PreparedImageSlices);
+ 				
+-			});
+-			
+-		}
++				paralelForOriginalCanvas
++				.map(cb)
++				.then(middleware)
++				.map(utils.float32ToClamped8Array)
++				.then(next);
++
++			}else{
++				self.task[0] = {
++					cb: cb,
++					params: params
++				};
++			}
++		};
++
++
+ 
+-		this.e.subscribe("makeUndo", this.executeQueue.bind(self));
+-		this.e.subscribe("makeRedo", this.runCommand.bind(self));
++		this.e.subscribe("makeUndo", function(e, data){
++			self.executeMultiTaskQueue(data, true);
++		});
++		this.e.subscribe("makeRedo", this.runCommand.bind(this));
++		this.e.subscribe("runCommandStack", this.runCommandStack.bind(this));
+ 
+ 	}
+ 
+diff --git a/static/picsio-edit/src/core/undoManager.js b/static/picsio-edit/src/core/undoManager.js
+index 1f1f9ca..0c224d7 100644
+--- a/static/picsio-edit/src/core/undoManager.js
++++ b/static/picsio-edit/src/core/undoManager.js
+@@ -16,7 +16,7 @@ define(['signal',
+ 	var UndoManager = function(snap, ready, testEnv){
+ 		
+ 		// every 5 save into indexed db
+-		const snapShotStep = 5;
++		var snapShotStep = 5;
+ 		
+ 		var self = this;
+ 
+@@ -48,73 +48,64 @@ define(['signal',
+ 		 * @return 
+ 		 */
+ 		this.proceedUndo = function(){
+-			console.log('proceedUndo');
+-			//self.publish('loadingStart');
+ 			var snapshotPosition = getLastSnapshotPosition(position);
+ 			var index = taskQueue[snapshotPosition].timestamp;
++			var next = function(data){
++				if(editor.canvas.isCropMode){
++					var tempCtx = editor.canvas.virtualCachedDraw(data);
++					var croppedData = editor.canvas.cropPartOfImage(tempCtx, crop.drawCoords);
++					editor.canvas.quickDraw(0, 0, croppedData);
++				}else{
++					editor.canvas.cachedDraw(data);	
++				}
++			};
+ 
+-				this.getSnapshot(index, function(e){
+-					try{
+-						var storedItem = e.target.result;
+-						if(position - 1 === snapshotPosition){
+-							if(editor.canvas.isCropMode){
+-								var tempCtx = editor.canvas.virtualCachedDraw({
+-									width: storedItem.width,
+-									height: storedItem.height,
+-									slices: utils.float32ToClamped8ArraySlices(storedItem.slices)
+-								});
+-								var croppedData = editor.canvas.cropPartOfImage(tempCtx, crop.drawCoords);
+-								editor.canvas.quickDraw(0, 0, croppedData);
+-								editor.getImageData().setCroppedDataFromImageData(croppedData);
+-							}else{
+-								self.publish("drawUndo", {slices: storedItem}, true);
++			this.getSnapshot(index, function(e){
++				try{
++					var storedItem = e.target.result;
++					if(position - 1 === snapshotPosition){
++						
++						self.publish("makeUndo", {
++							slices: storedItem, 
++							latest: taskQueue[position],
++							next: next
++						});
++						
++					}else{
++						self.publish("makeUndo", {
++							slices: storedItem, 
++							queue: getTaskQueue(snapshotPosition, position),
++							latest: taskQueue[position],
++							next: next
++						});
++						self.publish('loadingFinish');
++					}
++
++					self.prevState();		
++				}catch(e){
++					// without indexed db
++					console.log(position);
++					if(position == 1){
++						self.publish("drawUndo", {slices: utils.cloneSlices(snapshotNoIndexdbStore)});
++						self.prevState();
++					}else{
++						var storedItem = snapshotNoIndexdbStore;
++						var operationsQueue = self.getQueue().slice(0, position-1);
++						
++						self.publish("makeUndo", {
++							slices: utils.cloneSlices(storedItem), 
++							queue: operationsQueue,
++							next: function(data){
++								editor.canvas.cachedDraw(data);
++								self.prevState();
+ 							}
+-							
+-							editor.getImageData().update(storedItem);
+-							
+-							//self.publish('loadingFinish');
+-						}else{
+-							// draw apply filters to last available snapshot
+-							self.publish("makeUndo", {
+-								slices: storedItem, 
+-								queue: getTaskQueue(snapshotPosition, position),
+-								next: function(data){
+-									if(editor.canvas.isCropMode){
+-										var tempCtx = editor.canvas.virtualCachedDraw(data);
+-										var croppedData = editor.canvas.cropPartOfImage(tempCtx, crop.drawCoords);
+-										editor.canvas.quickDraw(0, 0, croppedData);
+-									}else{
+-										editor.canvas.cachedDraw(data);	
+-									}
+-								}
+-							});
+-							self.publish('loadingFinish');
+-						}
+-						self.prevState();		
+-					}catch(e){
+-						// without indexed db
+-						console.log(position);
+-						if(position == 1){
+-							self.publish("drawUndo", {slices: utils.cloneSlices(snapshotNoIndexdbStore)});
+-							self.prevState();
+-						}else{
+-							var storedItem = snapshotNoIndexdbStore;
+-							var operationsQueue = self.getQueue().slice(0, position-1);
+-							
+-							self.publish("makeUndo", {
+-								slices: utils.cloneSlices(storedItem), 
+-								queue: operationsQueue,
+-								next: function(data){
+-									editor.canvas.cachedDraw(data);
+-									self.prevState();
+-								}
+-							});
+-						}
+-						//self.publish('loadingFinish');
++						});
+ 					}
+-					
+-				});
+-		}
++					//self.publish('loadingFinish');
++				}
++				
++			});
++		};
+ 
+ 		/**
+ 		 * Redo implement logic
+@@ -123,20 +114,7 @@ define(['signal',
+ 		 * @return 
+ 		 */
+ 		this.proceedRedo = function(){
+-			console.log('proceedRedo');
+-			
+-			if(position % snapShotStep == 0){
+-				var index = taskQueue[position].timestamp;
+-				
+-				this.getSnapshot(index, function(e){
+-					var storedItem = e.target.result;
+-					
+-					self.publish("drawUndo", {slices: storedItem});
+-
+-				});
+-			}else{
+-				this.publish("makeRedo", { task: taskQueue[position] });
+-			}
++			this.publish("makeRedo", taskQueue[position]);
+ 		};
+ 
+ 
+@@ -172,6 +150,15 @@ define(['signal',
+ 
+ 		this.getTaskQueue = getTaskQueue;
+ 
++		this.setTaskQueue = function(queue){
++			if(taskQueue.length === 1){
++				taskQueue = taskQueue.concat(queue);
++				position+=queue.length;
++			}else{
++				console.warn('Imposible operation. TaskQueue is not empty.');
++			}
++		};
++
+ 		/**
+ 		 * Description
+ 		 * @method nextState
+@@ -257,8 +244,9 @@ define(['signal',
+ 		 * @param {} p
+ 		 * @return LogicalExpression
+ 		 */
+-		this.checkSnapshot = function(p){
+-			var pos  = p || position;
++		this.checkSnapshot = function(operation){
++			var pos  = position;
++
+ 			return (pos !== 0 && pos % snapShotStep == 0);
+ 		};
+ 
+@@ -272,7 +260,6 @@ define(['signal',
+ 		this.add = function(eventName, data){
+ 			var self = this;
+ 			
+-			// debugger;
+ 			this.publish('editor.update.imageData',{
+ 				next: function(){
+ 					// remove data from queue if new command after undo was executed
+@@ -281,16 +268,19 @@ define(['signal',
+ 					// move position
+ 					self.nextState();
+ 					
+-					if(self.checkSnapshot()){
++					if(self.checkSnapshot(data)){
+ 						// every 5 save to indexed db
+-						self.saveSnapshot(editor.getImageData().copyFloat32Slices()).then(function(e){
++						var slices = editor.getImageData().copyFloat32Slices();
++						editor.hold();
++
++						self.saveSnapshot(slices).then(function(e){
+ 
+ 							var index = e.target.result;
+ 							
+ 							// add db key to entity
+ 							data.timestamp = index;
+ 							taskQueue.push(data);
+-							console.log("SnapShot added");
++							editor.unhold();
+ 							
+ 						}).fail(function(e){
+ 							console.log('fail');
+@@ -298,13 +288,25 @@ define(['signal',
+ 
+ 					}else{
+ 						taskQueue.push(data);	
+-						console.log("SnapShot added");
+ 					}
+ 				},
+ 				data: data
+ 			}); 
+ 		};
+ 
++		this.remove = function(title){
++			var index;
++
++			for(var i = 0; i < taskQueue.length; i++){
++				if(taskQueue[i].title === title){
++					index = i;
++				}
++			}
++
++			if ( ~index ) taskQueue.splice(index, 1);
++			this.prevState();
++		};
++
+ 		/**
+ 		 * Description
+ 		 * @method checkClear
+@@ -320,6 +322,16 @@ define(['signal',
+ 			return true;
+ 		};
+ 
++		this.findPreviousOperationByTitle = function(title){
++			var counter = position + 1;
++			while(counter--){
++				if(taskQueue[counter] && taskQueue[counter].title === title){
++					return taskQueue[counter];
++				}
++			}
++			return false;
++		};
++
+ 		/**
+ 		 * Description
+ 		 * @method getQueue
+@@ -331,6 +343,28 @@ define(['signal',
+ 
+ 		/**
+ 		 * Description
++		 * @method getQueue
++		 * @return taskQueue
++		 */
++		this.getQueueToJson = function(){
++			var queueToJson = taskQueue.slice(1),
++				res = [];
++			for(var i = 0; i < queueToJson.length; i++){
++				var key = queueToJson[i].title;
++				var obj = {};
++				delete queueToJson[i].title;
++				delete queueToJson[i].timestamp;
++				obj[key] = queueToJson[i];
++				res.push(obj);
++			}
++			
++			return res;
++		};
++
++
++
++		/**
++		 * Description
+ 		 * @method saveSnapshot
+ 		 * @param {} snapshot
+ 		 * @param {} callback
+@@ -342,14 +376,13 @@ define(['signal',
+ 			Q.stopUnhandledRejectionTracking();
+ 			
+ 			db.saveSnapshot(snapshot, function(e){
+-				console.log("saved");
+ 				deferred.resolve(e);
+ 			}, function(e){
+ 				deferred.reject(e);
+ 			});
+ 
+ 			return deferred.promise;
+-		}
++		};
+ 
+ 		/**
+ 		 * Description
+@@ -360,7 +393,7 @@ define(['signal',
+ 		 */
+ 		this.getSnapshot = function(id, next){
+ 			db.getSnapshot(id, next);
+-		}
++		};
+ 
+ 		/**
+ 		 * Description
+@@ -370,7 +403,7 @@ define(['signal',
+ 		 */
+ 		this.popSnapShot = function(id){
+ 			// get last snapshot and remove
+-		}
++		};
+ 
+ 		/**
+ 		 * Description
+@@ -380,11 +413,15 @@ define(['signal',
+ 		 */
+ 		this.snapshotCount = function(success){
+ 			db.count(success)
+-		}
++		};
+ 
+ 
+ 		this.subscribe('state.added', this.add.bind(this));
+ 
++		this.subscribe('state.removed', function(e, params){
++			self.remove(params.title);
++		});
++
+ 		this.subscribe('undo', this.undo.bind(this));
+ 		this.subscribe('redo', this.redo.bind(this));
+ 
+@@ -396,6 +433,7 @@ define(['signal',
+ 		 * @return void
+ 		 */
+ 		this.reset = function(imageSlices){
++			var deferred = Q.defer();
+ 			taskQueue.splice(0, Number.MAX_VALUE);
+ 			position = 0;
+ 
+@@ -404,11 +442,13 @@ define(['signal',
+ 			self.saveSnapshot(imageSlices.copyFloat32Slices()).then(function(e){
+ 				var index = e.target.result;
+ 				taskQueue.push({timestamp: index});
++				deferred.resolve();
+ 				console.log("resave");
+ 			}).fail(function(e){
+-				// TODO: Handle error
++				deferred.reject();
+ 				console.log("fail");
+ 			});
++			return deferred.promise;
+ 		};
+ 
+ 		this.storeNoIndexdb = function(snapshot){
+diff --git a/static/picsio-edit/src/lib/indexeddb.js b/static/picsio-edit/src/lib/indexeddb.js
+index 1268577..591489b 100644
+--- a/static/picsio-edit/src/lib/indexeddb.js
++++ b/static/picsio-edit/src/lib/indexeddb.js
+@@ -165,7 +165,9 @@
+ 		
+ 		var request = objectStore.get(id);
+ 
+-		request.onsuccess = callback;
++		request.onsuccess = function(e){
++			callback(e);	
++		};
+ 
+ 		request.onerror = function(e) {
+ 			console.log("Error Getting: ", e);
+diff --git a/static/picsio-edit/src/plugins/brightness/plugin.js b/static/picsio-edit/src/plugins/brightness/plugin.js
+index dd8561d..956a349 100644
+--- a/static/picsio-edit/src/plugins/brightness/plugin.js
++++ b/static/picsio-edit/src/plugins/brightness/plugin.js
+@@ -52,6 +52,7 @@ define(['button',
+ 				id: 'brightness',
+ 				onChange: function(value){
+ 					taskManager.execute(self.apply, {
++						title: self.title,
+ 						brightness: dialog.getItem('brightness').getValue()/1000,
+ 						contrast: dialog.getItem('contrast').getValue()/100
+ 					});
+@@ -66,6 +67,7 @@ define(['button',
+ 				id: 'contrast',
+ 				onChange: function(value){
+ 					taskManager.execute(self.apply, {
++						title: self.title,
+ 						brightness: dialog.getItem('brightness').getValue()/1000,
+ 						contrast: dialog.getItem('contrast').getValue()/100
+ 					});
+@@ -102,10 +104,10 @@ define(['button',
+ 				var c = d[i*4] * contrast + adjust;
+ 				d[i*4] = c < 0 ? 0 : (c > 1 ? 1 : c);
+ 
+-				var c = d[i*4+1] * contrast + adjust;
++				c = d[i*4+1] * contrast + adjust;
+ 				d[i*4+1] = c < 0 ? 0 : (c > 1 ? 1 : c);
+ 
+-				var c = d[i*4+2] * contrast + adjust;
++				c = d[i*4+2] * contrast + adjust;
+ 				d[i*4+2] = c < 0 ? 0 : (c > 1 ? 1 : c);
+ 
+ 			}
+diff --git a/static/picsio-edit/src/plugins/crop/plugin.js b/static/picsio-edit/src/plugins/crop/plugin.js
+index cf18dad..e98e6ca 100755
+--- a/static/picsio-edit/src/plugins/crop/plugin.js
++++ b/static/picsio-edit/src/plugins/crop/plugin.js
+@@ -14,24 +14,29 @@ define(['button',
+ 						canvas,
+ 						shortcut){
+ 		
+-		var pluginCrop = pluginManager.extend({
+-				/**
+-				 * Description
+-				 * @method initialize
+-				 * @param {} parentToolbar
+-				 * @return 
+-				 */
+-
++		return pluginManager.extend({
+ 				shortcut: shortcut.transformations.crop,
+-
++				title: 'crop',
++				runningMode: 'mainThread',
++				modificationType: 'state',
++				cropped: false,
+ 				initialize: function(parentToolbar){
+ 					var self = this;
+ 
+-					this.cropCallback = function(canvas, selector, croppedData){
++
++					// need to refactor and try to remove this callback
++					this.cropCallback = function(canvas, selector, croppedData, coords){
+ 						canvas.quickDraw(0, 0, croppedData);
++						self.cropped = true;
+ 						selector.style.setProperty('display', 'none');
+-						//IT WILL SET IMAGE DATA TO CROPPED
++						
+ 						canvas.wasCropped = true;
++
++						self.publish('state.added', {
++							title: self.title,
++							coords: coords
++						}, true);
++
+ 						signal.publish('editor.update.imageData');
+ 					};
+ 
+@@ -47,6 +52,18 @@ define(['button',
+ 					btn.state = true;
+ 
+ 					crop.attachListenersForOverlayCanvas(btn);
++
++					signal.subscribe('CloseCropMode', function(){
++						if(self.cropped){
++							
++							self.cropped = false;
++							
++							self.publish('state.added', {
++								title: self.title,
++								coords: 0
++							}, true);
++						}
++					});
+ 				},
+ 
+ 				start: function(){
+@@ -54,9 +71,9 @@ define(['button',
+ 					self.publish("saveToAnalitics", ['Edit','Crop','Open']);
+ 
+ 					if(!canvas.wasCropped){
+-						signal.publish('editor.crop.start', {callback: this.cropCallback});
++						self.apply();
+ 					}else{
+-						signal.publish('editor.crop.end');
++						self.uncrop();	
+ 					}
+ 					self.state = !self.state;
+ 					this.isOpened = false;
+@@ -66,9 +83,34 @@ define(['button',
+ 
+ 				crop: null,
+ 
+-				apply: function(){}
+-		});
++				uncrop: function(){
++					var self = this;
++					signal.publish('editor.crop.end');
++				},
++
++				apply: function(reverse, operation){
++					var self = this;
+ 
+-		return pluginCrop;
++					if(reverse === undefined){
++						signal.publish('editor.crop.start', {callback: self.cropCallback}, true);
++					}else if(!reverse){
++						if(operation && operation.coords){
++							signal.publish('cropByCoords', operation, true);
++						}else{
++							signal.publish('restoreCrop', {}, true);	
++						}
++					}else{
++						// incorrect call undomanager here
++						operation = editor.undoManager.findPreviousOperationByTitle(self.title);
++						if(operation && operation.coords){
++							signal.publish('cropByCoords', operation, true);
++						}else{
++							signal.publish('restoreCrop', {}, true);	
++						}
++						
++					}
++					
++				}
++		});
+ 
+ });
+\ No newline at end of file
+diff --git a/static/picsio-edit/src/plugins/curves/plugin.js b/static/picsio-edit/src/plugins/curves/plugin.js
+index eae30cb..a61f0bf 100644
+--- a/static/picsio-edit/src/plugins/curves/plugin.js
++++ b/static/picsio-edit/src/plugins/curves/plugin.js
+@@ -47,6 +47,7 @@ define(['button',
+ 		preparePoint: function(type){
+ 			var self = this;
+ 			return {
++				title: self.title,
+ 				functionsR: self.preparePointsArray(self.curves.red.functions, 4),
+ 				pointsR: self.preparePointsArray(self.curves.red.points, 5),
+ 				functionsG: self.preparePointsArray(self.curves.green.functions, 4),
+diff --git a/static/picsio-edit/src/plugins/gradient/plugin.js b/static/picsio-edit/src/plugins/gradient/plugin.js
+index b795035..54eecc5 100644
+--- a/static/picsio-edit/src/plugins/gradient/plugin.js
++++ b/static/picsio-edit/src/plugins/gradient/plugin.js
+@@ -7,7 +7,8 @@ define(['button',
+ 		'gradientFilterUi',
+ 		'gradientGenerator',
+ 		'confirmationDialog',
+-		'signal'], function(
++		'signal',
++		'crop'], function(
+ 		Button,
+ 		pluginManager,
+ 		Dialog,
+@@ -17,7 +18,8 @@ define(['button',
+ 		gradientFilterUi,
+ 		gradientGenerator,
+ 		ConfirmationDialog,
+-		signal){
++		signal,
++		crop){
+ 
+ 	var geometry = {
+ 		getLineRectIntersectionPoints: function(point1, point2, rectSize){
+@@ -259,7 +261,7 @@ define(['button',
+ 
+ 			self.commandOption = {
+ 				title: self.title,
+-				prepare: true,
++				prepare: 1,
+ 				gradient: {
+ 					size: {
+ 						width: size.width,
+@@ -299,8 +301,32 @@ define(['button',
+ 			taskManager.execute(self.apply, self.commandOption);
+ 		},
+ 
+-		prepare: function(params, coords){
+-			return gradientGenerator.createGradient32(params.gradient.size, params.gradient.gPoints, params.gradient.colorStopList, coords).getSliceList();	
++		// moved from taskManager
++		mergeSlices: function(slices, additionalS){
++			if(slices.length !== additionalS.length){
++				console.error('Incorrect merged data');
++				return;
++			}
++
++			for(var i = 0; i < slices.length; i++){
++				slices[i]['params'] = {};
++				slices[i]['params']['gradient'] = additionalS[i].data;
++			}
++
++			return slices;
++		},
++
++		prepare: function(slices, params){
++			var self = this,
++				coords = crop.drawCoords,
++				width = slices[0].width,
++				height = 300 * (slices.length - 1) + slices[slices.length - 1].height;
++			
++
++			params.gradient.size.width = width;
++			params.gradient.size.height = height;
++			params = gradientGenerator.createGradient32(params.gradient.size, params.gradient.gPoints, params.gradient.colorStopList, coords).getSliceList();
++			return self.mergeSlices(slices, params);
+ 		},
+ 
+ 		apply: function(rgba){
+diff --git a/static/picsio-edit/src/plugins/grayscale/plugin.js b/static/picsio-edit/src/plugins/grayscale/plugin.js
+index c9cf328..4a83d56 100644
+--- a/static/picsio-edit/src/plugins/grayscale/plugin.js
++++ b/static/picsio-edit/src/plugins/grayscale/plugin.js
+@@ -47,7 +47,7 @@ define(['button',
+ 			dialog.addItem(InputRange, {
+ 				id: 'inputRange',
+ 				onChange: function(value){
+-					taskManager.execute(self.apply, {intensity: value/100});
++					taskManager.execute(self.apply, {intensity: value/100, title: self.title});
+ 				},
+ 				defaultValue: 0,
+ 				min: 0,
+diff --git a/static/picsio-edit/src/plugins/hsl/plugin.js b/static/picsio-edit/src/plugins/hsl/plugin.js
+index 644ce1d..bd2ff23 100644
+--- a/static/picsio-edit/src/plugins/hsl/plugin.js
++++ b/static/picsio-edit/src/plugins/hsl/plugin.js
+@@ -60,7 +60,9 @@ define(['button',
+ 		},
+ 
+ 		getParams: function(){
++			var self = this;
+ 			return{
++				title: self.title,
+ 				hue: this.getHueParams(),
+ 				saturation: this.getSatParams(),
+ 				lightness: this.getLightParams()
+diff --git a/static/picsio-edit/src/plugins/invert/plugin.js b/static/picsio-edit/src/plugins/invert/plugin.js
+index 426a756..dc13e28 100644
+--- a/static/picsio-edit/src/plugins/invert/plugin.js
++++ b/static/picsio-edit/src/plugins/invert/plugin.js
+@@ -27,12 +27,14 @@ define(['button',
+ 		start: function(){
+ 			var self = this;
+ 			self.publish("saveToAnalitics", ['Edit','Invert','Open']);
+-			taskManager.execute(self.apply, {
+-				callback: function(){
+-					self.publish('state.added', {
+-						title: self.title
+-					});
+-				}
++			var operation = {
++				title: self.title
++			};
++
++			taskManager.execute(self.apply, operation).then(function(){
++				self.publish('state.added', {
++					title: self.title
++				});
+ 			});
+ 			self.isOpened = false;
+ 		},
+diff --git a/static/picsio-edit/src/plugins/openFile/plugin.js b/static/picsio-edit/src/plugins/openFile/plugin.js
+index 361d91d..20be5be 100644
+--- a/static/picsio-edit/src/plugins/openFile/plugin.js
++++ b/static/picsio-edit/src/plugins/openFile/plugin.js
+@@ -28,6 +28,7 @@ define(['button',
+ 				title: 'Open',
+ 				container: parentToolbar,
+ 				menuIcon: 'openFile',
++				type: 'image',
+ 				onReady: function(img, file){
+ 					self.publish("saveToAnalitics", ['Edit','File Open','LoadFile']);
+ 					self.publish('loadingStart');
+diff --git a/static/picsio-edit/src/plugins/saturation/plugin.js b/static/picsio-edit/src/plugins/saturation/plugin.js
+index e2ff938..7cf9a2d 100644
+--- a/static/picsio-edit/src/plugins/saturation/plugin.js
++++ b/static/picsio-edit/src/plugins/saturation/plugin.js
+@@ -54,7 +54,7 @@ define(['button',
+ 			dialog.addItem(InputRange, {
+ 				id: 'inputRange',
+ 				onChange: function(value){
+-					taskManager.execute(self.apply, {saturation: value/100});
++					taskManager.execute(self.apply, {saturation: value/100, title: self.title});
+ 				},
+ 				defaultValue: 100,
+ 				min: 0,
+diff --git a/static/picsio-edit/src/plugins/sepia/plugin.js b/static/picsio-edit/src/plugins/sepia/plugin.js
+index a3ae3c7..ae9334c 100644
+--- a/static/picsio-edit/src/plugins/sepia/plugin.js
++++ b/static/picsio-edit/src/plugins/sepia/plugin.js
+@@ -28,11 +28,11 @@ define(['button',
+ 				menuIcon: 'sepia'
+ 			});
+ 		},
+-
++		
+ 		start: function(){
+ 			var self = this;
+ 			self.publish("saveToAnalitics", ['Edit','Sepia','Open']);
+-			var thisBtn = this;
++			
+ 			var dialog = new Dialog({
+ 				title: "Sepia",
+ 				onClose: this.close.bind(this),
+@@ -54,7 +54,7 @@ define(['button',
+ 				id: 'inputRange',
+ 				
+ 				onChange: function(value){
+-					taskManager.execute(self.apply, {intensity: value/100});
++					taskManager.execute(self.apply, {intensity: value/100, title: self.title});
+ 				},
+ 
+ 				defaultValue: 0
+diff --git a/static/picsio-edit/src/plugins/temperature/plugin.js b/static/picsio-edit/src/plugins/temperature/plugin.js
+index 4fffbd3..18749a6 100644
+--- a/static/picsio-edit/src/plugins/temperature/plugin.js
++++ b/static/picsio-edit/src/plugins/temperature/plugin.js
+@@ -45,7 +45,7 @@ define(['button',
+ 			dialog.addItem(InputRange, {
+ 				id: 'inputRange',
+ 				onChange: function(value){
+-					taskManager.execute(self.apply, {intensity: value/100});
++					taskManager.execute(self.apply, {intensity: value/100, title: self.title});
+ 				},
+ 				defaultValue: 5500,
+ 				min: 1000,
+diff --git a/static/picsio-edit/src/plugins/tools/convolutionBase.js b/static/picsio-edit/src/plugins/tools/convolutionBase.js
+index 118ae58..de46d19 100644
+--- a/static/picsio-edit/src/plugins/tools/convolutionBase.js
++++ b/static/picsio-edit/src/plugins/tools/convolutionBase.js
+@@ -26,23 +26,19 @@ define(['pluginManager',
+ 		start: function(){
+ 			var self = this;
+ 			self.publish("saveToAnalitics", ['Edit', self.title, 'Open']);
+-			taskManager.execute(self.apply, {
++
++			var operation = {
++				title: self.title.toLowerCase(),
+ 				kernel: self.kernel,
+ 				opaque: self.opaque,
+ 				divisor: self.divisor,
+ 				offset: self.offset,
+ 				additionalLines: Math.floor(Math.sqrt(self.kernel.length)/2),
+-				callback: function(){
+-					self.close();
+-					self.publish('state.added', {
+-						title: self.title.toLowerCase(),
+-						kernel: self.kernel,
+-						divisor: self.divisor,
+-						opaque: self.opaque,
+-						offset: self.offset,
+-						additionalLines: Math.floor(Math.sqrt(self.kernel.length)/2)
+-					});
+-				}
++			};
++
++			taskManager.execute(self.apply, operation).then(function(){
++				self.close();
++				self.publish('state.added', operation);
+ 			});
+ 		},
+ 
+diff --git a/static/picsio-edit/src/plugins/transform/plugin.js b/static/picsio-edit/src/plugins/transform/plugin.js
+index 32a8291..593f130 100644
+--- a/static/picsio-edit/src/plugins/transform/plugin.js
++++ b/static/picsio-edit/src/plugins/transform/plugin.js
+@@ -1,52 +1,49 @@
+ define(['button',
+ 		'pluginManager', 
+-		'signal'], function(Button, pluginManager, signal){
++		'signal',
++		'taskManager'], function(Button, pluginManager, signal, taskManager){
+ 	
+ 	var pluginTransform = pluginManager.extend({
+-		/**
+-		 * Description
+-		 * @method initialize
+-		 * @param {} parentToolbar
+-		 * @return 
+-		 */
+-		initialize: function(parentToolbar){
+-			var self = this;
++		
++		title: 'transform',
+ 
+-			/*new Button({
+-				click: function(){
+-					self.publish("saveToAnalitics", ['Edit','Transform','flipX']);
+-					self.publish("canvas.flipX");
+-				},
+-				title: "Horisontal Flip",
+-				icon: "horizontalflip.png",
+-				parentToolbar: parentToolbar
+-			});
++		runningMode: 'mainThread',
+ 
+-			new Button({
+-				click: function(){
+-					self.publish("saveToAnalitics", ['Edit','Transform','flipY']);
+-					self.publish("canvas.flipY");
+-				},
+-				title: "Vertical Flip",
+-				icon: "verticalflip.png",
+-				parentToolbar: parentToolbar
+-			});*/
++		modificationType: 'state',
++
++		initialize: function(parentToolbar){
++			var self = this;
+ 
+ 			new Button({
+-				click: function(){
+-					self.publish("saveToAnalitics", ['Edit','Transform','rotateCw']);
+-					self.publish("canvas.rotateCw");
+-				},
++				click: self.open.bind(self),
+ 				title: "Rotate 90˚ CW",
+ 				menuIcon: "rotateckw",
+ 				parentToolbar: parentToolbar
+ 			});
+ 		},
+ 
+-        apply: function(){
++		start: function(){
++			var self = this,
++				params = {title: self.title};
++
++			self.publish("saveToAnalitics", ['Edit','Transform','rotateCw']),
+ 
+-        },
++			self.publish('state.added', params, true);
++			taskManager.execute(self.apply, params);
++			self.close();
++		},
++
++		apply: function(reverse){
++			var self = this;
+ 
++			if(!reverse){
++				self.publish("canvas.rotateCw", null, true);
++			}else{
++				self.publish("canvas.rotateCw", null, true);
++				self.publish("canvas.rotateCw", null, true);
++				self.publish("canvas.rotateCw", null, true);
++			}
++		}
+ 	});
+ 
+ 	return pluginTransform;
+diff --git a/static/picsio-edit/src/plugins/undo/plugin.js b/static/picsio-edit/src/plugins/undo/plugin.js
+index 6e86807..e776f34 100644
+--- a/static/picsio-edit/src/plugins/undo/plugin.js
++++ b/static/picsio-edit/src/plugins/undo/plugin.js
+@@ -51,7 +51,7 @@ define(['button', 'pluginManager', 'shortcut'], function(Button, pluginManager,
+ 		 */
+ 		undo: function(e){
+ 			console.log('undo');
+-			this.publish("undo");
++			this.publish("undo", {}, true);
+ 			this.publish("saveToAnalitics", ['Edit','Undo','Make Undo']);
+ 		},
+ 
+@@ -62,7 +62,7 @@ define(['button', 'pluginManager', 'shortcut'], function(Button, pluginManager,
+ 		 */
+ 		redo: function(){
+ 			console.log('redo');
+-			this.publish("redo");
++			this.publish("redo", {}, true);
+ 			this.publish("saveToAnalitics", ['Edit','Undo','Make Redo']);
+ 		}
+ 	});
+diff --git a/static/picsio-edit/src/plugins/xmp/plugin.js b/static/picsio-edit/src/plugins/xmp/plugin.js
+new file mode 100644
+index 0000000..02b26e9
+--- /dev/null
++++ b/static/picsio-edit/src/plugins/xmp/plugin.js
+@@ -0,0 +1,53 @@
++define(['button',
++		'inputFile',
++		'pluginManager',
++		'taskManager',
++		'dialog',
++		'decode',
++		'resizeImage',
++		'shortcut'], function(
++		Button,
++		InputFile,
++		pluginManager,
++		taskManager,
++		Dialog,
++		decoder,
++		resizeImage,
++		shortcut){
++	
++	return pluginManager.extend({
++		title: 'xmp',
++		shortcut: shortcut.file.xmp,
++
++		initialize: function(parentToolbar){
++			var self = this;
++			
++			self.xmpFile = new InputFile({
++				id: 'loadXmpFile',
++				title: 'Open Adjustment',
++				container: parentToolbar,
++				menuIcon: 'loadFile',
++				mimetypes: ['text/xml', ""],
++				type: 'xml',
++				onReady: function(xml, file){
++					var xmp = editor.loadXmp(xml);
++					editor.applyXmp(xmp);
++				}
++			});
++
++			self.saveFile = new Button({
++				click: function(){
++					editor.saveXmp();
++				},
++				title: 'Save Adjustment',
++				parentToolbar: parentToolbar,
++				menuIcon: 'saveXMP'
++			});
++		},
++
++		start: function(){
++			this.xmpFile.open();
++			this.isOpened = false;
++		}
++	});	
++});
+\ No newline at end of file
+diff --git a/static/picsio-edit/src/ui/inputFile.js b/static/picsio-edit/src/ui/inputFile.js
+index bca7380..823a224 100644
+--- a/static/picsio-edit/src/ui/inputFile.js
++++ b/static/picsio-edit/src/ui/inputFile.js
+@@ -10,9 +10,9 @@ define(["uiObject", 'mustache', 'signal'], function(UIObject, Mustache, signal){
+ 			var self = this;
+ 			this.config.container = this.config.container || $("#picsEdit-rangeInput");
+ 
+-			this.params = {
+-				mimetypes: ['image/jpeg', 'image/bmp', 'image/x-windows-bmp', 'image/png', 'image/pjpeg']
+-			}
++			self.params = {
++				mimetypes: this.config.mimetypes || ['image/jpeg', 'image/bmp', 'image/x-windows-bmp', 'image/png', 'image/pjpeg']
++			};
+ 
+ 			var minVal = this.config.min || 0;
+ 			var maxVal = this.config.max || 100;
+@@ -29,11 +29,30 @@ define(["uiObject", 'mustache', 'signal'], function(UIObject, Mustache, signal){
+ 			var container = this.render();
+ 			var elem = this.elem = container.find("input[type=file]");
+ 			
++			var factory = {
++				image: function(e, file){
++					var originalBlob = new Blob([e.target.result]);
++					var originalUrl = URL.createObjectURL(originalBlob);
++					var img  = new Image();
++					img.onload = function(e){
++						console.log("Image ready");
++						self.config.onReady && self.config.onReady(img, file);
++					};
++					img.src = originalUrl;
++				},
++				xml: function(e){
++					var arrayBuffer = e.target.result;
++					var ab2str = function(buf) {
++						return String.fromCharCode.apply(null, new Uint8Array(buf));
++					};
++					self.config.onReady && self.config.onReady(ab2str(arrayBuffer));
++				}
++			};
+ 
+ 			elem.on('change', function(e){
+ 				var elemInput = e.target,
+ 					file = elemInput.files[0];
+-				
++					
+ 				if(self.params.mimetypes.indexOf(file.type.toLowerCase()) == -1){
+ 					signal.publish('dialog.alert.show',{
+ 						key: 'unsupportedFormat'
+@@ -44,14 +63,11 @@ define(["uiObject", 'mustache', 'signal'], function(UIObject, Mustache, signal){
+ 				var reader = new FileReader();
+ 
+ 				reader.onload = function(e){
+-					var originalBlob = new Blob([e.target.result]);
+-					var originalUrl = URL.createObjectURL(originalBlob);
+-					var img  = new Image();
+-					img.onload = function(e){
+-						console.log("Image ready");
+-						self.config.onReady && self.config.onReady(img, file);
++					if(factory[self.config.type]){
++						factory[self.config.type](e, file);	
++					}else{
++						self.config.onReady && self.config.onReady(e);
+ 					}
+-					img.src = originalUrl;
+ 				}
+ 
+ 				reader.readAsArrayBuffer(file);
+diff --git a/static/picsio-edit/src/ui/ui.js b/static/picsio-edit/src/ui/ui.js
+index 7fde24c..16a555e 100644
+--- a/static/picsio-edit/src/ui/ui.js
++++ b/static/picsio-edit/src/ui/ui.js
+@@ -21,44 +21,43 @@ define(["uiObject"], function(UIObject){
+ 
+ 		template: [
+ 		'<div id="picsEdit" class="picsioEditor">',
+-				'<a href="#" class="logoPicsioEditor"></a>',
+-				'<div id="firstPicsioToolbar" class="picsioToolbar"><ul></ul></div>',
+-				'<div id="secondPicsioToolbar" class="picsioToolbar"><ul></ul></div>',
+-				'<div id="thirdPicsioToolbar" class="picsioToolbar"><ul></ul></div>',
+-				'<div id="fourthPicsioToolbar" class="picsioToolbar"><ul></ul></div>',
+-				'<div id="fifthPicsioToolbar" class="picsioToolbar"><ul></ul></div>',
+-				'<div id="sixthPicsioToolbar" class="picsioToolbar"><ul></ul></div>',
+-				'<div id="picsEdit-canvas"></div>',
+-			'</div>',
++			'<a href="#" class="logoPicsioEditor"></a>',
++			'<div id="firstPicsioToolbar" class="picsioToolbar"><ul></ul></div>',
++			'<div id="secondPicsioToolbar" class="picsioToolbar"><ul></ul></div>',
++			'<div id="thirdPicsioToolbar" class="picsioToolbar"><ul></ul></div>',
++			'<div id="fourthPicsioToolbar" class="picsioToolbar"><ul></ul></div>',
++			'<div id="fifthPicsioToolbar" class="picsioToolbar"><ul></ul></div>',
++			'<div id="sixthPicsioToolbar" class="picsioToolbar"><ul></ul></div>',
++			'<div id="picsEdit-canvas"></div>',
+ 			'<div id="picsEdit-selector">',
+ 				'<div class="picsEditCropTopOverlay"></div>',
+-				'<div id="picsEdit-selector-corner-container">',
+-					'<div id="picsEdit-selector-left-top"></div>',
+-					'<div id="picsEdit-selector-top-middle"></div>',
+-					'<div id="picsEdit-selector-left-middle"></div>',
+-					'<div id="picsEdit-selector-right-top"></div>',
+-					'<div id="picsEdit-selector-right-middle"></div>',
+-					'<div id="picsEdit-selector-bottom-middle"></div>',
+-					'<div id="picsEdit-selector-right-bottom"></div>',
+-					'<div id="picsEdit-selector-left-bottom"></div>',
+-					'<div class="picsEditCropHorizontalLine_top"></div>',
+-					'<div class="picsEditCropHorizontalLine_bottom"></div>',
+-					'<div class="picsEditCropVerticalLine_left"></div>',
+-					'<div class="picsEditCropVerticalLine_right"></div>',
++					'<div id="picsEdit-selector-corner-container">',
++						'<div id="picsEdit-selector-left-top"></div>',
++						'<div id="picsEdit-selector-top-middle"></div>',
++						'<div id="picsEdit-selector-left-middle"></div>',
++						'<div id="picsEdit-selector-right-top"></div>',
++						'<div id="picsEdit-selector-right-middle"></div>',
++						'<div id="picsEdit-selector-bottom-middle"></div>',
++						'<div id="picsEdit-selector-right-bottom"></div>',
++						'<div id="picsEdit-selector-left-bottom"></div>',
++						'<div class="picsEditCropHorizontalLine_top"></div>',
++						'<div class="picsEditCropHorizontalLine_bottom"></div>',
++						'<div class="picsEditCropVerticalLine_left"></div>',
++						'<div class="picsEditCropVerticalLine_right"></div>',
++						'<div class="picsEditCropBottomOverlay"></div>',
++					'</div>',
+ 				'</div>',
+-				'<div class="picsEditCropBottomOverlay"></div>',
+-			'</div>',
+-			'<div class = "picsEdit-GradientFilter">',
+ 			'</div>',
++			'<div class = "picsEdit-GradientFilter"></div>',
+ 		'</div>'].join(""),
+ 
+ 		/**
+ 		 * Description
+-		 * @method $getCanvasContainer
++		 * @method find
+ 		 * @return CallExpression
+ 		 */
+-		$getCanvasContainer: function(){
+-			return $("#picsEdit-canvas");
++		find: function(selector){
++			return $("#picsEdit").find(selector);
+ 		},
+ 
+ 		/**
+diff --git a/tasks/sdf b/tasks/sdf
+new file mode 100644
+index 0000000..fe0c852
+--- /dev/null
++++ b/tasks/sdf
+@@ -0,0 +1 @@
++sdf
+\ No newline at end of file

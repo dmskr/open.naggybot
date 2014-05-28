@@ -42,8 +42,60 @@ Bot.db.bind('reviews').bind({
             return done(err) if err
             done(null, review)
 
+  download: (url, path, done) ->
+    exec "wget -O #{path} #{url}", (err, stdout, stderr) ->
+      return done(err) if err
+      done()
+
+  extract: (archive, path, done) ->
+    exec "tar -xf #{archive} -C #{path} --strip-components=1", (err, stdout, stderr) ->
+      return done(err) if err
+      done()
+
+  # Pull a tagbar of reviewes pull request and untar it
   pull: (review, done) ->
-    done(null, review)
+    review.pull ||= {}
+    repo = review.github.pull_request.head.repo
+
+    # Get the user's token
+    Bot.db.users.findByRepo repo, (err, user) ->
+      return done(err) if err
+      if !user
+        review.error = "No user for repo #{repo.owner.login}/#{repo.name} found in database"
+        return Bot.db.reviews.save review, done
+
+      review.pull.url = "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/tarball/#{review.github.pull_request.head.sha}?access_token=#{user.github.accessToken}"
+      Bot.db.reviews.save review, (err) ->
+        return done(err) if err
+
+        tmp.tmpName keep: false, (err, path) ->
+          return done(err) if err
+
+          fs.mkdirs path, (err) ->
+            return done(err) if err
+            review.pull.path = path
+            review.pull.archive = pathUtil.join(review.pull.path, 'ar.tar')
+
+            Bot.db.reviews.save review, (err) ->
+              return done(err) if err
+              Bot.db.reviews.download review.pull.url, review.pull.archive, (err) ->
+                return done(err) if err
+                review.pull.source = pathUtil.join(review.pull.path, 'source')
+                fs.mkdirs review.pull.source, (err) ->
+                  return done(err) if err
+                  Bot.db.reviews.extract review.pull.archive, review.pull.source, (err) ->
+                    return done(err) if err
+                    request {
+                      headers: { 'Accept': 'application/vnd.github.diff', 'User-Agent': 'NodeJS HTTP Client' }
+                      url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}?access_token=#{user.github.accessToken}"
+                    }, (err, response, body) ->
+                      return done(err) if err
+                      review.pull.diff = review.pull.path + '/git.diff'
+                      fs.writeFile review.pull.diff, (body || '').toString(), (err) ->
+                        return done(err) if err
+                        Bot.db.reviews.save review, (err) ->
+                          return done(err) if err
+                          done(null, review)
 
   analyze: (review, done) ->
     done(null, review)

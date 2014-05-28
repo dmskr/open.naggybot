@@ -146,3 +146,95 @@ describe "Review", ->
         callback null, review
       Bot.db.reviews.execute status: 'pending', (err, review) ->
 
+  describe "pull", ->
+    [review, temp, child_exec, findByRepo, lrequest] = [null, null, null, null, null]
+    beforeEach (done) ->
+      temp = global.tmp
+      child_exec = global.exec
+      findByRepo = Bot.db.users.findByRepo
+      Bot.db.users.findByRepo = (repo, callback) ->
+        callback(null, { github: { accessToken: '567890' }})
+
+      lrequest = global.request
+      global.request = (options, callback) -> callback(null, {}, '')
+      global.exec = (command, callback) -> callback(null)
+
+      fs.readFile Bot.root + '/app/reviews/specs/samples/pullRequest.json', (err, content) ->
+        return done(err) if err
+        review =
+          github:
+            number: 2
+            pull_request: JSON.parse(content)
+        done()
+
+    afterEach (done) ->
+      global.tmp = temp
+      global.exec = child_exec
+      global.request = lrequest
+      Bot.db.users.findByRepo = findByRepo
+      done()
+
+    it "should get tarball of a reviewed pull request", (done) ->
+      global.exec = (command, callback) ->
+        matches = command.match(/^wget -O (\S+) .+/)
+        should.exist matches
+        done()
+      Bot.db.reviews.pull review, (err, review) ->
+
+    it "should download a tarbar into existing directory", (done) ->
+      global.exec = (command, callback) ->
+        matches = command.match(/^wget -O (\S+) .+/)
+        should.exist matches[1]
+        fs.exists pathUtil.dirname(matches[1]), (exists) ->
+          exists.should.eql true
+          done()
+      Bot.db.reviews.pull review, (err, review) ->
+
+    it "should store pull.path & pull.archive for future use", (done) ->
+      global.exec = (command, callback) ->
+        matches = command.match(/^wget -O (\S+) .+/)
+        should.exist review.pull
+        should.exist review.pull.path
+        review.pull.archive.should.eql matches[1]
+        review.pull.path.should.eql pathUtil.dirname(matches[1])
+        done()
+      Bot.db.reviews.pull review, (err, review) ->
+
+    it "should wget the correct url", (done) ->
+      global.exec = (command, callback) ->
+        matches = command.match(/^wget -O (\S+) (.+)/)
+        should.exist matches[2]
+        matches[2].should.eql 'https://api.github.com/repos/octocat/Hello-World/tarball/6dcb09b5b57875f334f61aebed695e2e4193db5e?access_token=567890'
+        done()
+      Bot.db.reviews.pull review, (err, review) ->
+
+    it "should extract tarball into sources folder", (done) ->
+      global.exec = (command, callback) ->
+        return callback(null) if command.match /^wget/
+        command.should.eql "tar -xf #{review.pull.archive} -C #{review.pull.path}/source --strip-components=1"
+        done()
+      Bot.db.reviews.pull review, (err, review) ->
+
+    it "should request the diff", (done) ->
+      global.request = (options, callback) ->
+        options.headers.should.eql { 'Accept': 'application/vnd.github.diff', 'User-Agent': 'NodeJS HTTP Client' }
+        options.url.should.eql "https://api.github.com/repos/octocat/Hello-World/pulls/2?access_token=567890"
+        done()
+      Bot.db.reviews.pull review, (err, review) ->
+
+    it "should store returned diff in a file", (done) ->
+      global.request = (options, callback) ->
+        callback null, {}, 'this is the diff'
+
+      Bot.db.reviews.pull review, (err, review) ->
+        should.exist review.pull.diff
+        review.pull.diff.should.eql review.pull.path + '/git.diff'
+        fs.readFile review.pull.diff, (err, content) ->
+          return done(err) if err
+          content.toString().should.eql 'this is the diff'
+          done()
+
+  describe 'analyze', ->
+    it "should run coffeelint on all coffee files", (done) ->
+      done()
+
