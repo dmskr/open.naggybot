@@ -1,0 +1,111 @@
+{
+  "comments": [
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 87, max is 80",
+      "rule": "max_line_length",
+      "file": "fake.js"
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 87, max is 80",
+      "rule": "max_line_length",
+      "file": "app/reviews/specs/unidiff_spec.coffee",
+      "line": 69
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 87, max is 80",
+      "rule": "max_line_length",
+      "file": "app/reviews/specs/unidiff_spec.coffee",
+      "line": 15
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 89, max is 80",
+      "rule": "max_line_length",
+      "file": "app/reviews/specs/unidiff_spec.coffee",
+      "line": 50
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 120, max is 80",
+      "rule": "max_line_length",
+      "file": "app/reviews/specs/unidiff_spec.coffee",
+      "line": 89
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 118, max is 80",
+      "rule": "max_line_length",
+      "file": "app/reviews/specs/unidiff_spec.coffee",
+      "line": 90
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 95, max is 80",
+      "rule": "max_line_length",
+      "file": "app/reviews/specs/unidiff_spec.coffee",
+      "line": 94
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 105, max is 80",
+      "rule": "max_line_length",
+      "file": "app/reviews/specs/unidiff_spec.coffee",
+      "line": 95
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 101, max is 80",
+      "rule": "max_line_length",
+      "file": "app/reviews/specs/unidiff_spec.coffee",
+      "line": 96
+    }
+  ]
+}

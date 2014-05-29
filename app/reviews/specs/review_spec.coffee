@@ -238,3 +238,67 @@ describe "Review", ->
     it "should run coffeelint on all coffee files", (done) ->
       done()
 
+  describe 'thinkWhatYouSay', ->
+    [diff, comments] = [null, null]
+    beforeEach (done) ->
+      comments = []
+      fs.readFile Bot.root + '/app/reviews/specs/samples/naggypull.diff', (err, result) ->
+        return done(err) if err
+        Bot.apps.reviews.unidiff.parse result, (err, unidiff) ->
+          return done(err) if err
+          fs.readFile Bot.root + "/app/reviews/specs/samples/naggycomments.json", (err, content) ->
+            return done(err)  if err
+            Bot.db.reviews.thinkWhatYouSay unidiff, JSON.parse(content), (err, result) ->
+              return done(err) if err
+              diff = unidiff
+              comments = result
+              done()
+
+    it "should create some comments", (done) ->
+      should.exist comments
+      comments.length.should.be.above 0
+      done()
+
+    it "should not comment files absent in the diff", (done) ->
+      fakecomment = comments.find (comment) ->
+        comment.file is "fake.js"
+      should.not.exist fakecomment
+      done()
+
+    it "should comment files present in the diff", (done) ->
+      worker = comments.find (comment) ->
+        comment.file is "app/reviews/specs/unidiff_spec.coffee"
+      should.exist worker
+      done()
+
+    it "should not comment lines not present in the diff", (done) ->
+      workerComments = comments.findAll (comment) ->
+        comment.file is "app/reviews/specs/unidiff_spec.coffee"
+      oldIssue = workerComments.find (comment) ->
+        comment.line is 15 or comment.line is 50
+      should.not.exist oldIssue
+      done()
+
+    it "should not comment lines present in the diff, but not changed (added) there, i.e neutral ones", (done) ->
+      workerComments = comments.findAll (comment) ->
+        comment.file is "app/reviews/specs/unidiff_spec.coffee"
+      neutral = workerComments.findAll (comment) ->
+        [69].any comment.line
+      neutral.should.eql []
+      done()
+
+    it "should comment lines present in the diff", (done) ->
+      workerComments = comments.findAll (comment) ->
+        comment.file is "app/reviews/specs/unidiff_spec.coffee"
+      issues = workerComments.findAll (comment) ->
+        [89, 90, 94, 95, 96].include comment.line
+      should.exist issues
+      issues.length.should.eql 5
+      done()
+
+    it "should provide diff index for commented lines", (done) ->
+      workerComments = comments.findAll (comment) ->
+        comment.file is "app/reviews/specs/unidiff_spec.coffee"
+      workerComments.map("uniline").should.eql [39, 40, 44, 45, 46]
+      done()
+

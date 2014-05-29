@@ -102,4 +102,25 @@ Bot.db.bind('reviews').bind({
 
   push: (review, done) ->
     done(null, review)
+
+  thinkWhatYouSay: (diff, report, done) ->
+    result = report.comments.map (comment) ->
+      file = diff.find (file) ->
+        file.name is comment.file
+
+      return null unless file
+      range = file.ranges.find (range) ->
+        range.added.from < comment.line and comment.line <= range.added.to
+
+      return null  unless range
+      line = range.lines.findAll((line) -> line.action != '-')[comment.line - range.added.from + 1]
+      return null  if not line or line.action isnt "+"
+      comment.uniline = line.uniline
+      comment.lineText = line
+      comment
+    .compact()
+    done null, result
 })
+
+
+
