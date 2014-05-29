@@ -378,3 +378,89 @@ describe "Review", ->
       workerComments.map("uniline").should.eql [39, 40, 44, 45, 46]
       done()
 
+  describe 'push', ->
+    [review, github] = [null, null]
+    beforeEach (done) ->
+      github = global.GitHub
+      global.GitHub = ->
+      global.GitHub.prototype.pullRequests ||= {}
+      global.GitHub.prototype.pullRequests.createComment = (comment, next) -> next()
+      Bot.db.reviews.save {
+        github:
+          token: '321'
+          user: 'monkey'
+          pull_request:
+            number: 2
+            head:
+              sha: 'abc'
+              repo:
+                name: 'monkeytest'
+                owner:
+                  login: 'monkey'
+        analyze:
+          report:
+            comments: [
+              {
+                message: "Line exceeds maximum allowed length",
+                description: "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+                context: "Length is 120, max is 80",
+                line: 89,
+                uniline: 39,
+                file: "app/reviews/specs/unidiff_spec.coffee",
+                lineText: {
+                  action: "+",
+                  text: "            pack.ranges.first().lines.map('action').should.eql [null, null, null, null, '-', '+', '+', null, null, null]",
+                  uniline: 39
+                }
+              },
+              {
+                message: "Line exceeds maximum allowed length",
+                description: "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+                context: "Length is 118, max is 80",
+                line: 90,
+                uniline: 40,
+                file: "app/reviews/specs/unidiff_spec.coffee",
+                lineText: {
+                  action: "+",
+                  text: "            worker.ranges[1].lines.map('action').should.eql [null, null, null, null, '+', '+', null, null, null, null]",
+                  uniline: 40
+                }
+              }
+            
+            ]
+      }, (err, result) ->
+        return done(err) if err
+        review = result
+        done()
+
+    afterEach (done) ->
+      global.GitHub = github
+      done()
+
+    it "should authenticate to github", (done) ->
+      global.GitHub.prototype.pullRequests.createComment = (comment, next) -> next()
+      global.GitHub.prototype.authenticate = (args) ->
+        args.type.should.eql 'oauth'
+        args.token.should.eql '321'
+        done()
+      Bot.db.reviews.push review, (err) ->
+
+    it "should post comments to GitHub", (done) ->
+      times = 0
+      GitHub.prototype.authenticate = (args) ->
+      GitHub.prototype.pullRequests = { }
+      GitHub.prototype.pullRequests.createComment = (comment, next) ->
+        comment.user.should.eql 'monkey'
+        comment.repo.should.eql 'monkeytest'
+        comment.number.should.eql 2
+        comment.commit_id.should.eql 'abc'
+        comment.body.should.eql "Line exceeds maximum allowed length"
+        comment.path.should.eql "app/reviews/specs/unidiff_spec.coffee"
+        should.exist [39, 40].find(comment.position)
+        times += 1
+        next null, {}
+
+      Bot.db.reviews.push review, (err) ->
+        times.should.eql 2
+        done()
+

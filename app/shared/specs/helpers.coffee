@@ -7,6 +7,7 @@ DatabaseCleaner = require('database-cleaner')
 Object.merge global,
   databaseCleaner: new DatabaseCleaner('mongodb')
   should: chai.should()
+  sinon: require 'sinon'
 
 request = null
 beforeEach (done) ->

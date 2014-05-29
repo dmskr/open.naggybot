@@ -122,7 +122,25 @@ Bot.db.bind('reviews').bind({
                   done(null, review)
 
   push: (review, done) ->
-    done(null, review)
+    github = new GitHub(version: "3.0.0")
+    github.authenticate
+      type: "oauth"
+      token: review.github.token
+
+    async.eachSeries review.analyze.report.comments, ((comment, next) ->
+      return done(new Error("A comment without file specified")) unless comment.file
+      github.pullRequests.createComment {
+        user: review.github.pull_request.head.repo.owner.login
+        repo: review.github.pull_request.head.repo.name
+        number: review.github.pull_request.number
+        commit_id: review.github.pull_request.head.sha
+        body: comment.message
+        path: comment.file
+        position: comment.uniline
+      }, (err, comment) ->
+        return done(err) if err
+        next null, comment
+    ), done
 
   thinkWhatYouSay: (diff, report, done) ->
     result = report.comments.map (comment) ->
