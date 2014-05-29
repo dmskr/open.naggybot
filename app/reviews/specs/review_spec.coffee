@@ -108,7 +108,7 @@ describe "Review", ->
       done()
 
     afterEach (done) ->
-      [Bot.db.reviews.pull, Bot.db.reviews.analuze, Bot.db.reviews.push] = [pull, analyze, push]
+      [Bot.db.reviews.pull, Bot.db.reviews.analyze, Bot.db.reviews.push] = [pull, analyze, push]
       done()
 
     it "should pull data to review first", (done) ->
@@ -235,8 +235,84 @@ describe "Review", ->
           done()
 
   describe 'analyze', ->
-    it "should run coffeelint on all coffee files", (done) ->
+    [unidiffparse, adviserlint, thinkWhatYouSay, review, readFile] = [null, null, null, null, null]
+    beforeEach (done) ->
+      unidiffparse = Bot.apps.reviews.unidiff.parse
+      adviserlint = Bot.apps.reviews.adviser.lint
+      thinkWhatYouSay = Bot.db.reviews.thinkWhatYouSay
+      readFile = fs.readFile
+
+      Bot.apps.reviews.unidiff.parse = (diff, callback) -> callback null, [{ name: '3/4.coffee' }, {name: '1/2.coffee'}]
+      Bot.apps.reviews.adviser.lint = (files, callback) -> callback null, 'lint report'
+      Bot.db.reviews.thinkWhatYouSay = (diff, report, callback) -> callback null, 'final report'
+      fs.readFile = (path, callback) -> callback null, ''
+
+      Bot.db.reviews.save { pull: diff: 'diff/path' }, (err, result) ->
+        return done(err) if err
+        review = result
+        done()
+
+    afterEach (done) ->
+      Bot.apps.reviews.unidiff.parse = unidiffparse
+      Bot.apps.reviews.adviser.lint = adviserlint
+      Bot.db.reviews.thinkWhatYouSay = thinkWhatYouSay
+      fs.readFile = readFile
       done()
+
+    it "should parse diff stored in the review", (done) ->
+      fs.readFile = (path, callback) ->
+        path.should.eql 'diff/path'
+        callback null, 'this is a diff'
+
+      Bot.apps.reviews.unidiff.parse = (diff, callback) ->
+        diff.should.eql 'this is a diff'
+        done()
+      Bot.db.reviews.analyze review, ->
+
+    it "should store the unidiff artifacts to analyze section", (done) ->
+      Bot.db.reviews.analyze review, (err, review) ->
+        return done(err) if err
+        Bot.db.reviews.findById review._id, (err, review) ->
+          return done(err) if err
+          should.exist review.analyze
+          should.exist review.analyze.unidiff
+          review.analyze.unidiff.should.eql [{ name: '3/4.coffee' }, { name: '1/2.coffee'}]
+          done()
+
+    it "should run adviser on files present on the diff", (done) ->
+      Bot.apps.reviews.unidiff.parse = (diff, callback) ->
+        callback null, [{ name: '3/4.coffee' }, {name: '1/2.coffee'}]
+      Bot.apps.reviews.adviser.lint = (files, callback) ->
+        files.should.eql ['3/4.coffee', '1/2.coffee']
+        done()
+      Bot.db.reviews.analyze review, (err, review) ->
+
+    it "should store adviser artifacts into the review object", (done) ->
+      Bot.apps.reviews.adviser.lint = (files, callback) ->
+        callback null, 'adviser result'
+      Bot.db.reviews.analyze review, (err, review) ->
+        return done(err) if err
+        Bot.db.reviews.findById review._id, (err, review) ->
+          return done(err) if err
+          should.exist review.analyze
+          review.analyze.lint.should.eql 'adviser result'
+          done()
+
+    it "should run thinkWhatYouSay on result of diff parsing and sources advising", (done) ->
+      Bot.db.reviews.thinkWhatYouSay = (diff, report, callback) ->
+        diff.should.eql [{ name: '3/4.coffee' }, { name: '1/2.coffee' }]
+        report.should.eql 'lint report'
+        done()
+      Bot.db.reviews.analyze review, (err, review) ->
+
+    it "should store the final report to analyze section", (done) ->
+      Bot.db.reviews.analyze review, (err, review) ->
+        return done(err) if err
+        Bot.db.reviews.findById review._id, (err, review) ->
+          return done(err) if err
+          should.exist review.analyze
+          review.analyze.report.should.eql 'final report'
+          done()
 
   describe 'thinkWhatYouSay', ->
     [diff, comments] = [null, null]

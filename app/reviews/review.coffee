@@ -98,7 +98,28 @@ Bot.db.bind('reviews').bind({
                           done(null, review)
 
   analyze: (review, done) ->
-    done(null, review)
+    fs.readFile review.pull.diff, (err, content) ->
+      return done(err) if err
+      Bot.apps.reviews.unidiff.parse content, (err, unidiff) ->
+        return done(err) if err
+        review.analyze ||= {}
+        review.analyze.unidiff = unidiff
+        Bot.db.reviews.save review, (err) ->
+          return done(err) if err
+
+          Bot.apps.reviews.adviser.lint unidiff.map('name'), (err, report) ->
+            return done(err) if err
+            review.analyze ||= {}
+            review.analyze.lint = report
+            Bot.db.reviews.save review, (err) ->
+              return done(err) if err
+              Bot.db.reviews.thinkWhatYouSay unidiff, report, (err, result) ->
+                return done(err) if err
+                review.analyze ||= {}
+                review.analyze.report = result
+                Bot.db.reviews.save review, (err) ->
+                  return done(err) if err
+                  done(null, review)
 
   push: (review, done) ->
     done(null, review)
