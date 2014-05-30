@@ -2,16 +2,8 @@ require "../../shared/specs/helpers"
 
 describe "Adviser", ->
   describe 'lint', ->
-    [coffee, exec] = [null, null]
     beforeEach (done) ->
-      coffee = Bot.apps.reviews.adviser.coffee
-      exec = global.exec
-      global.exec = (command, callback) -> callback null, JSON.stringify(filename: [command: command])
-      done()
-
-    afterEach (done) ->
-      Bot.apps.reviews.adviser.coffeelint = coffee
-      global.exec = exec
+      nonmock.replace global, 'exec', (command, callback) -> callback null, JSON.stringify(filename: [command: command])
       done()
 
     it "should return no errors if no files were provided", (done) ->
