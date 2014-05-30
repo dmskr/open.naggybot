@@ -24,4 +24,19 @@ describe "Reviews Service Controller", ->
 
       Bot.apps.reviews.controller.service.create req, res, next
 
+    it "should place everything received into the github property", (done) ->
+      res.json = ->
+        Bot.db.reviews.find().limit(1).toArray (err, reviews)->
+          return done(err) if err
+          should.exist reviews
+          should.exist reviews.first()
+          should.exist reviews.first().github
+          should.exist reviews.first().github.should.eql {
+            action: 'opened'
+            number: 1
+            pull_request: {}
+          }
+          done()
+
+      Bot.apps.reviews.controller.service.create req, res, next
 
