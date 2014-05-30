@@ -211,6 +211,14 @@ describe "Review", ->
           content.toString().should.eql 'this is the diff'
           done()
 
+    it "should store accessToken into the review", (done) ->
+      Bot.db.reviews.pull review, (err, review) ->
+        return done(err) if err
+        Bot.db.reviews.findById review._id, (err, review) ->
+          return done(err) if err
+          review.github.accessToken.should.eql '567890'
+          done()
+
   describe 'analyze', ->
     [review] = [null]
     beforeEach (done) ->
@@ -352,7 +360,7 @@ describe "Review", ->
       global.GitHub.prototype.pullRequests.createComment = (comment, next) -> next()
       Bot.db.reviews.save {
         github:
-          token: '321'
+          accessToken: '321'
           user: 'monkey'
           pull_request:
             number: 2

@@ -64,6 +64,7 @@ Bot.db.bind('reviews').bind({
         review.error = "No user for repo #{repo.owner.login}/#{repo.name} found in database"
         return Bot.db.reviews.save review, done
 
+      review.github.accessToken = user.github.accessToken
       review.pull.url = "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/tarball/#{review.github.pull_request.head.sha}?access_token=#{user.github.accessToken}"
       Bot.db.reviews.save review, (err) ->
         return done(err) if err
@@ -125,7 +126,7 @@ Bot.db.bind('reviews').bind({
     github = new GitHub(version: "3.0.0")
     github.authenticate
       type: "oauth"
-      token: review.github.token
+      token: review.github.accessToken
 
     async.eachSeries review.analyze.report.comments, ((comment, next) ->
       return done(new Error("A comment without file specified")) unless comment.file
