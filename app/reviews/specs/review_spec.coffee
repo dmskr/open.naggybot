@@ -61,7 +61,6 @@ describe "Review", ->
             done()
 
   describe 'executeAll', ->
-    execute = null
     executedReviews = []
     beforeEach (done) ->
       reviews = [
@@ -73,16 +72,11 @@ describe "Review", ->
       ]
       (15).times -> reviews.push({ status: 'pending' })
       async.each reviews, Bot.db.reviews.save, done
-      execute = Bot.db.reviews.execute
 
       executedReviews = []
-      Bot.db.reviews.execute = (review, callback) ->
+      nonmock.replace Bot.db.reviews, 'execute', (review, callback) ->
         executedReviews.push review
         callback(null, review)
-
-    afterEach (done) ->
-      Bot.db.reviews.execute = execute
-      done()
 
     it "should find and execute all reviews in pending status", (done) ->
       Bot.db.reviews.executeAll {}, (err, reviews) ->
@@ -99,16 +93,10 @@ describe "Review", ->
         done()
 
   describe 'execute', ->
-    [pull, analyze, push] = [null, null, null]
-
     beforeEach (done) ->
-      [pull, analyze, push] = [Bot.db.reviews.pull, Bot.db.reviews.analyze, Bot.db.reviews.push]
-      Bot.db.reviews.pull = Bot.db.reviews.analuze = Bot.db.reviews.push = (review, callback) ->
-        callback(null, review)
-      done()
-
-    afterEach (done) ->
-      [Bot.db.reviews.pull, Bot.db.reviews.analyze, Bot.db.reviews.push] = [pull, analyze, push]
+      ['pull', 'analyze', 'push'].each (method) ->
+        nonmock.replace Bot.db.reviews, method, (review, callback) ->
+          callback(null, review)
       done()
 
     it "should pull data to review first", (done) ->
@@ -147,17 +135,13 @@ describe "Review", ->
       Bot.db.reviews.execute status: 'pending', (err, review) ->
 
   describe "pull", ->
-    [review, temp, child_exec, findByRepo, lrequest] = [null, null, null, null, null]
+    [review] = [null]
     beforeEach (done) ->
-      temp = global.tmp
-      child_exec = global.exec
-      findByRepo = Bot.db.users.findByRepo
-      Bot.db.users.findByRepo = (repo, callback) ->
+      nonmock.replace Bot.db.users, 'findByRepo', (repo, callback) ->
         callback(null, { github: { accessToken: '567890' }})
 
-      lrequest = global.request
-      global.request = (options, callback) -> callback(null, {}, '')
-      global.exec = (command, callback) -> callback(null)
+      nonmock.replace global, 'request', (options, callback) -> callback(null, {}, '')
+      nonmock.replace global, 'exec', (command, callback) -> callback(null)
 
       fs.readFile Bot.root + '/app/reviews/specs/samples/pullRequest.json', (err, content) ->
         return done(err) if err
@@ -166,13 +150,6 @@ describe "Review", ->
             number: 2
             pull_request: JSON.parse(content)
         done()
-
-    afterEach (done) ->
-      global.tmp = temp
-      global.exec = child_exec
-      global.request = lrequest
-      Bot.db.users.findByRepo = findByRepo
-      done()
 
     it "should get tarball of a reviewed pull request", (done) ->
       global.exec = (command, callback) ->
@@ -235,29 +212,17 @@ describe "Review", ->
           done()
 
   describe 'analyze', ->
-    [unidiffparse, adviserlint, thinkWhatYouSay, review, readFile] = [null, null, null, null, null]
+    [review] = [null]
     beforeEach (done) ->
-      unidiffparse = Bot.apps.reviews.unidiff.parse
-      adviserlint = Bot.apps.reviews.adviser.lint
-      thinkWhatYouSay = Bot.db.reviews.thinkWhatYouSay
-      readFile = fs.readFile
-
-      Bot.apps.reviews.unidiff.parse = (diff, callback) -> callback null, [{ name: '3/4.coffee' }, {name: '1/2.coffee'}]
-      Bot.apps.reviews.adviser.lint = (files, callback) -> callback null, 'lint report'
-      Bot.db.reviews.thinkWhatYouSay = (diff, report, callback) -> callback null, 'final report'
-      fs.readFile = (path, callback) -> callback null, ''
+      nonmock.replace Bot.apps.reviews.unidiff, 'parse', (diff, callback) -> callback null, [{ name: '3/4.coffee' }, {name: '1/2.coffee'}]
+      nonmock.replace Bot.apps.reviews.adviser, 'lint', (files, callback) -> callback null, 'lint report'
+      nonmock.replace Bot.db.reviews, 'thinkWhatYouSay', (diff, report, callback) -> callback null, 'final report'
+      nonmock.replace fs, 'readFile', (path, callback) -> callback null, ''
 
       Bot.db.reviews.save { pull: diff: 'diff/path' }, (err, result) ->
         return done(err) if err
         review = result
         done()
-
-    afterEach (done) ->
-      Bot.apps.reviews.unidiff.parse = unidiffparse
-      Bot.apps.reviews.adviser.lint = adviserlint
-      Bot.db.reviews.thinkWhatYouSay = thinkWhatYouSay
-      fs.readFile = readFile
-      done()
 
     it "should parse diff stored in the review", (done) ->
       fs.readFile = (path, callback) ->

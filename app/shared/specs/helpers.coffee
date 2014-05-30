@@ -7,6 +7,23 @@ DatabaseCleaner = require('database-cleaner')
 Object.merge global,
   databaseCleaner: new DatabaseCleaner('mongodb')
   should: chai.should()
+  nonmock: {
+    stock: []
+    replace: (obj, method, func) ->
+      existing = this.stock.find (item) ->
+        item.obj == obj && item.method == method
+      if !existing
+        existing = this.stock.push
+          obj: obj
+          method: method
+          func: obj[method]
+      obj[method] = func
+      return existing.func
+    restore: ->
+      this.stock.each (item) ->
+        item.obj[item.method] = item.func
+      this.stock = []
+  }
 
 request = null
 beforeEach (done) ->
@@ -32,6 +49,7 @@ beforeEach (done) ->
 
 afterEach (done) ->
   global.request = request
+  nonmock.restore()
   done()
 
 global.shouldHaveCreatedAt = (collection) ->
