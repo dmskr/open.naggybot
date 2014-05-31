@@ -5,6 +5,8 @@ notify = require("gulp-notify")
 jade = require('gulp-jade')
 mocha = require('gulp-mocha')
 exit = require('gulp-exit')
+fs = require('fs')
+async = require('async')
 
 paths =
   coffee: 'app/shared/assets/*.coffee'
@@ -62,4 +64,37 @@ gulp.task 'sloc', ->
  
   gulp.src(paths.sloc)
     .pipe(sloc())
+
+gulp.task 'deploy', (done) ->
+  sshclient = require 'sshclient'
+
+  opts =
+    host: "95.85.16.168"
+    port: 22
+    debug: true # optional
+    username: 'node'
+    agent: process.env.SSH_AUTH_SOCK
+    console: console
+    directory: '/var/www/naggybot'
+
+  sshclient.session opts, (err, ses) ->
+    return console.log(err) if err
+    
+    commands = [
+      "git reset --hard"
+      "git checkout master"
+      "git pull"
+      "npm install"
+      "bower install"
+      "gulp coffee"
+      "sudo stop naggy"
+      "sudo start naggy"
+    ].map (command) ->
+      (next) -> ses.exec "cd #{opts.directory}; #{command}", (err, meta1, meta2, meta3) ->
+        return next(err) if err
+        next()
+
+    async.series commands, (err) ->
+      ses.quit() # need to close the session here on both error and success
+      done(err)
 

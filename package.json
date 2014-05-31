@@ -48,7 +48,8 @@
     "fstream": "~0.1.25",
     "tar": "~0.1.19",
     "fs-extra": "~0.8.1",
-    "coffeelint": "~1.4.1"
+    "coffeelint": "~1.4.1",
+    "sshclient": "0.0.4"
   },
   "scripts": {
     "test": "make test",
