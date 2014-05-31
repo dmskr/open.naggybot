@@ -2,7 +2,7 @@ extends ../../shared/admin/layout
 
 block append title
 	title= 'Review ' + (review.type || '') + ' ' + review.status
-	action = 'reviews'
+	- var action = 'reviews'
 
 block content
 	.container(style="width: 80%")

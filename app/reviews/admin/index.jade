@@ -29,7 +29,7 @@ block content
 						th= 'Updated At'
 						th= 'Created At'
 				tbody
-					- var statuses = { "pending": "", "completed": "label-success", "expired": "labal-warning", "inprogress": "label-info", "error": "label-important" }
+					- var statuses = { "pending": "default", "completed": "label-success", "expired": "labal-warning", "inprogress": "label-info", "error": "label-important" }
 					each review in data
 						tr
 							- var id = review._id.toString()
@@ -37,7 +37,7 @@ block content
 								a(href="/admin/reviews/#{id}")
 									= id.slice(0,2) + '..' + id.slice(-3)
 							td
-								span.label(class=statuses[review.status] || statuses["pending"])= review.status || 'unknown'
+								span.label(class='label-' + statuses[review.status] || statuses["pending"])= review.status || 'unknown'
 							td
 								span= review.type
 							td= review.updatedAt && review.updatedAt.format('short') || 'never'
