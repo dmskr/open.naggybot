@@ -45,7 +45,7 @@ exports.create = (req, res, next) ->
     repo: req.body.repo.name
     name: 'web'
     config:
-      'url': "http://#{req.host}/pulls/github/callback"
+      'url': "http://#{Bot.settings.host}/pulls/github/callback"
       'content-type': 'application/json'
     events: ['pull_request']
     active: true

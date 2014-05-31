@@ -172,7 +172,7 @@ describe "Repos Private Controller", ->
           repo: 'awesome'
           name: 'web'
           config:
-            url: "http://localhost/pulls/github/callback"
+            url: "http://localhost:8082/pulls/github/callback"
             'content-type': 'application/json'
           events: ['pull_request']
           active: true
