@@ -14,6 +14,22 @@ describe "Reviews Service Controller", ->
         Bot.apps.reviews.controller.service.create req, res, callback
       , done
 
+    it "should allow the 'ping' event as well", (done) ->
+      req.headers['X-GitHub-Event'] = 'ping'
+      res.json = ->
+        done()
+
+      Bot.apps.reviews.controller.service.create req, res, next
+
+    it "should not create any review objects on ping event", (done) ->
+      req.headers['X-GitHub-Event'] = 'ping'
+      res.json = ->
+        Bot.db.reviews.find().limit(1).toArray (err, reviews)->
+          return done(err) if err
+          should.not.exist reviews.first()
+          done()
+      Bot.apps.reviews.controller.service.create req, res, next
+
     it "should create review in database", (done) ->
       res.json = ->
         Bot.db.reviews.find().limit(1).toArray (err, reviews)->
