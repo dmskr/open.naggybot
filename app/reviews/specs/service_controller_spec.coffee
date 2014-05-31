@@ -3,26 +3,25 @@ require("../../shared/specs/helpers")
 describe "Reviews Service Controller", ->
   describe "create", ->
     beforeEach (done) ->
-      req.headers['X-GitHub-Event'] = 'PullRequestEvent'
+      req.headers['x-github-event'] = 'pull_request'
       fs.readFile Bot.root + '/app/reviews/specs/samples/pullRequestEvent.json', (err, content) ->
         req.body = JSON.parse(content)
         done()
 
-    it "should pass through if github event not equal to PullRequestEvent or pull_request", (done) ->
+    it "should pass through if github event not equal to ping or pull_request", (done) ->
       async.each [null, 'some'], (event, callback) ->
-        req.headers['X-GitHub-Event'] = event
+        req.headers['x-github-event'] = event
         Bot.apps.reviews.controller.service.create req, res, callback
       , done
 
     it "should allow the 'ping' event as well", (done) ->
-      req.headers['X-GitHub-Event'] = 'ping'
-      res.json = ->
-        done()
+      req.headers['x-github-event'] = 'ping'
+      res.json = -> done()
 
       Bot.apps.reviews.controller.service.create req, res, next
 
     it "should not create any review objects on ping event", (done) ->
-      req.headers['X-GitHub-Event'] = 'ping'
+      req.headers['x-github-event'] = 'ping'
       res.json = ->
         Bot.db.reviews.find().limit(1).toArray (err, reviews)->
           return done(err) if err
