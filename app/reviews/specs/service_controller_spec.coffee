@@ -5,7 +5,7 @@ describe "Reviews Service Controller", ->
     beforeEach (done) ->
       req.headers['x-github-event'] = 'pull_request'
       fs.readFile Bot.root + '/app/reviews/specs/samples/pullRequestEvent.json', (err, content) ->
-        req.body = JSON.parse(content)
+        req.body.payload = content
         done()
 
     it "should pass through if github event not equal to ping or pull_request", (done) ->
@@ -46,10 +46,9 @@ describe "Reviews Service Controller", ->
           should.exist reviews
           should.exist reviews.first()
           should.exist reviews.first().github
-          should.exist reviews.first().github.should.eql {
-            action: 'opened'
-            number: 1
-            pull_request: {}
+          should.exist Object.select(reviews.first().github, 'action', 'number').should.eql {
+            action: 'synchronize'
+            number: 3
           }
           done()
 
