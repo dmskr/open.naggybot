@@ -1,32 +1,35 @@
 extends ../../shared/admin/layout
 
 block append title
-	title= 'Review ' + (review.type || '') + ' ' + review.status
-	- var action = 'reviews'
+  title= 'Review ' + (review.type || '') + ' ' + review.status
+  - var action = 'reviews'
 
 block content
-	.container(style="width: 80%")
-		- var id = review._id.toString()
-		h2= 'Review ' + id.slice(0,2) + '..' + id.slice(-3) + ' ' + (review.type || '') + ' (' + review.status + ')'
+  .container(style="width: 80%")
+    - var id = review._id.toString()
+    h2= 'Review ' + id.slice(0,2) + '..' + id.slice(-3) + ' ' + (review.type || '') + ' (' + review.status + ')'
 
-		div
-			label ID:&nbsp;
-			span= id
-		div
-			label Type:&nbsp;
-			span= review.type
-		div
-			label Status:&nbsp;
-			span= review.status
-		div(style="margin-top: 10px;")
-			label Path:&nbsp;
-			span= review.path
-		div
-			label Url:&nbsp;
-			span= review.url
-		div(style="margin-top: 10px;")
-			label Raw:&nbsp;
-			span= JSON.stringify(review)
+    div
+      label ID:&nbsp;
+      span= id
+    div
+      label Action:&nbsp;
+      span= (review.github || {}).action
+    div
+      label Status:&nbsp;
+      span= review.status
+    div
+      label Number:&nbsp;
+      span= (review.github || {}).number
 
-		input.btn.btn-primary(type="submit", value="Ok", onclick="javascript:window.location='/admin/reviews'")
+    br
+    input.btn.btn-primary(type="submit", value="Ok", onclick="javascript:window.location='/admin/reviews'")
+
+    br
+    br
+    br
+    div(style="margin-top: 10px;")
+      label Raw:&nbsp;
+      #review_json(style="width: 100%;")
+        = JSON.stringify(review, null, 2)
 
