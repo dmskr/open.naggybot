@@ -7,6 +7,8 @@ mocha = require('gulp-mocha')
 exit = require('gulp-exit')
 fs = require('fs')
 async = require('async')
+sugar = require('sugar')
+byline = require('byline')
 
 paths =
   coffee: 'app/shared/assets/*.coffee'
@@ -66,35 +68,31 @@ gulp.task 'sloc', ->
     .pipe(sloc())
 
 gulp.task 'deploy', (done) ->
-  sshclient = require 'sshclient'
 
-  opts =
-    host: "95.85.16.168"
-    port: 22
-    debug: true # optional
-    username: 'node'
-    agent: process.env.SSH_AUTH_SOCK
-    console: console
-    directory: '/var/www/naggybot'
+  child_proc = require 'child_process'
 
-  sshclient.session opts, (err, ses) ->
-    return console.log(err) if err
-    
-    commands = [
-      "git reset --hard"
-      "git checkout master"
-      "git pull"
-      "npm install"
-      "bower install"
-      "gulp coffee"
-      "sudo stop naggy"
-      "sudo start naggy"
-    ].map (command) ->
-      (next) -> ses.exec "cd #{opts.directory}; #{command}", (err, meta1, meta2, meta3) ->
-        return next(err) if err
-        next()
+  ssh = child_proc.spawn 'ssh', ['node@95.85.16.168']
+  byline(ssh.stdout, keepEmptyLines: true).on 'data', (data) ->
+    console.log(data.toString())
 
-    async.series commands, (err) ->
-      ses.quit() # need to close the session here on both error and success
-      done(err)
+  byline(ssh.stderr).on 'data', (data) ->
+    if data
+      console.log('stderr: ' + data)
+
+  ssh.on 'exit', (code) ->
+    if code != 0
+      console.log('child process exited with code ' + code)
+
+  ["cd /var/www/naggybot"
+  "git reset --hard"
+  "git checkout master"
+  "git pull"
+  "npm install"
+  "bower install"
+  "gulp coffee"
+  "sudo stop naggy"
+  "sudo start naggy"
+  "echo 'Done!'"
+  "exit"].each (command) ->
+    ssh.stdin.write("\n" + command + "\n")
 
