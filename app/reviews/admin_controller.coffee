@@ -56,3 +56,12 @@ exports.show = (req, res, next) ->
     res.render Bot.root + "/app/reviews/admin/show.jade",
       review: review
 
+exports.pull = (req, res, next) ->
+  res.json status: 'ok'
+
+exports.analyze = (req, res, next) ->
+  res.json status: 'ok'
+
+exports.push = (req, res, next) ->
+  res.json status: 'ok'
+

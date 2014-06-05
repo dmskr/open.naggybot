@@ -16,11 +16,18 @@ block content
       label Action:&nbsp;
       span= (review.github || {}).action
     div
+      label Number:&nbsp;
+      span= (review.github || {}).number
+    div
       label Status:&nbsp;
       span= review.status
     div
-      label Number:&nbsp;
-      span= (review.github || {}).number
+      form(action="/admin/reviews/#{review._id}/pull", method='post', style="display: inline;")
+        input.btn.btn-default#pull(type='submit', value="PULL")
+      form(action="/admin/reviews/#{review._id}/analyze", method='post', style="display: inline;")
+        input.btn.btn-default#analyze(type='submit', value="ANALYZE")
+      form(action="/admin/reviews/#{review._id}/push", method='post', style="display: inline;")
+        input.btn.btn-default#push(type='submit', value="PUSH")
 
     br
     input.btn.btn-primary(type="submit", value="Ok", onclick="javascript:window.location='/admin/reviews'")

@@ -62,6 +62,6 @@ if process.env.NODE_ENV == 'production'
 # Run the server
 env = (process.env.NODE_ENV || 'development').capitalize()
 server.listen(Bot.settings.port)
-console.log("Http server listening on http://0.0.0.0:8081")
+console.log("Http server listening on http://0.0.0.0:#{Bot.settings.port}")
 console.log("NaggyBot App server started in #{env} environment")
 
