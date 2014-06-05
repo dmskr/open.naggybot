@@ -324,3 +324,74 @@ describe "Reviews Admin Controller", ->
 
       Bot.apps.reviews.controller.admin.show req, res, next
 
+  describe 'pull', ->
+    review = null
+    beforeEach (done) ->
+      nonmock.replace Bot.db.reviews, 'pull', (rev, callback) -> callback(null, rev)
+      Bot.db.reviews.save { github: {} }, (err, result) ->
+        return done(err) if err
+        review = result
+        req.params.id = review._id
+        done()
+
+    it "should run review pulling", (done) ->
+      nonmock.replace Bot.db.reviews, 'pull', (pullthis, callback) ->
+        should.exist pullthis
+        pullthis._id.should.eql review._id
+        done()
+
+      Bot.apps.reviews.controller.admin.pull req, res, next
+
+    it "should redirect to review#show url", (done) ->
+      res.redirect = (url) ->
+        url.should.eql '/admin/reviews/' + review._id
+        done()
+      Bot.apps.reviews.controller.admin.pull req, res, next
+
+  describe 'analyze', ->
+    review = null
+    beforeEach (done) ->
+      nonmock.replace Bot.db.reviews, 'analyze', (rev, callback) -> callback(null, rev)
+      Bot.db.reviews.save { github: {} }, (err, result) ->
+        return done(err) if err
+        review = result
+        req.params.id = review._id
+        done()
+
+    it "should run review analyzing", (done) ->
+      nonmock.replace Bot.db.reviews, 'analyze', (analyze, callback) ->
+        should.exist analyze
+        analyze._id.should.eql review._id
+        done()
+
+      Bot.apps.reviews.controller.admin.analyze req, res, next
+
+    it "should redirect to review#show url", (done) ->
+      res.redirect = (url) ->
+        url.should.eql '/admin/reviews/' + review._id
+        done()
+      Bot.apps.reviews.controller.admin.analyze req, res, next
+
+  describe 'push', ->
+    review = null
+    beforeEach (done) ->
+      nonmock.replace Bot.db.reviews, 'push', (rev, callback) -> callback(null, rev)
+      Bot.db.reviews.save { github: {} }, (err, result) ->
+        return done(err) if err
+        review = result
+        req.params.id = review._id
+        done()
+
+    it "should run review analyzing", (done) ->
+      nonmock.replace Bot.db.reviews, 'push', (push, callback) ->
+        should.exist push
+        push._id.should.eql review._id
+        done()
+
+      Bot.apps.reviews.controller.admin.push req, res, next
+
+    it "should redirect to review#show url", (done) ->
+      res.redirect = (url) ->
+        url.should.eql '/admin/reviews/' + review._id
+        done()
+      Bot.apps.reviews.controller.admin.push req, res, next

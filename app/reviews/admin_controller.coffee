@@ -57,11 +57,23 @@ exports.show = (req, res, next) ->
       review: review
 
 exports.pull = (req, res, next) ->
-  res.json status: 'ok'
+  Bot.db.reviews.findById req.params.id, (err, review) ->
+    return next(err) if err
+    Bot.db.reviews.pull review, (err, review) ->
+      return next(err) if err
+      res.redirect '/admin/reviews/' + review._id
 
 exports.analyze = (req, res, next) ->
-  res.json status: 'ok'
+  Bot.db.reviews.findById req.params.id, (err, review) ->
+    return next(err) if err
+    Bot.db.reviews.analyze review, (err, review) ->
+      return next(err) if err
+      res.redirect '/admin/reviews/' + review._id
 
 exports.push = (req, res, next) ->
-  res.json status: 'ok'
+  Bot.db.reviews.findById req.params.id, (err, review) ->
+    return next(err) if err
+    Bot.db.reviews.push review, (err, review) ->
+      return next(err) if err
+      res.redirect '/admin/reviews/' + review._id
 
