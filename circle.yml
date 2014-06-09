@@ -6,6 +6,6 @@ deployment:
   production:
     branch: test
     commands:
-      - gulp deploy --branch=test
+      - ./node_modules/gulp/bin/gulp.js deploy --branch=test
 
 
