@@ -324,6 +324,12 @@ describe "Reviews Admin Controller", ->
 
       Bot.apps.reviews.controller.admin.show req, res, next
 
+    it "should return 'next' action with no error if review is not found", (done) ->
+      req.params.id = review._id + 'not_existing'
+      Bot.apps.reviews.controller.admin.show req, res, (err) ->
+        should.not.exist err
+        done()
+
   describe 'pull', ->
     review = null
     beforeEach (done) ->
