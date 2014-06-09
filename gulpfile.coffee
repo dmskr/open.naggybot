@@ -9,6 +9,7 @@ fs = require('fs')
 async = require('async')
 sugar = require('sugar')
 byline = require('byline')
+argv = require('yargs').argv
 
 paths =
   coffee: 'app/shared/assets/*.coffee'
@@ -85,7 +86,7 @@ gulp.task 'deploy', (done) ->
 
   ["cd /var/www/naggybot"
   "git reset --hard"
-  "git checkout master"
+  "git checkout #{argv.branch || 'master'}"
   "git pull"
   "npm install"
   "bower install"

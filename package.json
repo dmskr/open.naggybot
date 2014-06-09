@@ -50,7 +50,8 @@
     "fs-extra": "~0.8.1",
     "coffeelint": "~1.4.1",
     "byline": "~4.1.1",
-    "nonmock": "~0.1.2"
+    "nonmock": "~0.1.2",
+    "yargs": "~1.2.2"
   },
   "scripts": {
     "test": "make test",
