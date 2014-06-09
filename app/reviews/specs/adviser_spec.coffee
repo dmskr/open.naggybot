@@ -59,3 +59,11 @@ describe "Adviser", ->
         report.comments.first().line.should.eql 101
         done()
 
+    it "should return empty object if file does not exist", (done) ->
+      files = ['path/to/some.coffee']
+      global.exec = (command, callback) ->
+        callback null, ''
+      Bot.apps.reviews.adviser.lint files, (err, report) ->
+        return done(err) if err
+        done()
+
