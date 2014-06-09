@@ -2,3 +2,10 @@
   node:
       version: v0.10.17
 
+deployment:
+  production:
+    branch: test
+    commands:
+      - gulp deploy --branch=test
+
+
