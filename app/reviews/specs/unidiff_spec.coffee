@@ -9,13 +9,6 @@ describe "UniDiff", ->
         result.should.eql {}
         done()
 
-    #it "should successfully parse huge file from real pull request", (done) ->
-      #fs.readFile Bot.root + '/app/reviews/specs/samples/real.diff', (err, content) ->
-        #return done(err) if err
-        #Bot.apps.reviews.unidiff.parse content, (err, result) ->
-          #return done(err) if err
-          #done()
-
     describe 'result', ->
       [unidiff, content] = [null, null]
       before (done) ->
