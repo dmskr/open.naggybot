@@ -96,7 +96,14 @@ Bot.db.bind('reviews').bind({
                         return done(err) if err
                         Bot.db.reviews.save review, (err) ->
                           return done(err) if err
-                          done(null, review)
+                          request url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}?access_token=#{user.github.accessToken}", (err, response, body) ->
+                            return done(err) if err
+                            try
+                              review.github.pull_request = JSON.parse(body)
+                            catch SyntaxError
+                            Bot.db.reviews.save review, (err) ->
+                              return done(err) if err
+                              done(null, review)
 
   analyze: (review, done) ->
     fs.readFile review.pull.diff, (err, content) ->

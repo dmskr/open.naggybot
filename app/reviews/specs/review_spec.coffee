@@ -219,6 +219,17 @@ describe "Review", ->
           review.github.accessToken.should.eql '567890'
           done()
 
+    it "should update the pull request data", (done) ->
+      global.request = (options, callback) ->
+        options.url.should.eql "https://api.github.com/repos/octocat/Hello-World/pulls/2?access_token=567890"
+        callback null, {}, JSON.stringify(test: 'this is a test')
+      Bot.db.reviews.pull review, (err, review) ->
+        return done(err) if err
+        Bot.db.reviews.findById review._id, (err, review) ->
+          return done(err) if err
+          review.github.pull_request.should.eql test: 'this is a test'
+          done()
+
   describe 'analyze', ->
     [review] = [null]
     beforeEach (done) ->
