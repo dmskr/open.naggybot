@@ -30,14 +30,14 @@ exports.parseRange = (lines, done) ->
   matches = lines.first().match(/^(@@.+@@)(.+)?/)
   lines[0] = matches[2] or null
   
-  scopes = matches[1].match(/^@@\s\-(\d+),(\d+)\s\+(\d+),(\d+)\s@@\s?$/)
+  scopes = matches[1].match(/^@@\s+\-([^\s]+)\s+\+([^\s]+) @@/)
   result =
     removed:
-      from: scopes[1].toNumber()
-      total: scopes[2].toNumber()
+      from: (scopes[1].split(',')[0] || 0).toNumber()
+      total: (scopes[1].split(',')[1] || 0).toNumber()
     added:
-      from: scopes[3].toNumber()
-      total: scopes[4].toNumber()
+      from: (scopes[2].split(',')[0] || 0).toNumber()
+      total: (scopes[2].split(',')[1] || 0).toNumber()
     lines: lines
 
   [result.removed, result.added].each (s) ->
