@@ -1,5 +1,6 @@
 
 - [x] Pull request data should be updated as well during the 'pull' procedure
+- [x] Do all the pull data in parallel
 
 - [ ] All reviews in pending status created for the same pull request within the same repo should be shrinked to single one, latest one
 - [ ] Comments pushed to GitHub should not be duplicated

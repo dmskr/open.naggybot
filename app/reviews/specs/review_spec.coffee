@@ -194,6 +194,7 @@ describe "Review", ->
 
     it "should request the diff", (done) ->
       global.request = (options, callback) ->
+        return callback null, {}, '' if !options.headers
         options.headers.should.eql { 'Accept': 'application/vnd.github.diff', 'User-Agent': 'NodeJS HTTP Client' }
         options.url.should.eql "https://api.github.com/repos/octocat/Hello-World/pulls/2?access_token=567890"
         done()

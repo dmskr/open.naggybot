@@ -79,31 +79,39 @@ Bot.db.bind('reviews').bind({
 
             Bot.db.reviews.save review, (err) ->
               return done(err) if err
-              Bot.db.reviews.download review.pull.url, review.pull.archive, (err) ->
-                return done(err) if err
-                review.pull.source = pathUtil.join(review.pull.path, 'source')
-                fs.mkdirs review.pull.source, (err) ->
-                  return done(err) if err
-                  Bot.db.reviews.extract review.pull.archive, review.pull.source, (err) ->
-                    return done(err) if err
-                    request {
-                      headers: { 'Accept': 'application/vnd.github.diff', 'User-Agent': 'NodeJS HTTP Client' }
-                      url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}?access_token=#{user.github.accessToken}"
-                    }, (err, response, body) ->
-                      return done(err) if err
-                      review.pull.diff = review.pull.path + '/git.diff'
-                      fs.writeFile review.pull.diff, (body || '').toString(), (err) ->
-                        return done(err) if err
-                        Bot.db.reviews.save review, (err) ->
-                          return done(err) if err
-                          request url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}?access_token=#{user.github.accessToken}", (err, response, body) ->
-                            return done(err) if err
-                            try
-                              review.github.pull_request = JSON.parse(body)
-                            catch SyntaxError
-                            Bot.db.reviews.save review, (err) ->
-                              return done(err) if err
-                              done(null, review)
+              async.parallel [
+                (next) ->
+                  Bot.db.reviews.download review.pull.url, review.pull.archive, (err) ->
+                    return next(err) if err
+                    review.pull.source = pathUtil.join(review.pull.path, 'source')
+                    fs.mkdirs review.pull.source, (err) ->
+                      return next(err) if err
+                      Bot.db.reviews.extract review.pull.archive, review.pull.source, next
+                      
+                (next) ->
+                  request {
+                    headers: { 'Accept': 'application/vnd.github.diff', 'User-Agent': 'NodeJS HTTP Client' }
+                    url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}?access_token=#{user.github.accessToken}"
+                  }, (err, response, body) ->
+                    return next(err) if err
+                    review.pull.diff = review.pull.path + '/git.diff'
+                    fs.writeFile review.pull.diff, (body || '').toString(), (err) ->
+                      return next(err) if err
+                      Bot.db.reviews.save review, next
+
+                (next) ->
+                  request url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}?access_token=#{user.github.accessToken}", (err, response, body) ->
+                    return next(err) if err
+                    try
+                      review.github.pull_request = JSON.parse(body)
+                    catch SyntaxError
+                    Bot.db.reviews.save review, (err) ->
+                      return next(err) if err
+                      next(null, review)
+
+              ], (err) ->
+                done(err, review)
+
 
   analyze: (review, done) ->
     fs.readFile review.pull.diff, (err, content) ->
