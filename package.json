@@ -54,7 +54,7 @@
     "yargs": "~1.2.2"
   },
   "scripts": {
-    "test": "make test",
+    "test": "./node_modules/gulp/bin/gulp.js slowtest",
     "start": "coffee server.coffee"
   },
   "repository": {

@@ -26,20 +26,28 @@ gulp.task 'coffee', ->
     .pipe gulp.dest(paths.static)
     .pipe(notify("Compiled: <%= file.relative %>!"))
 
+mochaoptions =
+  ui: 'bdd'
+  growl: true
+  useColors: true
+  useInlineDiffs: true
+  reporter: 'list'
+  compilers: 'coffee:coffee-script/register'
+
 # TESTS = app/ app/**/specs/*_spec.coffee app/**/specs/**/*_spec.coffee
 gulp.task 'test', ->
   return gulp.src(paths.spec)
-    .pipe(mocha({
-      ui: 'bdd'
-      growl: true
-      useColors: true
-      useInlineDiffs: true
-      reporter: 'list'
-      compilers: 'coffee:coffee-script/register' }))
+    .pipe(mocha(mochaoptions))
+    .pipe(exit())
+
+gulp.task 'slowtest', ->
+  return gulp.src paths.spec
+    .pipe mocha(Object.merge(mochaoptions, timeout: 4000))
+    .pipe exit()
+
 
 gulp.task 'watch', ->
   gulp.watch paths.coffee, ['coffee']
-  gulp.watch paths.spec, ['test']
 
 gulp.task 'size', ->
   size = require('gulp-size')
