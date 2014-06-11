@@ -401,3 +401,38 @@ describe "Reviews Admin Controller", ->
         url.should.eql '/admin/reviews/' + review._id
         done()
       Bot.apps.reviews.controller.admin.push req, res, next
+
+  describe 'delete', ->
+    review = null
+    beforeEach (done) ->
+      Bot.db.reviews.save { some: 'value' }, (err, result) ->
+        return done(err) if err
+        review = result
+        req.params.id = review._id.toString()
+        done()
+
+    it "should redirect to review list after the deletion", (done) ->
+      res.redirect = (url) ->
+        should.exist url
+        url.should.eql '/admin/reviews'
+        done()
+
+      Bot.apps.reviews.controller.admin.del req, res, next
+
+    it "should set successfull message", (done) ->
+      req.flash = (status, message) ->
+        status.should.eql 'success'
+        should.exist message
+        done()
+
+      Bot.apps.reviews.controller.admin.del req, res, next
+
+    it "should remove the review", (done) ->
+      res.redirect = ->
+        Bot.db.reviews.findById review._id, (err, result) ->
+          return done(err) if err
+          should.not.exist result
+          done()
+
+      Bot.apps.reviews.controller.admin.del req, res, next
+

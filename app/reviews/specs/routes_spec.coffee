@@ -13,6 +13,7 @@ describe "Reviews Routes", ->
       'post /admin/reviews/:id/pull': 'reviews.admin.pull'
       'post /admin/reviews/:id/analyze': 'reviews.admin.analyze'
       'post /admin/reviews/:id/push': 'reviews.admin.push'
+      'delete /admin/reviews/:id': 'reviews.admin.del'
     }, { username: 'monkey', admin: true }, 'reviews')
 
   describe "for private", ->
@@ -27,6 +28,7 @@ describe "Reviews Routes", ->
       "post /admin/reviews/:id/pull"
       "post /admin/reviews/:id/analyze"
       "post /admin/reviews/:id/push"
+      "del /admin/reviews/:id"
     ], { username: 'monkey' }, 'users')
 
   describe "for public", ->
@@ -45,4 +47,5 @@ describe "Reviews Routes", ->
       "post /admin/reviews/:id/pull"
       "post /admin/reviews/:id/analyze"
       "post /admin/reviews/:id/push"
+      "del /admin/reviews/:id"
     ], null, 'users')

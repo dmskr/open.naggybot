@@ -55,6 +55,10 @@ block content
             input.btn.btn-default#push(type='submit', value="PUSH")
           | &nbsp; &nbsp; &nbsp;
           a(href='/admin/reviews') Back
+          div(style="float: right;")
+            form(action="/admin/reviews/#{review._id}", method='post', style="display: inline;")
+              input(type='hidden', name="_method" value="delete")
+              input.btn.btn-danger#delete(type='submit', value="DELETE")
 
     div(style="margin-top: 10px;")
       label Raw:&nbsp;

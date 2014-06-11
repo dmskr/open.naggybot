@@ -16,3 +16,6 @@ $ ->
   $('#push').click ->
     return confirm 'Are you sure you wanna push results for the review. This may affect users watching the reviewed repo'
 
+  $('#delete').click ->
+    return confirm 'Are you sure you wanna delete the review'
+
