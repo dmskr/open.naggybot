@@ -174,7 +174,7 @@ Bot.db.bind('reviews').bind({
       comment.lineText = line
       comment
     .compact()
-    done null, result
+    done null, comments: result
 })
 
 

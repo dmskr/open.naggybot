@@ -312,7 +312,7 @@ describe "Review", ->
             Bot.db.reviews.thinkWhatYouSay unidiff, JSON.parse(content), (err, result) ->
               return done(err) if err
               diff = unidiff
-              comments = result
+              comments = result.comments
               done()
 
     it "should create some comments", (done) ->
