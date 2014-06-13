@@ -73,7 +73,7 @@ exports.analyze = (req, res, next) ->
 exports.push = (req, res, next) ->
   Bot.db.reviews.findById req.params.id, (err, review) ->
     return next(err) if err
-    Bot.db.reviews.push review, (err, review) ->
+    Bot.db.reviews.push review, (err) ->
       return next(err) if err
       res.redirect '/admin/reviews/' + review._id
 
