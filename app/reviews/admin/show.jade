@@ -45,20 +45,19 @@ block content
           label.col-sm-1.control-label Pull Source:
           .col-sm-10
             p.form-control-static= pull.source
-      .form-group
-        .col-sm-10
-          form(action="/admin/reviews/#{review._id}/pull", method='post', style="display: inline;")
-            input.btn.btn-default#pull(type='submit', value="PULL")
-          form(action="/admin/reviews/#{review._id}/analyze", method='post', style="display: inline;")
-            input.btn.btn-default#analyze(type='submit', value="ANALYZE")
-          form(action="/admin/reviews/#{review._id}/push", method='post', style="display: inline;")
-            input.btn.btn-default#push(type='submit', value="PUSH")
-          | &nbsp; &nbsp; &nbsp;
-          a(href='/admin/reviews') Back
-          div(style="float: right;")
-            form(action="/admin/reviews/#{review._id}", method='post', style="display: inline;")
-              input(type='hidden', name="_method" value="delete")
-              input.btn.btn-danger#delete(type='submit', value="DELETE")
+
+    form(action="/admin/reviews/#{review._id}/pull", method='post', style="display: inline;")
+      input.btn.btn-default#pull(type='submit', value="PULL")
+    form(action="/admin/reviews/#{review._id}/analyze", method='post', style="display: inline;")
+      input.btn.btn-default#analyze(type='submit', value="ANALYZE")
+    form(action="/admin/reviews/#{review._id}/push", method='post', style="display: inline;")
+      input.btn.btn-default#push(type='submit', value="PUSH")
+    | &nbsp; &nbsp; &nbsp;
+    a(href='/admin/reviews') Back
+    div(style="float: right;")
+      form(action="/admin/reviews/#{review._id}", method='post', style="display: inline;")
+        input(type='hidden', name="_method" value="delete")
+        input.btn.btn-danger#delete(type='submit', value="DELETE")
 
     div(style="margin-top: 10px;")
       label Raw:&nbsp;
