@@ -82,3 +82,12 @@ exports.del = (req, res, next) ->
     return next(err) if err
     req.flash 'success', 'Review was removed successfully'
     res.redirect '/admin/reviews'
+
+exports.raw = (req, res, next) ->
+  Bot.db.reviews.findById req.params.id, (err, review) ->
+    return next(err) if err
+    res.send JSON.stringify(review, null, 2)
+
+exports.comments = (req, res, next) ->
+  res.json status: 'ok'
+

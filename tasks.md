@@ -1,5 +1,4 @@
 
-- [ ] All reviews in pending status created for the same pull request within the same repo should be shrinked to single one, latest one
 - [ ] Comments pushed to GitHub should not be duplicated
 
 - [ ] 'Too many words' should be posted to pull request overall if more than, say, 10 comments were posted already and more to come.

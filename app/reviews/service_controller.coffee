@@ -6,3 +6,5 @@ exports.create = (req, res, next) ->
     return next(err) if err
     res.json status: 'ok'
 
+exports.work = (next) ->
+
