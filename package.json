@@ -64,5 +64,5 @@
   "author": "Dmitry Skrinnik",
   "license": "MIT",
   "devDependencies": {},
-  "engine": "node v0.10.17"
+  "engine": "node v0.10.29"
 }
