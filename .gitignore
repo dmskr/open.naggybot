@@ -27,6 +27,7 @@ node_modules
 notes
 **/*.swp
 **/*.swo
+**/*.swn
 **/*.orig
 .DS_Store
 
