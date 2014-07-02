@@ -436,3 +436,30 @@ describe "Reviews Admin Controller", ->
 
       Bot.apps.reviews.controller.admin.del req, res, next
 
+  describe 'raw', ->
+    it 'should render the raw json representing the review', (done) ->
+      Bot.db.reviews.save { status: 'pending' }, (err, review) ->
+        return done(err) if err
+        req.params.id = review._id
+        res.send = (text) ->
+          should.exist(text)
+          text.should.eql JSON.stringify(review, null, 2)
+          done()
+
+        Bot.apps.reviews.controller.admin.raw req, res, next
+
+  describe 'comments', ->
+    it "should render the raw json representing the review's comments", (done) ->
+      Bot.db.reviews.save { status: 'pending', analyze: report: { everything: 'isok' } }, (err, review) ->
+        return done(err) if err
+        req.params.id = review._id
+        res.send = (text) ->
+          should.exist(text)
+          text.should.eql JSON.stringify({ everything: 'isok' }, null, 2)
+          done()
+
+        Bot.apps.reviews.controller.admin.comments req, res, next
+
+
+
+

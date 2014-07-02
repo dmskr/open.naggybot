@@ -65,3 +65,11 @@ server.listen(Bot.settings.port)
 console.log("Http server listening on http://0.0.0.0:#{Bot.settings.port}")
 console.log("NaggyBot App server started in #{env} environment")
 
+
+taskWorker = ->
+  Bot.db.review.executeAll {}, (err) ->
+    throw new Error(err) if err
+    setTimeout(taskWorker, 2000)
+
+taskWorker() if Bot.settings.env != 'production'
+

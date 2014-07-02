@@ -59,8 +59,14 @@ block content
         input(type='hidden', name="_method" value="delete")
         input.btn.btn-danger#delete(type='submit', value="DELETE")
 
+    br
+    br
+
+    a(href="/admin/reviews/#{review._id}/raw", target='_blank') Raw
+    | &nbsp; &nbsp;
+    a(href="/admin/reviews/#{review._id}/comments", target='_blank') Comments (#{(((review.analyze || {}).report || {}).comments || []).length})
     div(style="margin-top: 10px;")
-      label Raw:&nbsp;
+      label Formatted Raw:&nbsp;
       #review_json(style="width: 100%;")
         - review.pull = '[removed]'
         - review.analyze = '[removed]'
