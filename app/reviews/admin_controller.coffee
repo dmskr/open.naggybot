@@ -89,5 +89,7 @@ exports.raw = (req, res, next) ->
     res.send JSON.stringify(review, null, 2)
 
 exports.comments = (req, res, next) ->
-  res.json status: 'ok'
+  Bot.db.reviews.findById req.params.id, (err, review) ->
+    return next(err) if err
+    res.send JSON.stringify((review.analyze || {}).report, null, 2)
 
