@@ -52,7 +52,33 @@ exports.renderHtml = (req, res, next) ->
 
 exports.show = (req, res, next) ->
   Bot.db.reviews.findById req.params.id, (err, review) ->
-    return next(err)  if err
+    return next(err) if err || !review
     res.render Bot.root + "/app/reviews/admin/show.jade",
       review: review
 
+exports.pull = (req, res, next) ->
+  Bot.db.reviews.findById req.params.id, (err, review) ->
+    return next(err) if err
+    Bot.db.reviews.pull review, (err, review) ->
+      return next(err) if err
+      res.redirect '/admin/reviews/' + review._id
+
+exports.analyze = (req, res, next) ->
+  Bot.db.reviews.findById req.params.id, (err, review) ->
+    return next(err) if err
+    Bot.db.reviews.analyze review, (err, review) ->
+      return next(err) if err
+      res.redirect '/admin/reviews/' + review._id
+
+exports.push = (req, res, next) ->
+  Bot.db.reviews.findById req.params.id, (err, review) ->
+    return next(err) if err
+    Bot.db.reviews.push review, (err) ->
+      return next(err) if err
+      res.redirect '/admin/reviews/' + review._id
+
+exports.del = (req, res, next) ->
+  Bot.db.reviews.removeById req.params.id, (err) ->
+    return next(err) if err
+    req.flash 'success', 'Review was removed successfully'
+    res.redirect '/admin/reviews'

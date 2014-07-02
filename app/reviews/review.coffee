@@ -64,6 +64,7 @@ Bot.db.bind('reviews').bind({
         review.error = "No user for repo #{repo.owner.login}/#{repo.name} found in database"
         return Bot.db.reviews.save review, done
 
+      review.github.accessToken = user.github.accessToken
       review.pull.url = "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/tarball/#{review.github.pull_request.head.sha}?access_token=#{user.github.accessToken}"
       Bot.db.reviews.save review, (err) ->
         return done(err) if err
@@ -78,28 +79,103 @@ Bot.db.bind('reviews').bind({
 
             Bot.db.reviews.save review, (err) ->
               return done(err) if err
-              Bot.db.reviews.download review.pull.url, review.pull.archive, (err) ->
-                return done(err) if err
-                review.pull.source = pathUtil.join(review.pull.path, 'source')
-                fs.mkdirs review.pull.source, (err) ->
-                  return done(err) if err
-                  Bot.db.reviews.extract review.pull.archive, review.pull.source, (err) ->
-                    return done(err) if err
-                    request {
-                      headers: { 'Accept': 'application/vnd.github.diff', 'User-Agent': 'NodeJS HTTP Client' }
-                      url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}?access_token=#{user.github.accessToken}"
-                    }, (err, response, body) ->
-                      return done(err) if err
-                      review.pull.diff = review.pull.path + '/git.diff'
-                      fs.writeFile review.pull.diff, (body || '').toString(), (err) ->
-                        return done(err) if err
-                        Bot.db.reviews.save review, (err) ->
-                          return done(err) if err
-                          done(null, review)
+              async.parallel [
+                (next) ->
+                  Bot.db.reviews.download review.pull.url, review.pull.archive, (err) ->
+                    return next(err) if err
+                    review.pull.source = pathUtil.join(review.pull.path, 'source')
+                    fs.mkdirs review.pull.source, (err) ->
+                      return next(err) if err
+                      Bot.db.reviews.extract review.pull.archive, review.pull.source, next
+                      
+                (next) ->
+                  request {
+                    headers: { 'Accept': 'application/vnd.github.diff', 'User-Agent': 'NodeJS HTTP Client' }
+                    url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}?access_token=#{user.github.accessToken}"
+                  }, (err, response, body) ->
+                    return next(err) if err
+                    review.pull.diff = review.pull.path + '/git.diff'
+                    fs.writeFile review.pull.diff, (body || '').toString(), (err) ->
+                      return next(err) if err
+                      Bot.db.reviews.save review, next
+
+                (next) ->
+                  request url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}?access_token=#{user.github.accessToken}", (err, response, body) ->
+                    return next(err) if err
+                    try
+                      review.github.pull_request = JSON.parse(body)
+                    catch SyntaxError
+                    Bot.db.reviews.save review, (err) ->
+                      return next(err) if err
+                      next(null, review)
+
+              ], (err) ->
+                done(err, review)
+
 
   analyze: (review, done) ->
-    done(null, review)
+    fs.readFile review.pull.diff, (err, content) ->
+      return done(err) if err
+      Bot.apps.reviews.unidiff.parse content, (err, unidiff) ->
+        return done(err) if err
+        review.analyze ||= {}
+        review.analyze.unidiff = unidiff
+        Bot.db.reviews.save review, (err) ->
+          return done(err) if err
+
+          Bot.apps.reviews.adviser.lint unidiff.map('name'), (err, report) ->
+            return done(err) if err
+            review.analyze ||= {}
+            review.analyze.lint = report
+            Bot.db.reviews.save review, (err) ->
+              return done(err) if err
+              Bot.db.reviews.thinkWhatYouSay unidiff, report, (err, result) ->
+                return done(err) if err
+                review.analyze ||= {}
+                review.analyze.report = result
+                Bot.db.reviews.save review, (err) ->
+                  return done(err) if err
+                  done(null, review)
 
   push: (review, done) ->
-    done(null, review)
+    github = new GitHub(version: "3.0.0")
+    github.authenticate
+      type: "oauth"
+      token: review.github.accessToken
+
+    async.eachSeries review.analyze.report.comments, ((comment, next) ->
+      return done(new Error("A comment without file specified")) unless comment.file
+      github.pullRequests.createComment {
+        user: review.github.pull_request.head.repo.owner.login
+        repo: review.github.pull_request.head.repo.name
+        number: review.github.pull_request.number
+        commit_id: review.github.pull_request.head.sha
+        body: comment.message
+        path: comment.file
+        position: comment.uniline
+      }, (err, comment) ->
+        return done(err) if err
+        next null, comment
+    ), done
+
+  thinkWhatYouSay: (diff, report, done) ->
+    result = report.comments.map (comment) ->
+      file = diff.find (file) ->
+        file.name is comment.file
+
+      return null unless file
+      range = file.ranges.find (range) ->
+        range.added.from < comment.line and comment.line <= range.added.to
+
+      return null  unless range
+      line = range.lines.findAll((line) -> line.action != '-')[comment.line - range.added.from + 1]
+      return null  if not line or line.action isnt "+"
+      comment.uniline = line.uniline
+      comment.lineText = line
+      comment
+    .compact()
+    done null, comments: result
 })
+
+
+

@@ -10,23 +10,32 @@ methodOverride = require('method-override')
 
 app = Bot
 
-[database, port] = if app.settings.env == 'production'
-  ['naggybot', 8081]
+[database, host, port] = if app.settings.env == 'production'
+  ['naggybot', '95.85.16.168', 8081]
 else if app.settings.env == 'test'
-  ['naggybot_test', 8082]
+  ['naggybot_test', 'localhost:8082', 8082]
 else
-  ['naggybot_dev', 8081]
+  ['naggybot_dev', 'localhost:8081', 8081]
 
 mongourl = "mongodb://localhost:27017/#{database}?auto_reconnect=true"
 app.db = mongo.db(mongourl, safe: true)
 
-app.set('port', port)
-app.use(serveStatic("static"))
-app.set('views', app.root + "/app")
-app.set('view options', { layout: false })
-app.use(bodyParser())
-app.use(cookieParser())
-app.use(methodOverride())
+github = if app.settings.env == 'production'
+  client_id: "6fad070068889058d583"
+  secret: "e174e890fcfa46f6ce24781635fa601522724d9d"
+else
+  client_id: "76f9ddbeb73de6823fab"
+  secret: "4850ec99a910c8f1a4d654880adebc84dbc243af"
+
+app.set 'github', github
+app.set 'host', host
+app.set 'port', port
+app.use serveStatic("static")
+app.set 'views', app.root + "/app"
+app.set 'view options', { layout: false }
+app.use bodyParser()
+app.use cookieParser()
+app.use methodOverride()
 
 app.use(session(
   cookie:

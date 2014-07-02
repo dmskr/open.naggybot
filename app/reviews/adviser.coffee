@@ -1,11 +1,16 @@
 
 exports.lint = (files, done) ->
-  report = {}
+  report =
+    comments: []
   async.each files, (file, next) ->
     exports.coffee file, (err, result) ->
       return next(err) if err
-      if result
-        report[file] = result
+      comments = Object.values(result).flatten()
+      comments.each (comment) ->
+        comment.file = file if comment
+        comment.line = comment.lineNumber
+        delete comment.lineNumber
+      report.comments = report.comments.concat(comments)
       next()
   , (err) ->
     return done(err) if err
@@ -14,12 +19,13 @@ exports.lint = (files, done) ->
 exports.coffee = (path, done) ->
   return done() if pathUtil.extname(path) != '.coffee'
   exec "./node_modules/coffeelint/bin/coffeelint --reporter raw #{path}", (err, content) ->
-    return done(err) if err
+    # Just ignore any errors as any output is treated as an error here, including json report
+    # return done(err) if err
+    return done(null, {}) if content == ''
     result = null
     try
       result = JSON.parse(content)
     catch e
       return done(e)
     done(null, result)
-
 

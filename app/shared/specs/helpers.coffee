@@ -7,6 +7,7 @@ DatabaseCleaner = require('database-cleaner')
 Object.merge global,
   databaseCleaner: new DatabaseCleaner('mongodb')
   should: chai.should()
+  nonmock: require('nonmock')
 
 request = null
 beforeEach (done) ->
@@ -32,6 +33,7 @@ beforeEach (done) ->
 
 afterEach (done) ->
   global.request = request
+  nonmock.restore()
   done()
 
 global.shouldHaveCreatedAt = (collection) ->

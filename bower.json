@@ -26,6 +26,7 @@
     "sugar": "~1.4.1",
     "font-awesome": "~4.0.3",
     "bootstrap-social": "~4.3.0",
-    "github": "~0.9.0"
+    "github": "~0.9.0",
+    "ace-builds": "~1.1.3"
   }
 }

@@ -1,6 +1,3 @@
-GITHUB_CLIENT_ID = "76f9ddbeb73de6823fab"
-GITHUB_CLIENT_SECRET = "4850ec99a910c8f1a4d654880adebc84dbc243af"
-
 exports.new = (req, res, next) ->
   res.render Bot.root + '/app/users/public/login.jade'
 
@@ -48,8 +45,8 @@ exports.authGitHub = (accessToken, refreshToken, profile, done) ->
       return done(err, user)
 
 passport.use(new GitHubStrategy {
-    clientID: GITHUB_CLIENT_ID
-    clientSecret: GITHUB_CLIENT_SECRET
+    clientID: Bot.settings.github.client_id
+    clientSecret: Bot.settings.github.secret
     callbackURL: "http://#{Bot.settings.host}/auth/github/callback"
     scope: ['user:email', 'repo', 'admin:repo_hook']
   }, exports.authGitHub)

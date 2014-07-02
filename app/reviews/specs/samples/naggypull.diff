@@ -1,0 +1,113 @@
+diff --git a/app/reviews/specs/unidiff_spec.coffee b/app/reviews/specs/unidiff_spec.coffee
+index 564cbf6..76ed13c 100644
+--- a/app/reviews/specs/unidiff_spec.coffee
++++ b/app/reviews/specs/unidiff_spec.coffee
+@@ -68,25 +68,31 @@ describe "UniDiff", ->
+             worker.ranges.last().added.total.should.eql 8
+             done()
+ 
+-          it "should include original lines in a range", (done) ->
++          it "should include lines in a range", (done) ->
+             should.exist pack.ranges.first().lines
+             pack.ranges.first().lines.length.should.eql 10
+             done()
+ 
+-          it "should include appropriate lines in 'removed' & 'added' blocks", (done) ->
+-            pack.ranges.first().removed.lines.length.should.eql 7
+-            pack.ranges.first().added.lines.length.should.eql 8
+-            pack.ranges.first().added.lines.map((line) ->
+-              line.diffindex + ":" + line.action + line.text
+-            ).should.eql [
+-              "2:   \"readmeFilename\": \"README.md\","
+-              "3:   \"dependencies\": {"
+-              "4:     \"jshint\": \"~2.5.0\","
+-              "6:+    \"sugar\": \"~1.4.1\","
+-              "7:+    \"github\": \"~0.1.16\""
+-              "8:   },"
+-              "9:   \"strider\": {"
+-              "10:     \"id\": \"jshint\","
+-            ]
++          it "should set text field for each line", (done) ->
++            pack.ranges.first().lines.map('text').each (text) ->
++              should.exist text
++            done()
++
++          it "should set text field without predicating symbols", (done) ->
++            pack.ranges.first().lines.map('text').each (text) ->
++              if text && text.length > 0
++                text[0].should.not.eql '+'
++                text[0].should.not.eql '-'
++            done()
++
++          it "should set an action field for each line", (done) ->
++            pack.ranges.first().lines.map('action').should.eql [null, null, null, null, '-', '+', '+', null, null, null]
++            worker.ranges[1].lines.map('action').should.eql [null, null, null, null, '+', '+', null, null, null, null]
++            done()
++
++          it "should set uniline", (done) ->
++            pack.ranges.first().lines.map('uniline').should.eql [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
++            worker.ranges.first().lines.map('uniline').should.eql [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
++            worker.ranges[1].lines.map('uniline').should.eql [13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+             done()
+ 
+diff --git a/app/reviews/unidiff.coffee b/app/reviews/unidiff.coffee
+index a911ffb..d06c176 100644
+--- a/app/reviews/unidiff.coffee
++++ b/app/reviews/unidiff.coffee
+@@ -18,19 +18,16 @@ exports.parseFile = (lines, done) ->
+     return done(err)  if err
+     diffindex = 0
+     result.each (range) ->
+-      range.removed.lines.each (line) ->
+-        line.diffindex = diffindex + line.diffindex
+-      range.added.lines.each (line) ->
+-        line.diffindex = diffindex + line.diffindex
++      range.lines.each (line) ->
++        line.uniline = diffindex + line.uniline
+       diffindex += range.lines.length
+ 
+     done null,
+       name: name
+       ranges: result
+ 
+-
+ exports.parseRange = (lines, done) ->
+-  matches = lines.first().match(/^(@@.+@@\s?)(.+)?/)
++  matches = lines.first().match(/^(@@.+@@)(.+)?/)
+   lines[0] = matches[2] or null
+   
+   scopes = matches[1].match(/^@@\s\-(\d+),(\d+)\s\+(\d+),(\d+)\s@@\s?$/)
+@@ -38,28 +35,19 @@ exports.parseRange = (lines, done) ->
+     removed:
+       from: scopes[1].toNumber()
+       total: scopes[2].toNumber()
+-      lines: []
+     added:
+       from: scopes[3].toNumber()
+       total: scopes[4].toNumber()
+-      lines: []
+     lines: lines
+ 
+   [result.removed, result.added].each (s) ->
+     s.to = s.from + s.total
+ 
+-  lines.each (line, index) ->
+-    if line
+-      blocks = [result.removed, result.added]
+-      if line[0] is "+"
+-        blocks = [result.added]
+-      else if line[0] is "-"
+-        blocks = [result.removed]
+-      blocks.each (block) ->
+-        block.lines.push
+-          action: line[0]
+-          diffindex: index + 1
+-          text: line.slice(1)
++  result.lines = lines.map (line, index) ->
++    line ||= ''
++    action: if line[0] && line[0] != ' ' then line[0] else null
++    text: line.slice(1)
++    uniline: index + 1
+ 
+   done null, result
+ 

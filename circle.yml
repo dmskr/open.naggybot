@@ -1,4 +1,11 @@
 ﻿machine:
   node:
-      version: v0.10.17
+      version: v0.10.29
+
+deployment:
+  production:
+    branch: test
+    commands:
+      - ./node_modules/gulp/bin/gulp.js deploy --branch=test
+
 

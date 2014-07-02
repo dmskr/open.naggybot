@@ -1,0 +1,114 @@
+{
+  "app/reviews/review.coffee": [
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 94, max is 80",
+      "lineNumber": 27,
+      "rule": "max_line_length"
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 87, max is 80",
+      "lineNumber": 51,
+      "rule": "max_line_length"
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 92, max is 80",
+      "lineNumber": 64,
+      "rule": "max_line_length"
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 174, max is 80",
+      "lineNumber": 67,
+      "rule": "max_line_length"
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 84, max is 80",
+      "lineNumber": 81,
+      "rule": "max_line_length"
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 90, max is 80",
+      "lineNumber": 86,
+      "rule": "max_line_length"
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 110, max is 80",
+      "lineNumber": 89,
+      "rule": "max_line_length"
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 160, max is 80",
+      "lineNumber": 90,
+      "rule": "max_line_length"
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 86, max is 80",
+      "lineNumber": 94,
+      "rule": "max_line_length"
+    },
+    {
+      "name": "max_line_length",
+      "value": 80,
+      "level": "error",
+      "limitComments": true,
+      "message": "Line exceeds maximum allowed length",
+      "description": "This rule imposes a maximum line length on your code. <a\nhref=\"http://www.python.org/dev/peps/pep-0008/\">Python's style\nguide</a> does a good job explaining why you might want to limit the\nlength of your lines, though this is a matter of taste.\n\nLines can be no longer than eighty characters by default.",
+      "context": "Length is 88, max is 80",
+      "lineNumber": 113,
+      "rule": "max_line_length"
+    }
+  ]
+}

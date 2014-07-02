@@ -20,3 +20,7 @@ exports.route = (app) ->
     app.get ["/admin/reviews", key].remove('').join('/'), require_admin, admin[actions[key]]
 
   app.get "/admin/reviews/:id", require_admin, admin.show
+  app.post '/admin/reviews/:id/pull', require_admin, admin.pull
+  app.post '/admin/reviews/:id/analyze', require_admin, admin.analyze
+  app.post '/admin/reviews/:id/push', require_admin, admin.push
+  app.delete '/admin/reviews/:id', require_admin, admin.del
