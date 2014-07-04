@@ -1,8 +1,7 @@
 
 exports.lint = (files, done) ->
-  report =
-    comments: []
-  async.each files, (file, next) ->
+  report = comments: []
+  async.eachSeries files, (file, next) ->
     exports.coffee file, (err, result) ->
       return next(err) if err
       comments = Object.values(result).flatten()
@@ -18,7 +17,7 @@ exports.lint = (files, done) ->
 
 exports.coffee = (path, done) ->
   return done() if pathUtil.extname(path) != '.coffee'
-  exec "./node_modules/coffeelint/bin/coffeelint --reporter raw #{path}", (err, content) ->
+  exec "nice ./node_modules/coffeelint/bin/coffeelint --reporter raw #{path}", (err, content) ->
     # Just ignore any errors as any output is treated as an error here, including json report
     # return done(err) if err
     return done(null, {}) if content == ''

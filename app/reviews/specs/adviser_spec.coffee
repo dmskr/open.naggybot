@@ -32,7 +32,7 @@ describe "Adviser", ->
         'path/to/again.coffee'
       ]
       global.exec = (command, callback) ->
-        command.should.match /^\.\/node_modules\/coffeelint\/bin\/coffeelint --reporter raw/
+        command.should.match /^nice \.\/node_modules\/coffeelint\/bin\/coffeelint --reporter raw/
         callback null, JSON.stringify(filename: [command: command])
 
       Bot.apps.reviews.adviser.lint files, (err, report) ->
