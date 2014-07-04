@@ -1,8 +1,6 @@
 
-- [ ] Comments pushed to GitHub should not be duplicated
-
-- [ ] 'Too many words' should be posted to pull request overall if more than, say, 10 comments were posted already and more to come.
 - [ ] All pulled data should be cleaned up once a review is completed plus, say, 10 days
+- [ ] Should move status to inprogress / completed on review completion
 
 - [ ] Ideally the 'pull' action should be moved to git-based updates
   - [ ] Adding deploy keys after initial login
@@ -19,9 +17,13 @@
 - [ ] Add CSS lint to the hinting
 - [ ] Add JSHint to the linting
 
+- [ ] Set GitHub status for specific pull request
+
 
 
 - [ ] Mockups
 
 - [ ] Redesign all the UI using angular, backbone or ember.js
 
+Need additional investigation. Not clear if comments returned by github have global or unidiff-specific line indexes
+- [ ] Comments pushed to GitHub should not be duplicated

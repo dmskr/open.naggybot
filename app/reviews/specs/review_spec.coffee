@@ -470,3 +470,56 @@ describe "Review", ->
         times.should.eql 2
         done()
 
+  describe 'cleanAll', ->
+    cleanedReviews = []
+    beforeEach (done) ->
+      reviews = [
+        { status: 'inprogress' }
+        { status: 'pending' }
+        { status: 'pending' }
+        { status: 'pending' }
+        { status: 'error' }
+      ]
+      (15).times (time) -> reviews.push({ status: 'completed', createdAt: (3 + time).daysAgo() })
+      async.each reviews, Bot.db.reviews.save, done
+
+      cleanedReviews = []
+      nonmock.replace Bot.db.reviews, 'clean', (review, callback) ->
+        cleanedReviews.push review
+        callback(null, review)
+
+    it "should find and clean all reviews in completed status created more than 10 days ago", (done) ->
+      Bot.db.reviews.cleanAll {}, (err, reviews) ->
+        return done(err) if err
+        cleanedReviews.length.should.eql 8
+        cleanedReviews.each (r) -> r.status.should.eql 'completed'
+        cleanedReviews.each (r) -> r.createdAt.should.be.below(10.daysAgo()) > 'completed'
+        done()
+
+  describe 'clean', ->
+    review = null
+    beforeEach (done) ->
+      nonmock.replace global.fs, 'rmrf', (path, callback) -> callback null
+      Bot.db.reviews.save { pull: { url: 'url', path: 'path', archive: 'arch', diff: 'diff' }}, (err, result) ->
+        return done(err) if err
+        review = result
+        done()
+
+    it "should remove the data directory form disk", (done) ->
+      nonmock.replace global.fs, 'rmrf', (path, callback) ->
+        path.should.eql 'path'
+        done()
+      Bot.db.reviews.clean review, (err, review) ->
+
+    it "should remove the name of data directory from review in database", (done) ->
+      Bot.db.reviews.clean review, (err, review) ->
+        return done(err) if err
+        Bot.db.reviews.findById review._id, (err, review) ->
+          return done(err) if err
+          should.exist review.pull
+          should.exist review.pull.url
+          should.exist review.pull.diff
+          should.not.exist review.pull.path
+          should.not.exist review.pull.archive
+          done()
+

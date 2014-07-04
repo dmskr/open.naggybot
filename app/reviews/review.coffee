@@ -185,6 +185,18 @@ Bot.db.bind('reviews').bind({
       comment
     .compact()
     done null, comments: result
+
+  cleanAll: (options, done) ->
+    Bot.db.reviews.find({ status: 'completed', createdAt: { $lt: (10).daysAgo() }}).toArray (err, reviews) ->
+      return done(err) if err
+      async.map reviews, Bot.db.reviews.clean, done
+
+  clean: (review, done) ->
+    global.fs.rmrf review.pull.path, (err) ->
+      delete review.pull.path
+      delete review.pull.archive
+      Bot.db.reviews.save review, (err) ->
+        done err, review
 })
 
 
