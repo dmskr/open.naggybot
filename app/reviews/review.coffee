@@ -168,7 +168,7 @@ Bot.db.bind('reviews').bind({
       }, (err, comment) ->
         return done(err) if err
         next null, comment
-    ), done
+    ), (err) -> done(err, review)
 
   thinkWhatYouSay: (diff, report, done) ->
     result = report.comments.map (comment) ->
