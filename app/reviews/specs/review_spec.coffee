@@ -222,13 +222,34 @@ describe "Review", ->
 
     it "should update the pull request data", (done) ->
       global.request = (options, callback) ->
-        options.url.should.eql "https://api.github.com/repos/octocat/Hello-World/pulls/2?access_token=567890"
-        callback null, {}, JSON.stringify(test: 'this is a test')
+        ['https://api.github.com/repos/octocat/Hello-World/pulls/2/comments?access_token=567890',
+          "https://api.github.com/repos/octocat/Hello-World/pulls/2?access_token=567890"].indexOf(options.url).should.not.eql -1
+        if options.url == "https://api.github.com/repos/octocat/Hello-World/pulls/2?access_token=567890"
+          callback null, {}, JSON.stringify(test: 'this is a test')
+        else
+          callback null, {}, JSON.stringify({})
+
       Bot.db.reviews.pull review, (err, review) ->
         return done(err) if err
         Bot.db.reviews.findById review._id, (err, review) ->
           return done(err) if err
           review.github.pull_request.should.eql test: 'this is a test'
+          done()
+
+    it "should pull existing comments", (done) ->
+      global.request = (options, callback) ->
+        ['https://api.github.com/repos/octocat/Hello-World/pulls/2/comments?access_token=567890',
+          "https://api.github.com/repos/octocat/Hello-World/pulls/2?access_token=567890"].indexOf(options.url).should.not.eql -1
+
+        if options.url == 'https://api.github.com/repos/octocat/Hello-World/pulls/2/comments?access_token=567890'
+          callback null, {}, JSON.stringify([{ position: 3, body: 'Great stuff', path: 'app/file.txt'}])
+        else
+          callback null, {}, '{}'
+      Bot.db.reviews.pull review, (err, review) ->
+        return done(err) if err
+        Bot.db.reviews.findById review._id, (err, review) ->
+          return done(err) if err
+          review.pull.comments.should.eql [{ position: 3, body: 'Great stuff', path: 'app/file.txt'}]
           done()
 
   describe 'analyze', ->

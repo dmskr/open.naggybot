@@ -109,6 +109,16 @@ Bot.db.bind('reviews').bind({
                       return next(err) if err
                       next(null, review)
 
+                (next) ->
+                  request url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}/comments?access_token=#{user.github.accessToken}", (err, response, body) ->
+                    return next(err) if err
+                    try
+                      review.pull.comments = JSON.parse(body)
+                    catch SyntaxError
+                    Bot.db.reviews.save review, (err) ->
+                      return next(err) if err
+                      next(null, review)
+
               ], (err) ->
                 done(err, review)
 
