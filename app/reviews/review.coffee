@@ -26,7 +26,7 @@ Bot.db.bind('reviews').bind({
   executeAll: (options, done) ->
     Bot.db.reviews.find(status: 'pending').limit(options.limit || 0).toArray (err, reviews) ->
       return done(err) if err
-      async.map reviews, Bot.db.reviews.execute, done
+      async.mapSeries reviews, Bot.db.reviews.execute, done
 
   execute: (review, done) ->
     # Change status to 'inprogress'
@@ -191,7 +191,7 @@ Bot.db.bind('reviews').bind({
   cleanAll: (options, done) ->
     Bot.db.reviews.find({ status: 'completed', createdAt: { $lt: (10).daysAgo() }}).toArray (err, reviews) ->
       return done(err) if err
-      async.map reviews, Bot.db.reviews.clean, done
+      async.mapSeries reviews, Bot.db.reviews.clean, done
 
   clean: (review, done) ->
     global.fs.rmrf review.pull.path, (err) ->
