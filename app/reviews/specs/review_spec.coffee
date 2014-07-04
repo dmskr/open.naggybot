@@ -126,13 +126,20 @@ describe "Review", ->
         throw new Error('Review#analyze should be called first')
       Bot.db.reviews.execute status: 'pending', (err, review) ->
 
-    it "should push resul of an analyze", (done) ->
+    it "should push result of an analyze", (done) ->
       Bot.db.reviews.push = (review, callback) ->
         should.exist review
         done()
       Bot.db.reviews.pull = Bot.db.reviews.analyze = (review, callback) ->
         callback null, review
       Bot.db.reviews.execute status: 'pending', (err, review) ->
+
+    it "should immediately change review status to completed after push stage is finished", (done) ->
+      Bot.db.reviews.execute status: 'pending', (err, review) ->
+        return done(err) if err
+        Bot.db.reviews.findById review._id, (err, review) ->
+          review.status.should.eql 'completed'
+          done()
 
   describe "pull", ->
     [review] = [null]

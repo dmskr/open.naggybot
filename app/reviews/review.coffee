@@ -40,7 +40,9 @@ Bot.db.bind('reviews').bind({
           return done(err) if err
           Bot.db.reviews.push review, (err, review) ->
             return done(err) if err
-            done(null, review)
+            review.status = 'completed'
+            Bot.db.reviews.save review, (err) ->
+              done(err, review)
 
   download: (url, path, done) ->
     exec "wget -O #{path} #{url}", (err, stdout, stderr) ->
