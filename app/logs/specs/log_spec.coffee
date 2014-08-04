@@ -5,6 +5,21 @@ describe "Log", ->
     shouldHaveCreatedAt('logs')
     shouldHaveUpdatedAt('logs')
 
+    it "should append entities array if not specified", (done) ->
+      Bot.db.logs.save {}, (err, log) ->
+        return done(err) if err
+        should.exist log.entries
+        log.entries.length.should.eql 0
+        done()
+
+    it "should ignore entries array if exist", (done) ->
+      Bot.db.logs.save { entries: [{ text: 'Hello', createdAt: Date.create() }] }, (err, log) ->
+        return done(err) if err
+        should.exist log.entries
+        log.entries.length.should.eql 1
+        log.entries.first().text.should.eql 'Hello'
+        done()
+
   describe 'write', ->
     it "return an error if no logId provided", (done) ->
       Bot.db.logs.write {}, 'Something happens here', (err) ->

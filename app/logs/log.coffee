@@ -5,6 +5,7 @@ Bot.db.bind('logs').bind({
   save: (log, done) ->
     log.createdAt = Date.create() if !log.createdAt
     log.updatedAt = Date.create()
+    log.entries = [] if !log.entries
     skin.save.call this, log, strict: true , done
 
   write: (obj, text, done) ->
