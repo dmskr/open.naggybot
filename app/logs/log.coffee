@@ -10,6 +10,6 @@ Bot.db.bind('logs').bind({
 
   write: (obj, text, done) ->
     return done('No logId found') if !obj.logId
-    Bot.db.logs.updateById obj.logId, { $addToSet: { entries: { text: text, createdAt: Date.create() }}}, done
+    Bot.db.logs.updateById obj.logId, { $push: { entries: { text: text, createdAt: Date.create() }}}, done
 })
 
