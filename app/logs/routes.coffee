@@ -1,0 +1,2 @@
+exports.route = (app) ->
+

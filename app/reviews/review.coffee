@@ -3,10 +3,17 @@ skin = save: collection.save
 
 Bot.db.bind('reviews').bind({
   save: (review, done) ->
+    self = this
     review.createdAt ||= new Date()
     review.updatedAt = new Date()
     review.status ||= 'pending'
-    skin.save.call this, review, strict: true , done
+    if review.logId
+      skin.save.call self, review, strict: true , done
+    else
+      Bot.db.logs.save { entries: [] }, (err, log) ->
+        return done(err) if err
+        review.logId = log._id
+        skin.save.call self, review, strict: true , done
 
   expireAll: (done) ->
     Bot.db.reviews.find(

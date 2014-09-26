@@ -19,6 +19,28 @@ describe "Review", ->
         review.status.should.eql('inprogress')
         done()
 
+    it "should create log entry for every new review (not having logId)", (done) ->
+      Bot.db.reviews.save { status: 'inprogress' }, (err, review) ->
+        return done(err) if err
+        should.exist review.logId
+        Bot.db.logs.findById review.logId, (err, log) ->
+          return done(err) if err
+          should.exist log
+          should.exist log.entries
+          log.entries.length.should.eql 0
+          done()
+
+    it "should not create any log entries if logId already specified", (done) ->
+      Bot.db.logs.save { entries: [] }, (err, log) ->
+        return done(err) if err
+        Bot.db.reviews.save { logId: log._id }, (err, review) ->
+          return done(err) if err
+          review.logId.should.eql log._id # Not changed
+          Bot.db.logs.findById review.logId, (err, log) ->
+            return done(err) if err
+            should.exist log
+            done()
+
   describe "expireAll", ->
     it "should expire any review created more than 10 minutes ago in not completed status still", (done) ->
       Bot.db.reviews.save

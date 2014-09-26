@@ -1,9 +1,19 @@
 
 
+- [ ] Setup server via nodechef
+
 - [ ] Add CSS lint to the hinting
 - [ ] Add JSHint to the linting
 
-- [ ] Set GitHub status for specific pull request
+
+
+Tomorrow:
+  - [ ] Advanced logging
+  - [ ] Set GitHub status for specific pull request
+
+
+
+
 
 
 
@@ -13,16 +23,12 @@
 - [ ] Error checking / reporting - send an email in case of a token revoke
 
 
-
-
 - [ ] Ideally the 'pull' action should be moved to git-based updates
   - [ ] Adding deploy keys after initial login
   - [ ] Initial checkout
 
   - [ ] Checkout of a specific branch
   - [ ] Restoring code in case of cleanup
-
-
 
 
 - [ ] Mockups
