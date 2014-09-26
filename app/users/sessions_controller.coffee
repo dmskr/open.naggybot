@@ -23,7 +23,7 @@ exports.create = (req, res, next) ->
       return res.redirect('/private')
   )(req, res, next)
 
-exports.del = (req, res, next) ->
+exports.delete = (req, res, next) ->
   req.logout()
   res.redirect '/'
 

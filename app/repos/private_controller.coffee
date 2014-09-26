@@ -76,7 +76,7 @@ exports.create = (req, res, next) ->
         req.flash 'success', 'Nagging your repo. Watch Out!'
         res.redirect '/private/repos/'
 
-exports.del = (req, res, next) ->
+exports.delete = (req, res, next) ->
   github = new GitHub({ version: '3.0.0' })
   github.authenticate({
     type: 'oauth'

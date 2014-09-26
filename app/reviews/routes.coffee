@@ -23,7 +23,7 @@ exports.route = (app) ->
   app.post '/admin/reviews/:id/pull', require_admin, admin.pull
   app.post '/admin/reviews/:id/analyze', require_admin, admin.analyze
   app.post '/admin/reviews/:id/push', require_admin, admin.push
-  app.delete '/admin/reviews/:id', require_admin, admin.del
+  app.delete '/admin/reviews/:id', require_admin, admin.delete
   app.get '/admin/reviews/:id/raw', require_admin, admin.raw
   app.get '/admin/reviews/:id/comments', require_admin, admin.comments
 

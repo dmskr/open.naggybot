@@ -244,7 +244,7 @@ describe "Repos Private Controller", ->
 
       Bot.apps.repos.controller.private.create req, res, next
 
-  describe 'del', ->
+  describe 'delete', ->
     repo = null
     beforeEach (done) ->
       Bot.db.repos.save {
@@ -267,7 +267,7 @@ describe "Repos Private Controller", ->
         args.token.should.eql '321'
         done()
         return null # Required to properly initialize prototype
-      Bot.apps.repos.controller.private.del req, res, next
+      Bot.apps.repos.controller.private.delete req, res, next
 
     it "should request all hooks attached to the repo", (done) ->
       global.GitHub.prototype.repos.getHooks = (args, callback) ->
@@ -278,7 +278,7 @@ describe "Repos Private Controller", ->
         }
         done()
         return null
-      Bot.apps.repos.controller.private.del req, res, next
+      Bot.apps.repos.controller.private.delete req, res, next
 
     it "should remove all hooks created by naggybot", (done) ->
       global.GitHub.prototype.repos.getHooks = (args, callback) ->
@@ -296,7 +296,7 @@ describe "Repos Private Controller", ->
       res.redirect = ->
         removedHooks.should.eql [321, 987]
         done()
-      Bot.apps.repos.controller.private.del req, res, next
+      Bot.apps.repos.controller.private.delete req, res, next
 
     it "should mark the repo as inactive", (done) ->
       res.redirect = ->
@@ -304,7 +304,7 @@ describe "Repos Private Controller", ->
           return done(err) if err
           repo.active.should.eql false
           done()
-      Bot.apps.repos.controller.private.del req, res, next
+      Bot.apps.repos.controller.private.delete req, res, next
 
     it "should set successfull flash message", (done) ->
       req.flash = (type, message) ->
@@ -312,7 +312,7 @@ describe "Repos Private Controller", ->
         should.exist message
         done()
 
-      Bot.apps.repos.controller.private.del req, res, next
+      Bot.apps.repos.controller.private.delete req, res, next
 
     it "should redirect to repo#index page", (done) ->
       res.redirect = (url) ->
@@ -320,6 +320,6 @@ describe "Repos Private Controller", ->
         url.should.eql '/private/repos'
         done()
 
-      Bot.apps.repos.controller.private.del req, res, next
+      Bot.apps.repos.controller.private.delete req, res, next
 
 

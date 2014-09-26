@@ -77,7 +77,7 @@ exports.push = (req, res, next) ->
       return next(err) if err
       res.redirect '/admin/reviews/' + review._id
 
-exports.del = (req, res, next) ->
+exports.delete = (req, res, next) ->
   Bot.db.reviews.removeById req.params.id, (err) ->
     return next(err) if err
     req.flash 'success', 'Review was removed successfully'

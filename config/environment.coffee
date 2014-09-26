@@ -33,7 +33,9 @@ app.set 'port', port
 app.use serveStatic("static")
 app.set 'views', app.root + "/app"
 app.set 'view options', { layout: false }
-app.use bodyParser()
+
+app.use(bodyParser.urlencoded(extended: true))
+app.use(bodyParser.json())
 app.use cookieParser()
 app.use methodOverride()
 
@@ -45,7 +47,9 @@ app.use(session(
     httpOnly: false
   store: new skinstore(app.db)
   secret: "*vr6ylm(4bjeq^xuay@u(q0%@5hevcf=d1-prij_qu2_mg&r1q"
-  key: 'naggybot.sid'
+  key: 'naggybot.sid',
+  resave: true,
+  saveUninitialized: true
 ))
 
 app.use(flash())
@@ -59,7 +63,7 @@ app.use (req, res, next) ->
     original.call res, template, opts, callback
   next()
 
-app.use(morgan(format: 'dev'))
+app.use(morgan('dev'))
 app.use(passport.initialize())
 app.use(passport.session())
 

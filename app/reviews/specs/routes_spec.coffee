@@ -13,7 +13,7 @@ describe "Reviews Routes", ->
       'post /admin/reviews/:id/pull': 'reviews.admin.pull'
       'post /admin/reviews/:id/analyze': 'reviews.admin.analyze'
       'post /admin/reviews/:id/push': 'reviews.admin.push'
-      'delete /admin/reviews/:id': 'reviews.admin.del'
+      'delete /admin/reviews/:id': 'reviews.admin.delete'
       'get /admin/reviews/:id/raw': 'reviews.admin.raw'
       'get /admin/reviews/:id/comments': 'reviews.admin.comments'
     }, { username: 'monkey', admin: true }, 'reviews')
@@ -30,7 +30,7 @@ describe "Reviews Routes", ->
       "post /admin/reviews/:id/pull"
       "post /admin/reviews/:id/analyze"
       "post /admin/reviews/:id/push"
-      "del /admin/reviews/:id"
+      "delete /admin/reviews/:id"
       "get /admin/reviews/:id/raw"
       "get /admin/reviews/:id/comments"
     ], { username: 'monkey' }, 'users')
@@ -51,7 +51,7 @@ describe "Reviews Routes", ->
       "post /admin/reviews/:id/pull"
       "post /admin/reviews/:id/analyze"
       "post /admin/reviews/:id/push"
-      "del /admin/reviews/:id"
+      "delete /admin/reviews/:id"
       "get /admin/reviews/:id/raw"
       "get /admin/reviews/:id/comments"
     ], null, 'users')

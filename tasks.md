@@ -1,18 +1,15 @@
 
 
-- [ ] Setup server via nodechef
+- [ ] Setup the CI
+- [ ] Setup Servers
+- [ ] Make it working for its own codebase
+
 
 - [ ] Add CSS lint to the hinting
 - [ ] Add JSHint to the linting
 
 
-
-Tomorrow:
-  - [ ] Advanced logging
-  - [ ] Set GitHub status for specific pull request
-
-
-
+- [ ] Set GitHub status for specific pull request
 
 
 
