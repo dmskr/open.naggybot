@@ -417,7 +417,7 @@ describe "Reviews Admin Controller", ->
         url.should.eql '/admin/reviews'
         done()
 
-      Bot.apps.reviews.controller.admin.del req, res, next
+      Bot.apps.reviews.controller.admin.delete req, res, next
 
     it "should set successfull message", (done) ->
       req.flash = (status, message) ->
@@ -425,7 +425,7 @@ describe "Reviews Admin Controller", ->
         should.exist message
         done()
 
-      Bot.apps.reviews.controller.admin.del req, res, next
+      Bot.apps.reviews.controller.admin.delete req, res, next
 
     it "should remove the review", (done) ->
       res.redirect = ->
@@ -434,7 +434,7 @@ describe "Reviews Admin Controller", ->
           should.not.exist result
           done()
 
-      Bot.apps.reviews.controller.admin.del req, res, next
+      Bot.apps.reviews.controller.admin.delete req, res, next
 
   describe 'raw', ->
     it 'should render the raw json representing the review', (done) ->

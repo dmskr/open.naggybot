@@ -21,7 +21,7 @@ exports.route = (app) ->
 
   app.get '/login', sessions.new
   app.post '/login', sessions.create
-  app.post '/logout', sessions.del
+  app.post '/logout', sessions.delete
   app.get '/signup', pub.new
   app.post '/signup', pub.create
 

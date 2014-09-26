@@ -10,17 +10,17 @@ describe "Sessions Controller", ->
 
   describe "create", ->
 
-  describe "del", ->
+  describe "delete", ->
     it "should call req.logout to remove user's cookie", (done) ->
       req.logout = done
-      Bot.apps.users.controller.sessions.del req, res, next
+      Bot.apps.users.controller.sessions.delete req, res, next
 
     it "should redirect back to root", (done) ->
       req.logout = ->
       res.redirect = (url) ->
         url.should.eql '/'
         done()
-      Bot.apps.users.controller.sessions.del req, res, next
+      Bot.apps.users.controller.sessions.delete req, res, next
 
   describe 'authgithub', ->
     profile = null

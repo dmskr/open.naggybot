@@ -57,7 +57,7 @@ describe "Users Routes", ->
     shouldHaveRoutes({
       'get /login': 'users.sessions.new',
       'post /login': 'users.sessions.create',
-      'post /logout': 'users.sessions.del',
+      'post /logout': 'users.sessions.delete',
       'get /signup': 'users.public.new',
       'post /signup': 'users.public.create'
     }, null)
