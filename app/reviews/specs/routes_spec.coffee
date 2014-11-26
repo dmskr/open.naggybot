@@ -33,7 +33,7 @@ describe "Reviews Routes", ->
       "delete /admin/reviews/:id"
       "get /admin/reviews/:id/raw"
       "get /admin/reviews/:id/comments"
-    ], { username: 'monkey' }, 'users')
+    ], { username: 'monkey' }, 'reviews')
 
   describe "for public", ->
     shouldHaveRoutes({
@@ -54,4 +54,4 @@ describe "Reviews Routes", ->
       "delete /admin/reviews/:id"
       "get /admin/reviews/:id/raw"
       "get /admin/reviews/:id/comments"
-    ], null, 'users')
+    ], null, 'reviews')

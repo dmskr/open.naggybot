@@ -11,7 +11,7 @@ describe "Users Routes", ->
       'get /private/repos/ignored': 'repos.private.ignored'
       'post /private/repos': 'repos.private.create'
       'delete /private/repos/:owner/:name': 'repos.private.delete'
-    }, { username: 'dmskr' })
+    }, { username: 'dmskr' }, 'repos')
 
   describe "for private", ->
     shouldNotHaveRoutes([], { username: 'monkey' }, 'repos')

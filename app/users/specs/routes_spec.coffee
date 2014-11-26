@@ -25,12 +25,10 @@ describe "Users Routes", ->
       "get /admin/users/search",
       "get /admin/users/autocomplete",
       "get /admin/users/new",
-      "post /admin/users",
       "get /admin/users/user_id",
       "put /admin/users/user_id",
-      "post /admin/users/user_id",
-      "delete /admin/users/user_id"
-    ], null, 'users')
+      "post /admin/users/user_id"
+    ], { username: 'dmskr' }, 'users')
 
     shouldHaveRoutes({
       'get /private/users/current': 'users.private.current'
@@ -47,11 +45,9 @@ describe "Users Routes", ->
       "get /admin/users/search",
       "get /admin/users/autocomplete",
       "get /admin/users/new",
-      "post /admin/users",
       "get /admin/users/user_id",
       "put /admin/users/user_id",
-      "post /admin/users/user_id",
-      "delete /admin/users/user_id"
+      "post /admin/users/user_id"
     ], null, 'users')
 
     shouldHaveRoutes({
