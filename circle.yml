@@ -1,18 +1,4 @@
 machine:
-  services:
-    - docker
   node:
-      version: v0.10.36
-
-dependencies:
-  override:
-    - docker info
-    - docker build -t dmskr/naggy .
-
-deployment:
-  hub: 
-    branch: master
-    commands:
-      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-      - docker push dmskr/naggy
+    version: v0.10.36
 
