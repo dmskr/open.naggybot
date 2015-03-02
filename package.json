@@ -54,7 +54,7 @@
   },
   "scripts": {
     "test": "./node_modules/gulp/bin/gulp.js slowtest",
-    "start": "coffee server.coffee"
+    "start": "./node_modules/coffee-script/bin/coffee server.coffee"
   },
   "repository": {
     "type": "git",
@@ -64,5 +64,5 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {},
-  "engine": "node v0.10.33"
+  "engine": "node v0.10.36"
 }
