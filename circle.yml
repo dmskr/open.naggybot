@@ -7,7 +7,7 @@ machine:
 dependencies:
   override:
     - docker info
-    - docker build -t dmskr/naggy .
+    - docker build -t tutum.co/dmskr/naggy .
 
 deployment:
   hub:
