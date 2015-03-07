@@ -21,8 +21,8 @@ mongourl = "mongodb://localhost:27017/#{database}?auto_reconnect=true"
 app.db = mongo.db(mongourl, safe: true)
 
 app.set 'github',
-  client_id: process.env.GITHUB_CLIENT || '<github-client>'
-  secret: process.env.GITHUB_SECRET || '<github-secret>'
+  client_id: process.env.GITHUB_CLIENT
+  secret: process.env.GITHUB_SECRET
 
 app.set 'host', host
 app.set 'port', port

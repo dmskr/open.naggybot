@@ -13,6 +13,6 @@ deployment:
   hub:
     branch: dockerci
     commands:
-      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS tutum.co
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
       - docker push dmskr/naggy
 
