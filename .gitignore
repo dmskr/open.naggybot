@@ -34,3 +34,6 @@ notes
 static/lib
 static/app.js
 
+# Environment
+.env.development
+

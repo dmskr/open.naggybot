@@ -1,3 +1,6 @@
+global.dotenv = require('dotenv')
+global.dotenv.load()
+
 global.express = require('express')
 global.connect = require('connect')
 global.sugar = require("sugar")
@@ -21,6 +24,7 @@ global.tar = require 'tar'
 global.fstream = require 'fstream'
 global.pathUtil = require 'path'
 global.os = require 'os'
+global.newRelic = require 'newrelic'
 
 global.Bot = express()
 Bot.root = __dirname
