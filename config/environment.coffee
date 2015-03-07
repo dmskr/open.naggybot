@@ -20,14 +20,10 @@ else
 mongourl = "mongodb://localhost:27017/#{database}?auto_reconnect=true"
 app.db = mongo.db(mongourl, safe: true)
 
-github = if app.settings.env == 'production'
-  client_id: "6fad070068889058d583"
-  secret: "e174e890fcfa46f6ce24781635fa601522724d9d"
-else
-  client_id: "76f9ddbeb73de6823fab"
-  secret: "4850ec99a910c8f1a4d654880adebc84dbc243af"
+app.set 'github',
+  client_id: process.env.GITHUB_CLIENT
+  secret: process.env.GITHUB_SECRET
 
-app.set 'github', github
 app.set 'host', host
 app.set 'port', port
 app.use serveStatic("static")

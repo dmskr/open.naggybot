@@ -47,4 +47,3 @@ if Bot.apps.shared
   Bot.get('/*', Bot.apps.shared.controller.public.notFound)
   Bot.post('/*', Bot.apps.shared.controller.public.notFound)
 
-
