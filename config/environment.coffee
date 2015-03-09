@@ -10,22 +10,14 @@ methodOverride = require('method-override')
 
 app = Bot
 
-[database, host, port, dbhost] = if app.settings.env == 'production'
-  ['naggybot', '95.85.16.168', 8081, 'mongodb']
-else if app.settings.env == 'test'
-  ['naggybot_test', 'localhost:8082', 8082, 'localhost']
-else
-  ['naggybot_dev', 'localhost:8081', 8081, 'localhost']
-
-mongourl = "mongodb://#{dbhost}:27017/#{database}?auto_reconnect=true"
-app.db = mongo.db(mongourl, safe: true)
+app.db = mongo.db(process.env.MONGODB, safe: true)
 
 app.set 'github',
   client_id: process.env.GITHUB_CLIENT
   secret: process.env.GITHUB_SECRET
 
-app.set 'host', host
-app.set 'port', port
+app.set 'host', process.env.EXT_HOST
+app.set 'port', process.env.INT_PORT
 app.use serveStatic("static")
 app.set 'views', app.root + "/app"
 app.set 'view options', { layout: false }
