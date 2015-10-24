@@ -8,7 +8,7 @@ Bot.db.bind('reviews').bind({
     review.updatedAt = new Date()
     review.status ||= 'pending'
     if review.logId
-      skin.save.call self, review, strict: true , done
+      skin.save.call self, review, { strict: true }, done
     else
       Bot.db.logs.save { entries: [] }, (err, log) ->
         return done(err) if err

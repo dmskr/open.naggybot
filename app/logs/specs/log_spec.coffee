@@ -24,7 +24,7 @@ describe "Log", ->
     it "return an error if no logId provided", (done) ->
       Bot.db.logs.write {}, 'Something happens here', (err) ->
         should.exist err
-        err.should.eql 'No logId found'
+        err.should.eql new Error('No logId found')
         done()
 
     it "should append to existing log entries if logId is present", (done) ->

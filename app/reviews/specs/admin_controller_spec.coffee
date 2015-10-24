@@ -443,7 +443,7 @@ describe "Reviews Admin Controller", ->
         req.params.id = review._id
         res.send = (text) ->
           should.exist(text)
-          text.should.eql JSON.stringify(review, null, 2)
+          JSON.parse(text).should.eql JSON.parse(JSON.stringify(review))
           done()
 
         Bot.apps.reviews.controller.admin.raw req, res, next

@@ -12,6 +12,9 @@ app = Bot
 
 app.db = mongo.db(process.env.MONGODB, safe: true)
 
+#Logger = require('mongodb').Logger
+#Logger.setLevel('debug')
+
 app.set 'github',
   client_id: process.env.GITHUB_CLIENT
   secret: process.env.GITHUB_SECRET

@@ -9,7 +9,7 @@ Bot.db.bind('logs').bind({
     skin.save.call this, log, strict: true , done
 
   write: (obj, text, done) ->
-    return done('No logId found') if !obj.logId
+    return done(new Error('No logId found')) if !obj.logId
     Bot.db.logs.updateById obj.logId, { $push: { entries: { text: text, createdAt: Date.create() }}}, done
 })
 
