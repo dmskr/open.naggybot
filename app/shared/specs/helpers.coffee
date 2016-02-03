@@ -1,13 +1,16 @@
 process.env.NODE_ENV = 'test'
 chai = require('chai')
-
-require('../../../server')
 DatabaseCleaner = require('database-cleaner')
+async = require("async")
 
-Object.merge global,
-  databaseCleaner: new DatabaseCleaner('mongodb')
-  should: chai.should()
-  nonmock: require('nonmock')
+global.databaseCleaner = new DatabaseCleaner('mongodb')
+global.should = chai.should()
+global.nonmock = require('nonmock')
+
+before (done) ->
+  require('../../../server') (err, bot) ->
+    global.Bot = bot
+    done(err)
 
 request = null
 beforeEach (done) ->

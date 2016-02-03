@@ -13,12 +13,13 @@ module.exports = (Bot, initDone)->
 
   app = Bot.express
 
-  mongo.connect process.env.MONGODB.toString(), (err, db) ->
-    throw err if err
-    Bot.db = db
+  #Logger = require('mongodb').Logger
+  #Logger.setLevel('debug')
 
-    #Logger = require('mongodb').Logger
-    #Logger.setLevel('debug')
+  console.log(process.env.MONGODB)
+  mongo.connect process.env.MONGODB, (err, db) ->
+    return initDone(err) if err
+    Bot.db = db
 
     app.set 'github',
       client_id: process.env.GITHUB_CLIENT

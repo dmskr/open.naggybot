@@ -1,61 +1,66 @@
-Bot = exports.Bot = {}
+module.exports = (done) ->
+  Bot = exports.Bot = {}
 
-Bot.dotenv = require('dotenv')
-Bot.dotenv.load()
+  Bot.dotenv = require('dotenv')
+  Bot.dotenv.load()
 
-Bot.express = require('express')()
-Bot.sugar = require("sugar")
-Bot.mongo = require('mongodb').MongoClient
-Bot.bcrypt = require('bcrypt')
-Bot.crypto = require('crypto')
-Bot.querystring = require('querystring')
-Bot.exec = require('child_process').exec
-Bot.nodemailer = require('nodemailer')
-Bot.URI = require('url')
-Bot.Path = require('path')
-Bot.async = require('async')
-Bot.GitHub = require('github')
-Bot.request = require('request')
-Bot.tmp = require 'tmp'
-Bot.tar = require 'tar'
-Bot.fstream = require 'fstream'
-Bot.pathUtil = require 'path'
-Bot.os = require 'os'
+  Bot.express = require('express')()
+  Bot.sugar = require("sugar")
+  Bot.mongo = require('mongodb').MongoClient
+  Bot.bcrypt = require('bcrypt')
+  Bot.crypto = require('crypto')
+  Bot.querystring = require('querystring')
+  Bot.exec = require('child_process').exec
+  Bot.nodemailer = require('nodemailer')
+  Bot.URI = require('url')
+  Bot.Path = require('path')
+  Bot.async = require('async')
+  Bot.GitHub = require('github')
+  Bot.request = require('request')
+  Bot.tmp = require 'tmp'
+  Bot.tar = require 'tar'
+  Bot.fstream = require 'fstream'
+  Bot.pathUtil = require 'path'
+  Bot.os = require 'os'
 
-Bot.root = __dirname
+  Bot.root = __dirname
 
-Bot.server = require('http').createServer(Bot.express)
-Bot.isServer = true
+  Bot.server = require('http').createServer(Bot.express)
+  Bot.isServer = true
 
-# Setup SMTP
-Bot.express.settings.email = {
-  auth: {
-    host: "",
-    secureConnection: false,
-    port: 111,
+  # Setup SMTP
+  Bot.express.settings.email = {
     auth: {
-      user: "",
-      pass: ""
+      host: "",
+      secureConnection: false,
+      port: 111,
+      auth: {
+        user: "",
+        pass: ""
+      }
     }
   }
-}
 
-Bot.smtp = Bot.nodemailer.createTransport("SMTP", Bot.express.settings.email.auth)
+  Bot.smtp = Bot.nodemailer.createTransport("SMTP", Bot.express.settings.email.auth)
 
-# Cache timestamps
-Bot.express.locals.tsjs = Bot.express.locals.tscss = Date.create().getTime()
+  # Cache timestamps
+  Bot.express.locals.tsjs = Bot.express.locals.tscss = Date.create().getTime()
 
-# Environment
-require("./config/environment") Bot, ->
-  # Applications
-  require("./config/applications") Bot, ->
-    ## Nodetime
-    #if process.env.NODE_ENV == 'production'
-      #require('nodetime').profile {
-        #accountKey: '99fb39f6d50c88ec2b03c1d18b428e45c58f5da1'
-        #appName: 'Node.js Application'
-      #}
+  # Environment
+  require("./config/environment") Bot, ->
+    # Applications
+    require("./config/applications") Bot, ->
+      ## Nodetime
+      #if process.env.NODE_ENV == 'production'
+        #require('nodetime').profile {
+          #accountKey: '99fb39f6d50c88ec2b03c1d18b428e45c58f5da1'
+          #appName: 'Node.js Application'
+        #}
 
+      done(null, Bot)
+
+if require.main == module
+  module.exports (err, Bot) ->
     # Run the server
     env = (process.env.NODE_ENV || 'development').capitalize()
     Bot.server.listen(Bot.express.settings.port)

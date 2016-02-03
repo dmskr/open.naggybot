@@ -1,3 +1,4 @@
+ObjectId = require("mongodb").ObjectId
 module.exports = (Bot, done) ->
   collection = Bot.db.collection('users')
 
@@ -13,7 +14,9 @@ module.exports = (Bot, done) ->
         user.email
       ].join(" "), (err, keywords) ->
         user.keywords = keywords
-        collection.save user, strict: true , done
+        collection.save user, strict: true , (err, result) ->
+          return done(err) if err
+          return done(null, ((result || {}).ops || [])[0] || user)
     
     hashPassword: (password, done) ->
       return done(null, null) if !password || password.length == 0
@@ -63,5 +66,11 @@ module.exports = (Bot, done) ->
         Bot.db.users.findById repos.first().user, done
 
     find: collection.find
+    findById: (id, done) ->
+      collection.findOne _id: new ObjectId(id), done
+    update: collection.update
+    deleteMany: collection.deleteMany
+    deleteOne: collection.deleteOne
+    remove: collection.remove
   })
   done()
