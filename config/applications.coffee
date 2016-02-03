@@ -1,50 +1,72 @@
-Bot.apps = {} if !Bot.apps
+fs = require('fs-extra')
+async = require("async")
 
-apps = Bot.apps
-files = fs.readdirSync("#{Bot.root}/app").findAll (name) ->
-  !name.match(/^\./)
+module.exports = (Bot, appsDone) ->
+  Bot.apps = {} if !Bot.apps
 
-console.log(files)
-files.each (name) ->
-  apps[name] ||= {}
-  apps[name].controller ||= {}
-  
-  # Setup public/private/admin controllers
-  ['admin', 'public', 'private'].each (role) ->
-    path = "#{Bot.root}/app/#{name}/#{role}_controller"
-    if fs.existsSync("#{path}.coffee")
-      apps[name].controller[role] = require(path)
+  apps = Bot.apps
+  files = fs.readdirSync("#{Bot.root}/app").findAll (name) ->
+    !name.match(/^\./)
 
-  # Setup default model if exist
-  model = "#{Bot.root}/app/#{name}/#{name.singularize()}"
-  if fs.existsSync("#{model}.coffee")
-    require(model)
+  async.each files, (name, next) ->
+    apps[name] ||= {}
+    apps[name].controller ||= {}
+    
+    # Setup public/private/admin controllers
+    async.each ['admin', 'public', 'private'], (role, next) ->
+      path = "#{Bot.root}/app/#{name}/#{role}_controller"
+      if fs.existsSync("#{path}.coffee")
+        require(path) Bot, (err, controller) ->
+          return next(err) if err
+          apps[name].controller[role] = controller
+          return next()
+      else next()
+    , (err) ->
+      return next(err) if err
 
-# Additional models
-require "#{Bot.root}/app/shared/keywords"
+      # Setup default model if exist
+      model = "#{Bot.root}/app/#{name}/#{name.singularize()}"
+      if fs.existsSync("#{model}.coffee")
+        require(model) Bot, next
+      else next()
 
-# Additional controllers out of public/private/admin scheme
-apps.users.controller.sessions = require("../app/users/sessions_controller")
-apps.reviews.controller.service = require("../app/reviews/service_controller")
-apps.reviews.adviser = require("../app/reviews/adviser")
-apps.reviews.unidiff = require("../app/reviews/unidiff")
+  , (err) ->
+    return appsDone(err) if err
 
-# Util function used in routes
-global.require_user = (req, res, next) ->
-  return next(new Error(401)) if !req.user
-  next()
+    # Additional models
+    require("#{Bot.root}/app/shared/keywords") Bot, ->
+      # Additional controllers out of public/private/admin scheme
+      async.parallel({
+        sessions: (next) -> require("../app/users/sessions_controller")(Bot, next)
+        service: (next) -> require("../app/reviews/service_controller")(Bot, next)
+        adviser: (next) -> require("../app/reviews/adviser")(Bot, next)
+        unidiff: (next) -> require("../app/reviews/unidiff")(Bot, next)
+      }, (err, result) ->
+        return appsDone(err) if err
+        apps.users.controller.sessions = result.sessions
+        apps.reviews.controller.service = result.service
+        apps.reviews.adviser = result.adviser
+        apps.reviews.unidiff = result.unidiff
+      )
 
-global.require_admin = (req, res, next) ->
-  return next(new Error(401)) if !req.user or !req.user.admin
-  next()
+      # Util function used in routes
+      Bot.require_user = (req, res, next) ->
+        return next(new Error(401)) if !req.user
+        next()
 
-# Set routes
-files.each (name) ->
-  apps[name].routes = require("../app/#{name}/routes")
-  apps[name].routes.route(Bot)
+      Bot.require_admin = (req, res, next) ->
+        return next(new Error(401)) if !req.user or !req.user.admin
+        next()
 
-# The 404 Route (ALWAYS Keep this as the last route)
-if Bot.apps.shared
-  Bot.get('/*', Bot.apps.shared.controller.public.notFound)
-  Bot.post('/*', Bot.apps.shared.controller.public.notFound)
+      # Set routes
+      files.each (name) ->
+        apps[name].routes = require("../app/#{name}/routes")
+        apps[name].routes.route(Bot)
+
+      # The 404 Route (ALWAYS Keep this as the last route)
+      if Bot.apps.shared
+        Bot.express.get('/*', Bot.apps.shared.controller.public.notFound)
+        Bot.express.post('/*', Bot.apps.shared.controller.public.notFound)
+
+      appsDone()
 

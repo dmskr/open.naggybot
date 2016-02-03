@@ -1,6 +1,7 @@
-exports.route = (app) ->
-  usersAdmin = app.apps.users.controller.admin
-  pub = app.apps.shared.controller.public
+exports.route = (Bot) ->
+  usersAdmin = Bot.apps.users.controller.admin
+  pub = Bot.apps.shared.controller.public
 
+  app = Bot.express
   app.get '/', pub.index
 

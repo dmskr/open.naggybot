@@ -17,6 +17,7 @@
     "express-session": "^1.13.0",
     "fs-extra": "^0.26.5",
     "github": "^0.2.4",
+    "jade": "^1.11.0",
     "method-override": "^2.3.5",
     "mongodb": "^2.1.4",
     "morgan": "^1.6.1",
@@ -41,6 +42,11 @@
   "author": "Dmitry Skrinnik",
   "license": "MIT",
   "private": true,
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "database-cleaner": "^0.11.0",
+    "mocha": "^2.4.5",
+    "nonmock": "^0.1.2"
+  },
   "engine": "node v4.1.2"
 }

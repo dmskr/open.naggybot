@@ -1,4 +1,5 @@
-module.exports = (initDone)->
+module.exports = (Bot, initDone)->
+  mongo = require("mongodb").MongoClient
   session = require('express-session')
   MongoStore = require('connect-mongo')(session)
   cookieParser = require('cookie-parser')
@@ -8,12 +9,13 @@ module.exports = (initDone)->
   poweredBy = require('connect-powered-by')
   morgan  = require('morgan')
   methodOverride = require('method-override')
+  passport = require('passport')
 
-  app = Bot
+  app = Bot.express
 
   mongo.connect process.env.MONGODB.toString(), (err, db) ->
     throw err if err
-    app.db = db
+    Bot.db = db
 
     #Logger = require('mongodb').Logger
     #Logger.setLevel('debug')
@@ -39,7 +41,7 @@ module.exports = (initDone)->
         maxAge: 86400000000
         expires: (1).yearFromNow()
         httpOnly: false
-      store: new MongoStore({ db: app.db })
+      store: new MongoStore({ db: Bot.db })
       secret: "*vr6ylm(4bjeq^xuay@u(q0%@5hevcf=d1-prij_qu2_mg&r1q"
       key: 'naggybot.sid',
       resave: true,
