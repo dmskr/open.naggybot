@@ -1,27 +1,26 @@
 collection = Bot.db.collection('reviews')
-skin = save: collection.save
 
-Bot.db.bind('reviews').bind({
+Bot.db.reviews = {
   save: (review, done) ->
     self = this
     review.createdAt ||= new Date()
     review.updatedAt = new Date()
     review.status ||= 'pending'
     if review.logId
-      skin.save.call self, review, { strict: true }, done
+      collection.save review, { strict: true }, done
     else
       Bot.db.logs.save { entries: [] }, (err, log) ->
         return done(err) if err
         review.logId = log._id
-        skin.save.call self, review, strict: true , done
+        collection.save review, strict: true , done
 
   expireAll: (done) ->
-    Bot.db.reviews.find(
+    collection.find(
       status: "inprogress"
       createdAt:
         $lt: (10).minutesAgo()
     ).toArray (err, reviews) ->
-      return next(err)  if err
+      return next(err) if err
       async.each reviews or [], Bot.db.reviews.expire, (err) ->
         done(err, reviews)
 
@@ -31,7 +30,7 @@ Bot.db.bind('reviews').bind({
     Bot.db.reviews.save review, done
 
   executeAll: (options, done) ->
-    Bot.db.reviews.find(status: 'pending').limit(options.limit || 0).toArray (err, reviews) ->
+    collection.find(status: 'pending').limit(options.limit || 0).toArray (err, reviews) ->
       return done(err) if err
       async.mapSeries reviews, Bot.db.reviews.execute, done
 
@@ -206,7 +205,5 @@ Bot.db.bind('reviews').bind({
       delete review.pull.archive
       Bot.db.reviews.save review, (err) ->
         done err, review
-})
-
-
+}
 

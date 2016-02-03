@@ -1,4 +1,4 @@
-Bot.db.bind("keywords").bind({
+Bot.db.keywords = {
   fromText: (text, done) ->
     result = (text or "").toString().split(/[.,\/ !(){}\[\]-\]{}()*+?.,\\^$|#\s\@]/).exclude (w) ->
       not w or w.length is 0
@@ -16,4 +16,4 @@ Bot.db.bind("keywords").bind({
     done null,
       $and: conditions
 
-})
+}

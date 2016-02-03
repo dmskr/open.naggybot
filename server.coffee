@@ -2,9 +2,8 @@ global.dotenv = require('dotenv')
 global.dotenv.load()
 
 global.express = require('express')
-global.connect = require('connect')
 global.sugar = require("sugar")
-global.mongo = require('mongoskin')
+global.mongo = require('mongodb').MongoClient
 global.fs = require('fs-extra')
 global.passport = require('passport')
 global.LocalStrategy = require('passport-local').Strategy
@@ -24,7 +23,6 @@ global.tar = require 'tar'
 global.fstream = require 'fstream'
 global.pathUtil = require 'path'
 global.os = require 'os'
-global.newRelic = require 'newrelic'
 
 global.Bot = express()
 Bot.root = __dirname
@@ -51,28 +49,27 @@ global.smtp = nodemailer.createTransport("SMTP", Bot.settings.email.auth)
 Bot.locals.tsjs = Bot.locals.tscss = Date.create().getTime()
 
 # Environment
-require("./config/environment")
+require("./config/environment") ->
+  # Applications
+  require("./config/applications")
 
-# Applications
-require("./config/applications")
+  ## Nodetime
+  #if process.env.NODE_ENV == 'production'
+    #require('nodetime').profile {
+      #accountKey: '99fb39f6d50c88ec2b03c1d18b428e45c58f5da1'
+      #appName: 'Node.js Application'
+    #}
 
-# Nodetime
-if process.env.NODE_ENV == 'production'
-  require('nodetime').profile {
-    accountKey: '99fb39f6d50c88ec2b03c1d18b428e45c58f5da1'
-    appName: 'Node.js Application'
-  }
+  # Run the server
+  env = (process.env.NODE_ENV || 'development').capitalize()
+  server.listen(Bot.settings.port)
+  console.log("Http server listening on http://0.0.0.0:#{Bot.settings.port}")
+  console.log("NaggyBot App server started in #{env} environment")
 
-# Run the server
-env = (process.env.NODE_ENV || 'development').capitalize()
-server.listen(Bot.settings.port)
-console.log("Http server listening on http://0.0.0.0:#{Bot.settings.port}")
-console.log("NaggyBot App server started in #{env} environment")
+  #taskWorker = ->
+    #Bot.db.reviews.executeAll {}, (err) ->
+      #throw new Error(err) if err
+      #setTimeout(taskWorker, 2000)
 
-taskWorker = ->
-  Bot.db.reviews.executeAll {}, (err) ->
-    throw new Error(err) if err
-    setTimeout(taskWorker, 2000)
-
-taskWorker() if Bot.settings.env == 'production'
+  #taskWorker() if Bot.settings.env == 'production'
 

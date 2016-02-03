@@ -2,8 +2,9 @@ Bot.apps = {} if !Bot.apps
 
 apps = Bot.apps
 files = fs.readdirSync("#{Bot.root}/app").findAll (name) ->
-  name != '.' && name != '..'
+  !name.match(/^\./)
 
+console.log(files)
 files.each (name) ->
   apps[name] ||= {}
   apps[name].controller ||= {}

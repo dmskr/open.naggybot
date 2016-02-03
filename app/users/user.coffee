@@ -1,9 +1,8 @@
 collection = Bot.db.collection('users')
-skin = save: collection.save
 
 emailRegExp = /^([a-zA-Z0-9_\-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([a-zA-Z0-9\-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/
 
-Bot.db.bind('users').bind({
+Bot.db.users = {
   save: (user, done) ->
     self = this
     user.createdAt ||= new Date()
@@ -13,7 +12,7 @@ Bot.db.bind('users').bind({
       user.email
     ].join(" "), (err, keywords) ->
       user.keywords = keywords
-      skin.save.call self, user, strict: true , done
+      collection.save user, strict: true , done
   
   hashPassword: (password, done) ->
     return done(null, null) if !password || password.length == 0
@@ -61,5 +60,5 @@ Bot.db.bind('users').bind({
       return done(err) if err
       return done() if !repos || !repos.first() || !repos.first().user
       Bot.db.users.findById repos.first().user, done
-})
+}
 
