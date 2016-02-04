@@ -60,11 +60,11 @@ module.exports = (Bot, done) ->
 
   exports.renderHtml = (req, res, next) ->
     page = ((req.query or {}).page or 0).toNumber()
-    async.parallel
-      data: (done) ->
-        req.locals.cursor.skip(page * pageSize).limit(pageSize).toArray done
+    async.series
       total: (done) ->
         req.locals.cursor.count done
+      data: (done) ->
+        req.locals.cursor.skip(page * pageSize).limit(pageSize).toArray done
     , (err, results) ->
       return next(err)  if err
       res.render Bot.root + "/app/users/admin/index.jade", Object.merge(results,
