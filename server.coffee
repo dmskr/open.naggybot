@@ -50,6 +50,7 @@ module.exports = (done) ->
   require("./config/environment") Bot, ->
     # Applications
     require("./config/applications") Bot, ->
+      console.log("Init Complete")
       ## Nodetime
       #if process.env.NODE_ENV == 'production'
         #require('nodetime').profile {

@@ -2,6 +2,8 @@ process.env.NODE_ENV = 'test'
 chai = require('chai')
 DatabaseCleaner = require('database-cleaner')
 async = require("async")
+express = require("express")
+fs = require("fs")
 
 global.databaseCleaner = new DatabaseCleaner('mongodb')
 global.should = chai.should()
@@ -23,6 +25,7 @@ beforeEach (done) ->
       query: {}
       headers: {}
       body: {}
+      connection: {}
       flash: ->
 
     global.res =
@@ -64,30 +67,32 @@ global.shouldHaveUpdatedAt = (collection) ->
 global.shouldHaveRoutes = (routes, user, collection) ->
   app = null
   beforeEach ->
-    app = express()
+    app = Object.clone(Bot)
+    app.express = express()
     app.apps = Object.clone(Bot.apps, true)
 
-  Object.keys(routes).each (key) ->
+  Object.keys(routes).forEach (key) ->
     [method, url] = key.split(' ')
     [collection, controller, action] = routes[key].split('.')
     it "#{method.toUpperCase()} #{url} should match #{routes[key]}", (done) ->
       app.apps[collection].controller[controller][action] = -> done()
       app.apps[collection].routes.route(app)
-      app.handle Object.merge(req, { method: method, url: url, user: user }), res, next
+      app.express.handle Object.merge(req, { method: method, url: url, user: user }), res, next
 
 global.shouldNotHaveRoutes = (routes, user, collection) ->
   throw new Error('Routes are required as a first param') unless routes
   throw new Error('Collection is required as a third param') unless collection
   app = null
   beforeEach ->
-    app = express()
+    app = Object.clone(Bot)
+    app.express = express()
     app.apps = Object.clone(Bot.apps, true)
 
-  routes.each (route) ->
+  routes.forEach (route) ->
     [method, url] = route.split(' ')
     it "#{method.toUpperCase()} #{url} should return error 401", (done) ->
       app.apps[collection].routes.route(app)
-      app.handle Object.merge(req, { method: method, url: url }), res, (err) ->
+      app.express.handle Object.merge(req, { method: method, url: url }), res, (err) ->
         err.should.eql new Error(401)
         done()
 
