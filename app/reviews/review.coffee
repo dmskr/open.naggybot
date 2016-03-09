@@ -1,19 +1,28 @@
+async = require "async"
+fs = require "fs-extra"
+pathUtil = require "path"
+
+ObjectId = require("mongodb").ObjectId
 module.exports = (Bot, done) ->
   collection = Bot.db.collection('reviews')
 
-  Bot.db.reviews = {
+  Bot.db.reviews = Object.extended().merge(collection).merge({
     save: (review, done) ->
       self = this
       review.createdAt ||= new Date()
       review.updatedAt = new Date()
       review.status ||= 'pending'
       if review.logId
-        collection.save review, { strict: true }, done
+        collection.save review, { strict: true }, (err, result) ->
+          return done(err) if err
+          return done(null, ((result || {}).ops || [])[0] || review)
       else
         Bot.db.logs.save { entries: [] }, (err, log) ->
           return done(err) if err
           review.logId = log._id
-          collection.save review, strict: true , done
+          collection.save review, strict: true , (err, result) ->
+            return done(err) if err
+            return done(null, ((result || {}).ops || [])[0] || review)
 
     expireAll: (done) ->
       collection.find(
@@ -78,7 +87,7 @@ module.exports = (Bot, done) ->
         Bot.db.reviews.save review, (err) ->
           return done(err) if err
 
-          tmp.tmpName keep: false, (err, path) ->
+          Bot.tmp.tmpName keep: false, (err, path) ->
             return done(err) if err
 
             fs.mkdirs path, (err) ->
@@ -201,11 +210,21 @@ module.exports = (Bot, done) ->
         async.mapSeries reviews, Bot.db.reviews.clean, done
 
     clean: (review, done) ->
-      global.fs.rmrf review.pull.path, (err) ->
+      fs.rmrf review.pull.path, (err) ->
         delete review.pull.path
         delete review.pull.archive
         Bot.db.reviews.save review, (err) ->
           done err, review
-  }
+
+    find: collection.find.bind(collection)
+    findById: (id, done) ->
+      collection.findOne.bind(collection) _id: new ObjectId(id), done
+    update: collection.update.bind(collection)
+    deleteMany: collection.deleteMany.bind(collection)
+    deleteOne: collection.deleteOne.bind(collection)
+    remove: -> collection.remove.bind(collection)
+    removeById: (id, done) ->
+      collection.remove.bind(collection) _id: new ObjectId(id), done
+  })
   done()
 

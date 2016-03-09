@@ -1,3 +1,6 @@
+async = require("async")
+pathUtil = require "path"
+
 module.exports = (Bot, done) ->
   exports = {}
   exports.lint = (files, done) ->

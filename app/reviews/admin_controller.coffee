@@ -1,3 +1,5 @@
+async = require "async"
+
 module.exports = (Bot, done) ->
   exports = {}
   pageSize = 100
@@ -43,8 +45,8 @@ module.exports = (Bot, done) ->
     page = ((req.query || {}).page || 0).toNumber()
 
     async.parallel {
-      data: (done) -> req.locals.cursor.skip(page * pageSize).limit(pageSize).toArray(done)
       total: (done) -> req.locals.cursor.count(done)
+      data: (done) -> req.locals.cursor.skip(page * pageSize).limit(pageSize).toArray(done)
     }, (err, results) ->
       return next(err) if (err)
       res.render Bot.root + '/app/reviews/admin/index.jade', Object.merge(results, {

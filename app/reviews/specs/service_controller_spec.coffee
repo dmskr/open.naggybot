@@ -1,3 +1,6 @@
+fs = require "fs"
+async = require "async"
+
 require("../../shared/specs/helpers")
 
 describe "Reviews Service Controller", ->

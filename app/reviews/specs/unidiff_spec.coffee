@@ -1,3 +1,4 @@
+fs = require "fs"
 require "../../shared/specs/helpers"
 
 describe "UniDiff", ->

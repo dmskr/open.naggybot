@@ -13,7 +13,7 @@ describe "Reviews Admin Controller", ->
       Bot.apps.reviews.controller.admin[action] req, res, next
 
     it "should not fail if no reviews found", (done) ->
-      Bot.db.reviews.remove (err) ->
+      Bot.db.reviews.deleteMany {}, (err) ->
         return done(err)  if err
         res.render = (template, params) ->
           params.total.should.eql 0
@@ -58,7 +58,7 @@ describe "Reviews Admin Controller", ->
       Bot.apps.reviews.controller.admin[action] req, res, next
 
     it "should not fail if no reviews found", (done) ->
-      Bot.db.reviews.remove (err) ->
+      Bot.db.reviews.deleteMany (err) ->
         return done(err)  if err
         res.render = (template, params) ->
           params.total.should.eql 0
@@ -125,7 +125,7 @@ describe "Reviews Admin Controller", ->
       Bot.apps.reviews.controller.admin[action] req, res, next
 
     it "should not fail if no reviews found", (done) ->
-      Bot.db.reviews.remove (err) ->
+      Bot.db.reviews.deleteMany (err) ->
         return done(err)  if err
         res.render = (template, params) ->
           params.total.should.eql 0
@@ -191,7 +191,7 @@ describe "Reviews Admin Controller", ->
       Bot.apps.reviews.controller.admin[action] req, res, next
 
     it "should not fail if no reviews found", (done) ->
-      Bot.db.reviews.remove (err) ->
+      Bot.db.reviews.deleteMany (err) ->
         return done(err)  if err
         res.render = (template, params) ->
           params.total.should.eql 0
@@ -258,7 +258,7 @@ describe "Reviews Admin Controller", ->
       Bot.apps.reviews.controller.admin[action] req, res, next
 
     it "should not fail if no reviews found", (done) ->
-      Bot.db.reviews.remove (err) ->
+      Bot.db.reviews.deleteMany (err) ->
         return done(err)  if err
         res.render = (template, params) ->
           params.total.should.eql 0
@@ -325,7 +325,7 @@ describe "Reviews Admin Controller", ->
       Bot.apps.reviews.controller.admin.show req, res, next
 
     it "should return 'next' action with no error if review is not found", (done) ->
-      req.params.id = review._id + 'not_existing'
+      req.params.id = (review._id + '1').slice(1) # not existing
       Bot.apps.reviews.controller.admin.show req, res, (err) ->
         should.not.exist err
         done()

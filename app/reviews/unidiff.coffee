@@ -1,3 +1,5 @@
+async = require "async"
+
 module.exports = (Bot, done) ->
   exports = {}
   exports.parse = (diff, done) ->
