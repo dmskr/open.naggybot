@@ -1,4 +1,5 @@
 require("../../shared/specs/helpers")
+fs = require "fs-extra"
 
 describe "Repos Private Controller", ->
   originalGitHub = null
@@ -172,7 +173,7 @@ describe "Repos Private Controller", ->
           repo: 'awesome'
           name: 'web'
           config:
-            url: "http://localhost:8082/reviews/github"
+            url: "http://localhost:8081/reviews/github"
             'content-type': 'application/json'
           events: ['pull_request']
           active: true

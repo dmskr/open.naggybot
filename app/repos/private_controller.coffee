@@ -1,3 +1,5 @@
+async = require "async"
+
 module.exports = (Bot, done) ->
   exports = {}
   exports.index = (req, res, next) ->
