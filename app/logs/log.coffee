@@ -14,7 +14,7 @@ module.exports = (Bot, done) ->
 
     write: (obj, text, done) ->
       return done(new Error('No logId found')) if !obj.logId
-      collection.updateById obj.logId, { $push: { entries: { text: text, createdAt: Date.create() }}}, done
+      collection.update.bind(collection) { _id: new ObjectId(obj.logId) }, { $push: { entries: { text: text, createdAt: Date.create() }}}, done
     findById: (id, done) ->
       collection.findOne.bind(collection) _id: new ObjectId(id), done
   })
