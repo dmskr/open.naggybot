@@ -1,3 +1,7 @@
+async = require "async"
+fs = require "fs-extra"
+pathUtil = require "path"
+
 require "../../shared/specs/helpers"
 
 describe "Review", ->
@@ -528,14 +532,14 @@ describe "Review", ->
   describe 'clean', ->
     review = null
     beforeEach (done) ->
-      nonmock.replace global.fs, 'rmrf', (path, callback) -> callback null
+      nonmock.replace fs, 'rmrf', (path, callback) -> callback null
       Bot.db.reviews.save { pull: { url: 'url', path: 'path', archive: 'arch', diff: 'diff' }}, (err, result) ->
         return done(err) if err
         review = result
         done()
 
     it "should remove the data directory form disk", (done) ->
-      nonmock.replace global.fs, 'rmrf', (path, callback) ->
+      nonmock.replace fs, 'rmrf', (path, callback) ->
         path.should.eql 'path'
         done()
       Bot.db.reviews.clean review, (err, review) ->

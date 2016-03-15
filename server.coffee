@@ -1,78 +1,77 @@
-global.dotenv = require('dotenv')
-global.dotenv.load()
+module.exports = (done) ->
+  Bot = exports.Bot = {}
 
-global.express = require('express')
-global.connect = require('connect')
-global.sugar = require("sugar")
-global.mongo = require('mongoskin')
-global.fs = require('fs-extra')
-global.passport = require('passport')
-global.LocalStrategy = require('passport-local').Strategy
-global.GitHubStrategy = require('passport-github').Strategy
-global.bcrypt = require('bcrypt')
-global.crypto = require('crypto')
-global.querystring = require('querystring')
-global.exec = require('child_process').exec
-global.nodemailer = require('nodemailer')
-global.URI = require('url')
-global.Path = require('path')
-global.async = require('async')
-global.GitHub = require('github')
-global.request = require('request')
-global.tmp = require 'tmp'
-global.tar = require 'tar'
-global.fstream = require 'fstream'
-global.pathUtil = require 'path'
-global.os = require 'os'
-global.newRelic = require 'newrelic'
+  Bot.dotenv = require('dotenv')
+  Bot.dotenv.load()
 
-global.Bot = express()
-Bot.root = __dirname
+  Bot.express = require('express')()
+  Bot.sugar = require("sugar")
+  Bot.mongo = require('mongodb').MongoClient
+  Bot.bcrypt = require('bcrypt')
+  Bot.crypto = require('crypto')
+  Bot.querystring = require('querystring')
+  Bot.exec = require('child_process').exec
+  Bot.nodemailer = require('nodemailer')
+  Bot.URI = require('url')
+  Bot.Path = require('path')
+  Bot.async = require('async')
+  Bot.GitHub = require('github')
+  Bot.request = require('request')
+  Bot.tmp = require 'tmp'
+  Bot.tar = require 'tar'
+  Bot.fstream = require 'fstream'
+  Bot.pathUtil = require 'path'
+  Bot.os = require 'os'
 
-global.server = require('http').createServer(Bot)
-global.isServer = true
+  Bot.root = __dirname
 
-# Setup SMTP
-Bot.settings.email = {
-  auth: {
-    host: "",
-    secureConnection: false,
-    port: 111,
+  Bot.server = require('http').createServer(Bot.express)
+  Bot.isServer = true
+
+  # Setup SMTP
+  Bot.express.settings.email = {
     auth: {
-      user: "",
-      pass: ""
+      host: "",
+      secureConnection: false,
+      port: 111,
+      auth: {
+        user: "",
+        pass: ""
+      }
     }
   }
-}
 
-global.smtp = nodemailer.createTransport("SMTP", Bot.settings.email.auth)
+  Bot.smtp = Bot.nodemailer.createTransport("SMTP", Bot.express.settings.email.auth)
 
-# Cache timestamps
-Bot.locals.tsjs = Bot.locals.tscss = Date.create().getTime()
+  # Cache timestamps
+  Bot.express.locals.tsjs = Bot.express.locals.tscss = Date.create().getTime()
 
-# Environment
-require("./config/environment")
+  # Environment
+  require("./config/environment") Bot, ->
+    # Applications
+    require("./config/applications") Bot, ->
+      console.log("Init Complete")
+      ## Nodetime
+      #if process.env.NODE_ENV == 'production'
+        #require('nodetime').profile {
+          #accountKey: '99fb39f6d50c88ec2b03c1d18b428e45c58f5da1'
+          #appName: 'Node.js Application'
+        #}
 
-# Applications
-require("./config/applications")
+      done(null, Bot)
 
-# Nodetime
-if process.env.NODE_ENV == 'production'
-  require('nodetime').profile {
-    accountKey: '99fb39f6d50c88ec2b03c1d18b428e45c58f5da1'
-    appName: 'Node.js Application'
-  }
+if require.main == module
+  module.exports (err, Bot) ->
+    # Run the server
+    env = (process.env.NODE_ENV || 'development').capitalize()
+    Bot.server.listen(Bot.express.settings.port)
+    console.log("Http server listening on http://0.0.0.0:#{Bot.express.settings.port}")
+    console.log("NaggyBot App server started in #{env} environment")
 
-# Run the server
-env = (process.env.NODE_ENV || 'development').capitalize()
-server.listen(Bot.settings.port)
-console.log("Http server listening on http://0.0.0.0:#{Bot.settings.port}")
-console.log("NaggyBot App server started in #{env} environment")
+    #taskWorker = ->
+      #Bot.db.reviews.executeAll {}, (err) ->
+        #throw new Error(err) if err
+        #setTimeout(taskWorker, 2000)
 
-taskWorker = ->
-  Bot.db.reviews.executeAll {}, (err) ->
-    throw new Error(err) if err
-    setTimeout(taskWorker, 2000)
-
-taskWorker() if Bot.settings.env == 'production'
+    #taskWorker() if Bot.express.settings.env == 'production'
 

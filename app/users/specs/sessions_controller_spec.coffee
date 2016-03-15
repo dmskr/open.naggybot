@@ -1,4 +1,5 @@
 require("../../shared/specs/helpers")
+fs = require("fs")
 
 describe "Sessions Controller", ->
   describe "new", ->

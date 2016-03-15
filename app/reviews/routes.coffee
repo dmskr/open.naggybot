@@ -1,12 +1,13 @@
-exports.route = (app) ->
-  pub = app.apps.reviews.controller.public
-  admin = app.apps.reviews.controller.admin
-  service = app.apps.reviews.controller.service
-  shared = app.apps.shared.controller.public
+exports.route = (Bot) ->
+  pub = Bot.apps.reviews.controller.public
+  admin = Bot.apps.reviews.controller.admin
+  service = Bot.apps.reviews.controller.service
+  shared = Bot.apps.shared.controller.public
 
+  app = Bot.express
   app.post '/reviews/github', service.create
 
-  app.get "/admin/reviews/index", require_admin, admin.index
+  app.get "/admin/reviews/index", Bot.require_admin, admin.index
   actions =
     "": "index"
     all: "index"
@@ -17,13 +18,13 @@ exports.route = (app) ->
     pending: "pending"
 
   Object.keys(actions).each (key) ->
-    app.get ["/admin/reviews", key].remove('').join('/'), require_admin, admin[actions[key]]
+    app.get ["/admin/reviews", key].remove('').join('/'), Bot.require_admin, admin[actions[key]]
 
-  app.get "/admin/reviews/:id", require_admin, admin.show
-  app.post '/admin/reviews/:id/pull', require_admin, admin.pull
-  app.post '/admin/reviews/:id/analyze', require_admin, admin.analyze
-  app.post '/admin/reviews/:id/push', require_admin, admin.push
-  app.delete '/admin/reviews/:id', require_admin, admin.delete
-  app.get '/admin/reviews/:id/raw', require_admin, admin.raw
-  app.get '/admin/reviews/:id/comments', require_admin, admin.comments
+  app.get "/admin/reviews/:id", Bot.require_admin, admin.show
+  app.post '/admin/reviews/:id/pull', Bot.require_admin, admin.pull
+  app.post '/admin/reviews/:id/analyze', Bot.require_admin, admin.analyze
+  app.post '/admin/reviews/:id/push', Bot.require_admin, admin.push
+  app.delete '/admin/reviews/:id', Bot.require_admin, admin.delete
+  app.get '/admin/reviews/:id/raw', Bot.require_admin, admin.raw
+  app.get '/admin/reviews/:id/comments', Bot.require_admin, admin.comments
 

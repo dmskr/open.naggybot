@@ -1,13 +1,14 @@
-exports.route = (app) ->
-  priv = app.apps.repos.controller.private
-  shared = app.apps.shared.controller.public
+exports.route = (Bot) ->
+  priv = Bot.apps.repos.controller.private
+  shared = Bot.apps.shared.controller.public
 
-  app.get '/private', require_user, priv.index
-  app.get '/private/repos', require_user, priv.index
-  app.get '/private/repos/index', require_user, priv.index
-  app.get '/private/repos/all', require_user, priv.index
-  app.get '/private/repos/watched', require_user, priv.watched
-  app.get '/private/repos/ignored', require_user, priv.ignored
-  app.post '/private/repos', require_user, priv.create
-  app.delete '/private/repos/:owner/:name', require_user, priv.delete
+  app = Bot.express
+  app.get '/private', Bot.require_user, priv.index
+  app.get '/private/repos', Bot.require_user, priv.index
+  app.get '/private/repos/index', Bot.require_user, priv.index
+  app.get '/private/repos/all', Bot.require_user, priv.index
+  app.get '/private/repos/watched', Bot.require_user, priv.watched
+  app.get '/private/repos/ignored', Bot.require_user, priv.ignored
+  app.post '/private/repos', Bot.require_user, priv.create
+  app.delete '/private/repos/:owner/:name', Bot.require_user, priv.delete
 

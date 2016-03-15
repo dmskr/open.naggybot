@@ -1,59 +1,76 @@
-exports.new = (req, res, next) ->
-  res.render Bot.root + '/app/users/public/login.jade'
+passport = require("passport")
+LocalStrategy = require('passport-local').Strategy
+GitHubStrategy = require('passport-github').Strategy
 
-exports.create = (req, res, next) ->
-  renderError = (error) ->
-    if error
-      if req.is('json')
-        return res.json('200', { errors: { _id: error }})
-      else
-        req.flash('error', error)
-        return res.render("#{Bot.root}/app/users/public/login.jade", email: req.body.email)
-  
-  email = (req.body.email || '').toLowerCase()
-  if !((req.body.username || email) && req.body.password)
-    return renderError('Missing Credentials')
+module.exports = (Bot, done) ->
+  exports = {}
+  exports.new = (req, res, next) ->
+    res.render Bot.root + '/app/users/public/login.jade'
 
-  passport.authenticate('local', (err, user, info) ->
-    return next(err) if err
-    return renderError(Object.values(info.errors).join('<br/>')) if !user
+  exports.create = (req, res, next) ->
+    renderError = (error) ->
+      if error
+        if req.is('json')
+          return res.json('200', { errors: { _id: error }})
+        else
+          req.flash('error', error)
+          return res.render("#{Bot.root}/app/users/public/login.jade", email: req.body.email)
+    
+    email = (req.body.email || '').toLowerCase()
+    if !((req.body.username || email) && req.body.password)
+      return renderError('Missing Credentials')
 
-    req.logIn user, (err) ->
-      return next(err) if (err)
-      return res.redirect('/private')
-  )(req, res, next)
+    passport.authenticate('local', (err, user, info) ->
+      return next(err) if err
+      return renderError(Object.values(info.errors).join('<br/>')) if !user
 
-exports.delete = (req, res, next) ->
-  req.logout()
-  res.redirect '/'
+      req.logIn user, (err) ->
+        return next(err) if (err)
+        return res.redirect('/private')
+    )(req, res, next)
 
-exports.authGitHub = (accessToken, refreshToken, profile, done) ->
-  Bot.db.users.find({ 'github.id': profile.id }).limit(1).toArray (err, users) ->
-    return done(err) if err
+  exports.delete = (req, res, next) ->
+    req.logout()
+    res.redirect '/'
 
-    user = users.first() || {}
-    user ||= {}
-    user.github ||= { id: (profile || {}).id }
-    user.github.displayName = profile.displayName
-    user.github.username = profile.username
-    user.github.emails = (profile.emails || []).map((email) -> email.value).findAll((email) -> !!email)
-    user.github.avatar_url = (profile._json || {}).avatar_url
-    user.github.gravatar_id = (profile._json || {}).gravatar_id
-    user.github.accessToken = accessToken
-    user.github.refreshToken = refreshToken
-    Bot.db.users.save user, (err) ->
-      return done(err, user)
+  exports.authGitHub = (accessToken, refreshToken, profile, done) ->
+    Bot.db.users.find({ 'github.id': profile.id }).limit(1).toArray (err, users) ->
+      return done(err) if err
 
-passport.use(new GitHubStrategy {
-    clientID: Bot.settings.github.client_id
-    clientSecret: Bot.settings.github.secret
-    callbackURL: "http://#{Bot.settings.host}/auth/github/callback"
-    scope: ['user:email', 'repo', 'admin:repo_hook']
-  }, exports.authGitHub)
+      user = users.first() || {}
+      user ||= {}
+      user.github ||= { id: (profile || {}).id }
+      user.github.displayName = profile.displayName
+      user.github.username = profile.username
+      user.github.emails = (profile.emails || []).map((email) -> email.value).findAll((email) -> !!email)
+      user.github.avatar_url = (profile._json || {}).avatar_url
+      user.github.gravatar_id = (profile._json || {}).gravatar_id
+      user.github.accessToken = accessToken
+      user.github.refreshToken = refreshToken
+      Bot.db.users.save user, (err) ->
+        return done(err, user)
 
-passport.serializeUser (user, done) ->
-  done(null, user._id)
+  #passport.use(new LocalStrategy (username, password, done) ->
+    #Bot.db.users.find(username: username, (err, users) ->
+      #return done(err) if err
+      #user = users[0]
+      #if !user return done('Username "' + username + '" does not exist')
+      #Bot.db.users.hashPassword
 
-passport.deserializeUser (id, done) ->
-  Bot.db.users.findById(id, done)
+    #)
+    #done()
+  #)
+  passport.use(new GitHubStrategy {
+      clientID: Bot.express.settings.github.client_id
+      clientSecret: Bot.express.settings.github.secret
+      callbackURL: "http://#{Bot.express.settings.host}/auth/github/callback"
+      scope: ['user:email', 'repo', 'admin:repo_hook']
+    }, exports.authGitHub)
 
+  passport.serializeUser (user, done) ->
+    done(null, user._id)
+
+  passport.deserializeUser (id, done) ->
+    Bot.db.users.findById(id, done)
+
+  done(null, exports)

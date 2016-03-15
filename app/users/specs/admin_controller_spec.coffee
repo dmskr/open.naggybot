@@ -1,4 +1,5 @@
 require("../../shared/specs/helpers")
+async = require("async")
 
 describe "User Admin Controller", ->
   shouldBeLikeIndex = (options) ->
@@ -11,7 +12,7 @@ describe "User Admin Controller", ->
       Bot.apps.users.controller.admin[action](req, res, next)
 
     it "should not fail if no users found", (done) ->
-      Bot.db.users.remove (err) ->
+      Bot.db.users.remove {}, { w: 1 }, (err) ->
         return done(err) if(err)
         res.render = (template, params) ->
           params.total.should.eql(0)
@@ -68,7 +69,7 @@ describe "User Admin Controller", ->
       Bot.apps.users.controller.admin.active(req, res, next)
 
     it "should only show active users", (done) ->
-      Bot.db.users.update { title: { $gt: 5 }}, { $set: { access: false }}, { multi: true }, (err) ->
+      Bot.db.users.update { title: { $gt: 5 }}, { $set: { access: false }}, { w: 1, multi: true }, (err) ->
         return done(err) if(err)
         res.render = (view, params) ->
           params.data.length.should.eql(6)
@@ -87,7 +88,7 @@ describe "User Admin Controller", ->
     shouldBeLikeIndex(action: 'blocked')
 
     beforeEach (done) ->
-      Bot.db.users.update({}, { $set: { access: false }}, { multi: true }, done)
+      Bot.db.users.update({}, { $set: { access: false }}, { w: 1, multi: true }, done)
 
     it "should render proper view", (done) ->
       res.render = (template, options) ->
@@ -103,7 +104,7 @@ describe "User Admin Controller", ->
       Bot.apps.users.controller.admin.blocked(req, res, next)
 
     it "should only show blocked users", (done) ->
-      Bot.db.users.update { title: { $gt: 5 }}, { $set: { access: true }}, { multi: true }, (err) ->
+      Bot.db.users.update { title: { $gt: 5 }}, { $set: { access: true }}, { w: 1, multi: true }, (err) ->
         return done(err) if(err)
         res.render = (view, params) ->
           params.data.length.should.eql(6)
@@ -176,13 +177,13 @@ describe "User Admin Controller", ->
         view.should.equal(Bot.root + "/app/users/admin/form.jade")
         params.man._id.should.eql(user2show._id)
         done()
-      Bot.apps.users.controller.admin.show(req, res)
+      Bot.apps.users.controller.admin.show(req, res, next)
 
     it "should generate MD5 hash after user's email", (done) ->
       res.render = (view, params) ->
         params.man.emailmd5.should.eql('0a4d6346bd2f3ff7512d660efa1a2716')
         done()
-      Bot.apps.users.controller.admin.show(req, res)
+      Bot.apps.users.controller.admin.show(req, res, next)
 
   describe "Update", ->
     user = null
@@ -209,13 +210,13 @@ describe "User Admin Controller", ->
           result.access.should.eql(true)
           done()
 
-      Bot.apps.users.controller.admin.update(req, res)
+      Bot.apps.users.controller.admin.update(req, res, next)
 
     it "should update user successfully", (done) ->
       res.redirect = (url) ->
         url.should.eql '/admin/users'
         done()
-      Bot.apps.users.controller.admin.update(req, res)
+      Bot.apps.users.controller.admin.update(req, res, next)
 
   describe 'autocomplete', ->
     autocomplete = null
