@@ -16,7 +16,6 @@ module.exports = (Bot, initDone)->
   #Logger = require('mongodb').Logger
   #Logger.setLevel('debug')
 
-  console.log(process.env.MONGODB)
   mongo.connect process.env.MONGODB, (err, db) ->
     return initDone(err) if err
     Bot.db = db
