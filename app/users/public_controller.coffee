@@ -6,7 +6,6 @@ module.exports = (Bot, done) ->
   exports.create = (req, res, next) ->
     user = req.body.user
     user.email = (user.email || '').toLowerCase()
-    console.log(Bot.db.users)
     Bot.db.users.validate user, (err, errors) ->
       return next(err) if err
       renderError = (error) ->
