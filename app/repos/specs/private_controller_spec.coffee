@@ -1,5 +1,6 @@
 require("../../shared/specs/helpers")
 fs = require "fs-extra"
+w = require "when"
 
 describe "Repos Private Controller", ->
   originalGitHub = null
@@ -10,7 +11,7 @@ describe "Repos Private Controller", ->
     global.GitHub.prototype.repos = {}
     global.GitHub.prototype.orgs = {}
     global.GitHub.prototype.repos.getAll = (params, callback) ->
-      fs.readFile "#{Bot.root}/app/repos/specs/allRepos.json", (err, content) ->
+      fs.readFile "#{Bot.root}/app/repos/specs/data/allRepos.json", (err, content) ->
         return done(err) if err
         callback(null, JSON.parse(content))
 
@@ -57,9 +58,9 @@ describe "Repos Private Controller", ->
       Bot.apps.repos.controller.private.index req, res, next
 
     it "should list all organizations the user included in", (done) ->
-      global.GitHub.prototype.orgs.getFromUser = (args, callback) ->
+      global.GitHub.prototype.orgs.getFromUser = (args) ->
         args.user.should.eql 'ghmonkey'
-        callback(null, [{ login: 'monkeyOrg' }])
+        [{ login: 'monkeyOrg' }]
       res.render = (url, params) ->
         should.exist params.accounts
         params.accounts.map('login').should.eql ['ghmonkey', 'monkeyOrg']
@@ -80,8 +81,8 @@ describe "Repos Private Controller", ->
       Bot.db.repos.save { user: req.user._id, github: { name: 'bananas', owner: { login: 'monkey' }}, active: true }, (err) ->
         return done(err) if err
 
-        global.GitHub.prototype.repos.getAll = (args, callback) ->
-          callback(null, [{ name: 'bananas', owner: { login: 'monkey' }}])
+        global.GitHub.prototype.repos.getAll = (args) ->
+          w.resolve [{ name: 'bananas', owner: { login: 'monkey' }}]
 
         res.render = (template, params) ->
           params.repos.should.eql [{ name: 'bananas', owner: { login: 'monkey' }, nagging: true }]
@@ -90,8 +91,8 @@ describe "Repos Private Controller", ->
         Bot.apps.repos.controller.private.index req, res, next
 
     it "should not mark repos of the user not stored in local db as those", (done) ->
-      global.GitHub.prototype.repos.getAll = (args, callback) ->
-        callback(null, [{ name: 'bananas', owner: { login: 'monkey' }}])
+      global.GitHub.prototype.repos.getAll = (args) ->
+        w.resolve [{ name: 'bananas', owner: { login: 'monkey' }}]
 
       res.render = (template, params) ->
         params.repos.should.eql [{ name: 'bananas', owner: { login: 'monkey' }}]
@@ -210,13 +211,10 @@ describe "Repos Private Controller", ->
 
       Bot.apps.repos.controller.private.create req, res, next
 
-    it "should update existing if repo with the same name & owner belonged to the same user already exist in database", (done) ->
-      Bot.db.repos.save { github: req.body.repo, user: req.user._id, active: false }, (err) ->
-        return done(err) if err
-
+    it "should update existing if repo with the same name & owner belonged to the same user already exist in database", ->
+      Bot.db.repos.save({ github: req.body.repo, user: req.user._id, active: false }).then ->
         res.redirect = (url) ->
-          Bot.db.repos.find('github.name': 'awesome', 'github.owner.login': 'monkeymaster').toArray (err, repos) ->
-            return next(err) if err
+          Bot.db.repos.find('github.name': 'awesome', 'github.owner.login': 'monkeymaster').toArray().then (repos) ->
             repos.length.should.eql 1
             Object.select(repos.first(), ['active', 'user', 'github']).should.eql
               active: true
@@ -225,7 +223,6 @@ describe "Repos Private Controller", ->
                 name: 'awesome'
                 owner:
                   login: 'monkeymaster'
-            done()
 
         Bot.apps.repos.controller.private.create req, res, next
 

@@ -27,8 +27,7 @@ describe "Review", ->
       Bot.db.reviews.save { status: 'inprogress' }, (err, review) ->
         return done(err) if err
         should.exist review.logId
-        Bot.db.logs.findById review.logId, (err, log) ->
-          return done(err) if err
+        Bot.db.logs.findById(review.logId).then (log) ->
           should.exist log
           should.exist log.entries
           log.entries.length.should.eql 0
@@ -40,8 +39,7 @@ describe "Review", ->
         Bot.db.reviews.save { logId: log._id }, (err, review) ->
           return done(err) if err
           review.logId.should.eql log._id # Not changed
-          Bot.db.logs.findById review.logId, (err, log) ->
-            return done(err) if err
+          Bot.db.logs.findById(review.logId).then (log) ->
             should.exist log
             done()
 

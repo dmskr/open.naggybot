@@ -1,4 +1,7 @@
 async = require "async"
+w = require "when"
+wK = require "when/keys"
+wN = require "when/node"
 
 module.exports = (Bot, done) ->
   exports = {}
@@ -9,16 +12,14 @@ module.exports = (Bot, done) ->
       token: req.user.github.accessToken
     })
     query = {
-      repos: (callback) ->
-        github.repos.getAll { sort: 'updated', per_page: 100, type: 'all' }, callback
-      accounts: (callback) -> github.orgs.getFromUser { user: req.user.github.username, per_page: 100 }, callback
-      nagging: (callback) -> Bot.db.repos.find(user: req.user._id, active: true).toArray callback
+      repos: wN.lift(github.repos.getAll).bind(github.repos.getAll)({ sort: 'updated', per_page: 100, type: 'all' })
+      accounts: wN.lift(github.orgs.getFromUser).bind(github.orgs.getFromUser)({ user: req.user.github.username, per_page: 100 })
+      nagging: Bot.db.repos.find(user: req.user._id, active: true).toArray()
     }
     if req.query.organization
-      query.repos = (callback) -> github.repos.getFromOrg { org: req.query.organization.toLowerCase(), sort: 'updated', per_page: 100, type: 'all' }, callback
+      query.repos = wN.lift(github.repos.getFromOrg).bind(github.repos)({ org: req.query.organization.toLowerCase(), sort: 'updated', per_page: 100, type: 'all' })
 
-    async.parallel query, (err, result) ->
-      return next(err) if err
+    wK.all(query).then (result) ->
       result.accounts.each (account) -> account.type = 'organization'
       (result.accounts || []).unshift Object.merge(req.user.github, { login: req.user.github.username, type: 'user' })
       result.selectedAccount = req.user.github

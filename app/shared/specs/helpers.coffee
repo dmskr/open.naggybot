@@ -43,26 +43,21 @@ afterEach (done) ->
   done()
 
 global.shouldHaveCreatedAt = (collection) ->
-  it "should store createdAt when saved for first time", (done) ->
-    Bot.db[collection].save { something: 'Ya!' }, (err, record) ->
+  it "should store createdAt when saved for first time", ->
+    Bot.db[collection].save({ something: 'Ya!' }).then (record) ->
       should.exist(record.createdAt)
-      done()
 
-  it "should not refresh createdAt if already provided", (done) ->
+  it "should not refresh createdAt if already provided", ->
     time = (1).hourFromNow()
-    Bot.db[collection].save { some: 'Yo!', createdAt: time }, (err, record) ->
-      return done(err) if err
+    Bot.db[collection].save({ some: 'Yo!', createdAt: time }).then (record) ->
       record.createdAt.should.eql(time)
-      done()
 
 global.shouldHaveUpdatedAt = (collection) ->
-  it "should always insert updatedAt", (done) ->
+  it "should always insert updatedAt", ->
     time = (1).hourFromNow()
-    Bot.db[collection].save { some: 'Yo!', updatedAt: time }, (err, record) ->
-      return done(err) if err
+    Bot.db[collection].save({ some: 'Yo!', updatedAt: time }).then (record) ->
       should.exist(record.updatedAt)
       record.updatedAt.should.not.eql(time)
-      done()
 
 global.shouldHaveRoutes = (routes, user, collection) ->
   app = null
