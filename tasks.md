@@ -1,6 +1,5 @@
 
 
-- [ ] Setup the CI
 - [ ] Setup Servers
 - [ ] Make it working for its own codebase
 
@@ -26,7 +25,9 @@
 
 - [ ] Mockups
 
-- [ ] Redesign all the UI using angular, backbone or ember.js
+- [ ] Redesign all the UI using angular, backbone or ember.js, react
 
 Need additional investigation. Not clear if comments returned by github have global or unidiff-specific line indexes
 - [ ] Comments pushed to GitHub should not be duplicated
+- [ ] update jslint / hint version
+- [ ] add grammar check for comments
