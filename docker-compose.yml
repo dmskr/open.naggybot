@@ -1,0 +1,10 @@
+mongo:
+  image: mongo:3.2
+naggy:
+  build: .
+  command: npm start
+  links:
+    - mongo
+  environment:
+    PORT: 8081
+

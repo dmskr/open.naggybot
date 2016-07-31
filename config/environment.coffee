@@ -16,8 +16,8 @@ module.exports = (Bot, initDone)->
   #Logger = require('mongodb').Logger
   #Logger.setLevel('debug')
 
-  console.log(process.env.MONGODB)
-  mongo.connect process.env.MONGODB, (err, db) ->
+  connection = process.env.MONGO_PORT.replace(/^tcp/i, 'mongodb') + "/naggybot?auto_reconnect=true&safe=true&w=1"
+  mongo.connect connection, (err, db) ->
     return initDone(err) if err
     Bot.db = db
 
@@ -26,7 +26,7 @@ module.exports = (Bot, initDone)->
       secret: process.env.GITHUB_SECRET
 
     app.set 'host', process.env.EXT_HOST
-    app.set 'port', process.env.INT_PORT
+    app.set 'port', process.env.PORT
     app.use serveStatic("static")
     app.set 'views', app.root + "/app"
     app.set 'view options', { layout: false }

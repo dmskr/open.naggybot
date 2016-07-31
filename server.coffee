@@ -64,9 +64,9 @@ if require.main == module
   module.exports (err, Bot) ->
     # Run the server
     env = (process.env.NODE_ENV || 'development').capitalize()
-    Bot.server.listen(Bot.express.settings.port)
-    console.log("Http server listening on http://0.0.0.0:#{Bot.express.settings.port}")
-    console.log("NaggyBot App server started in #{env} environment")
+    Bot.server.listen Bot.express.settings.port, ->
+      console.log("Http server listening on http://0.0.0.0:#{Bot.express.settings.port}")
+      console.log("NaggyBot App server started in #{env} environment")
 
     #taskWorker = ->
       #Bot.db.reviews.executeAll {}, (err) ->

@@ -36,4 +36,5 @@ static/app.js
 
 # Environment
 .env.development
+.env
 
