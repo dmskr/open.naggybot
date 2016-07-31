@@ -1,7 +1,7 @@
 mongo:
   image: mongo:3.2.8
 naggy:
-  build: .
+  build: ..
   command: npm start
   links:
     - mongo
