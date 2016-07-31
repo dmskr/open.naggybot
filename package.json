@@ -35,7 +35,7 @@
     "yargs": "^4.2.0"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --timeout 4000",
+    "test": "./node_modules/mocha/bin/mocha --opts config/mocha.opts --timeout 4000",
     "start": "./node_modules/coffee-script/bin/coffee server.coffee"
   },
   "repository": {
