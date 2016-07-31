@@ -1,12 +1,8 @@
 mongo:
-  image: mongo
-  ports:
-    - "27017:27017"
+  image: mongo:3.3
 naggy:
   build: .
   command: npm start
-  ports:
-    - "8081:8081"
   links:
     - mongo
   environment:
