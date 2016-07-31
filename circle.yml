@@ -1,6 +1,4 @@
 machine:
-  node:
-    version: v4.4.5
   services:
     - docker
 
@@ -10,10 +8,9 @@ dependencies:
 
 test:
   pre:
-    - docker-compose pull
-    - docker-compose -p naggybot up -d
+    - docker-compose -f config/docker.compose.test.yml -p naggybot up -d
   override:
-    - docker-compose run naggy npm test
+    - docker-compose -f config/docker.compose.test.yml run naggy npm test
 
 deployment:
   hub:
