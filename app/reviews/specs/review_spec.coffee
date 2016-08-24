@@ -1,6 +1,7 @@
 async = require "async"
 fs = require "fs-extra"
 pathUtil = require "path"
+childProcess = require "child_process"
 
 require "../../shared/specs/helpers"
 
@@ -173,8 +174,8 @@ describe "Review", ->
       nonmock.replace Bot.db.users, 'findByRepo', (repo, callback) ->
         callback(null, { github: { accessToken: '567890' }})
 
-      nonmock.replace global, 'request', (options, callback) -> callback(null, {}, '')
-      nonmock.replace global, 'exec', (command, callback) -> callback(null)
+      nonmock.replace Bot, 'request', (options, callback) -> callback(null, {}, '')
+      nonmock.replace childProcess, 'exec', (command, callback) -> callback(null)
 
       fs.readFile Bot.root + '/app/reviews/specs/samples/pullRequest.json', (err, content) ->
         return done(err) if err
@@ -185,14 +186,14 @@ describe "Review", ->
         done()
 
     it "should get tarball of a reviewed pull request", (done) ->
-      global.exec = (command, callback) ->
+      childProcess.exec = (command, callback) ->
         matches = command.match(/^wget -O (\S+) .+/)
         should.exist matches
         done()
       Bot.db.reviews.pull review, (err, review) ->
 
     it "should download a tarbar into existing directory", (done) ->
-      global.exec = (command, callback) ->
+      childProcess.exec = (command, callback) ->
         matches = command.match(/^wget -O (\S+) .+/)
         should.exist matches[1]
         fs.exists pathUtil.dirname(matches[1]), (exists) ->
@@ -201,7 +202,7 @@ describe "Review", ->
       Bot.db.reviews.pull review, (err, review) ->
 
     it "should store pull.path & pull.archive for future use", (done) ->
-      global.exec = (command, callback) ->
+      childProcess.exec = (command, callback) ->
         matches = command.match(/^wget -O (\S+) .+/)
         should.exist review.pull
         should.exist review.pull.path
@@ -211,7 +212,7 @@ describe "Review", ->
       Bot.db.reviews.pull review, (err, review) ->
 
     it "should wget the correct url", (done) ->
-      global.exec = (command, callback) ->
+      childProcess.exec = (command, callback) ->
         matches = command.match(/^wget -O (\S+) (.+)/)
         should.exist matches[2]
         matches[2].should.eql 'https://api.github.com/repos/octocat/Hello-World/tarball/6dcb09b5b57875f334f61aebed695e2e4193db5e?access_token=567890'
@@ -219,14 +220,14 @@ describe "Review", ->
       Bot.db.reviews.pull review, (err, review) ->
 
     it "should extract tarball into sources folder", (done) ->
-      global.exec = (command, callback) ->
+      childProcess.exec = (command, callback) ->
         return callback(null) if command.match /^wget/
         command.should.eql "tar -xf #{review.pull.archive} -C #{review.pull.path}/source --strip-components=1"
         done()
       Bot.db.reviews.pull review, (err, review) ->
 
     it "should request the diff", (done) ->
-      global.request = (options, callback) ->
+      Bot.request = (options, callback) ->
         return callback null, {}, '' if !options.headers
         options.headers.should.eql { 'Accept': 'application/vnd.github.diff', 'User-Agent': 'NodeJS HTTP Client' }
         options.url.should.eql "https://api.github.com/repos/octocat/Hello-World/pulls/2?access_token=567890"
@@ -234,7 +235,7 @@ describe "Review", ->
       Bot.db.reviews.pull review, (err, review) ->
 
     it "should store returned diff in a file", (done) ->
-      global.request = (options, callback) ->
+      Bot.request = (options, callback) ->
         callback null, {}, 'this is the diff'
 
       Bot.db.reviews.pull review, (err, review) ->
@@ -254,7 +255,7 @@ describe "Review", ->
           done()
 
     it "should update the pull request data", (done) ->
-      global.request = (options, callback) ->
+      Bot.request = (options, callback) ->
         ['https://api.github.com/repos/octocat/Hello-World/pulls/2/comments?access_token=567890',
           "https://api.github.com/repos/octocat/Hello-World/pulls/2?access_token=567890"].indexOf(options.url).should.not.eql -1
         if options.url == "https://api.github.com/repos/octocat/Hello-World/pulls/2?access_token=567890"
@@ -270,7 +271,7 @@ describe "Review", ->
           done()
 
     it "should pull existing comments", (done) ->
-      global.request = (options, callback) ->
+      Bot.request = (options, callback) ->
         ['https://api.github.com/repos/octocat/Hello-World/pulls/2/comments?access_token=567890',
           "https://api.github.com/repos/octocat/Hello-World/pulls/2?access_token=567890"].indexOf(options.url).should.not.eql -1
 
@@ -420,10 +421,10 @@ describe "Review", ->
   describe 'push', ->
     [review, github] = [null, null]
     beforeEach (done) ->
-      github = global.GitHub
-      global.GitHub = ->
-      global.GitHub.prototype.pullRequests ||= {}
-      global.GitHub.prototype.pullRequests.createComment = (comment, next) -> next()
+      github = Bot.GitHub
+      Bot.GitHub = ->
+      Bot.GitHub.prototype.pullRequests ||= {}
+      Bot.GitHub.prototype.pullRequests.createComment = (comment, next) -> next()
       Bot.db.reviews.save {
         github:
           accessToken: '321'
@@ -473,12 +474,12 @@ describe "Review", ->
         done()
 
     afterEach (done) ->
-      global.GitHub = github
+      Bot.GitHub = github
       done()
 
     it "should authenticate to github", (done) ->
-      global.GitHub.prototype.pullRequests.createComment = (comment, next) -> next()
-      global.GitHub.prototype.authenticate = (args) ->
+      Bot.GitHub.prototype.pullRequests.createComment = (comment, next) -> next()
+      Bot.GitHub.prototype.authenticate = (args) ->
         args.type.should.eql 'oauth'
         args.token.should.eql '321'
         done()
@@ -486,9 +487,9 @@ describe "Review", ->
 
     it "should post comments to GitHub", (done) ->
       times = 0
-      GitHub.prototype.authenticate = (args) ->
-      GitHub.prototype.pullRequests = { }
-      GitHub.prototype.pullRequests.createComment = (comment, next) ->
+      Bot.GitHub.prototype.authenticate = (args) ->
+      Bot.GitHub.prototype.pullRequests = { }
+      Bot.GitHub.prototype.pullRequests.createComment = (comment, next) ->
         comment.user.should.eql 'monkey'
         comment.repo.should.eql 'monkeytest'
         comment.number.should.eql 2

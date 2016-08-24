@@ -6,22 +6,13 @@ module.exports = (done) ->
 
   Bot.express = require('express')()
   Bot.sugar = require("sugar")
-  Bot.mongo = require('mongodb').MongoClient
   Bot.bcrypt = require('bcrypt')
-  Bot.crypto = require('crypto')
-  Bot.querystring = require('querystring')
-  Bot.exec = require('child_process').exec
   Bot.nodemailer = require('nodemailer')
   Bot.URI = require('url')
   Bot.Path = require('path')
   Bot.async = require('async')
   Bot.GitHub = require('github')
   Bot.request = require('request')
-  Bot.tmp = require 'tmp'
-  Bot.tar = require 'tar'
-  Bot.fstream = require 'fstream'
-  Bot.pathUtil = require 'path'
-  Bot.os = require 'os'
 
   Bot.root = __dirname
 

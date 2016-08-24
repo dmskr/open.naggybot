@@ -3,7 +3,7 @@ async = require "async"
 module.exports = (Bot, done) ->
   exports = {}
   exports.index = (req, res, next) ->
-    github = new global.GitHub({ version: '3.0.0' })
+    github = new Bot.GitHub({ version: '3.0.0' })
     github.authenticate({
       type: 'oauth',
       token: req.user.github.accessToken
@@ -38,7 +38,7 @@ module.exports = (Bot, done) ->
   exports.watched = exports.index
 
   exports.create = (req, res, next) ->
-    github = new GitHub({ version: '3.0.0' })
+    github = new Bot.GitHub({ version: '3.0.0' })
     github.authenticate({
       type: 'oauth'
       token: req.user.github.accessToken
@@ -81,7 +81,7 @@ module.exports = (Bot, done) ->
           res.redirect '/private/repos/'
 
   exports.delete = (req, res, next) ->
-    github = new GitHub({ version: '3.0.0' })
+    github = new Bot.GitHub({ version: '3.0.0' })
     github.authenticate({
       type: 'oauth'
       token: req.user.github.accessToken

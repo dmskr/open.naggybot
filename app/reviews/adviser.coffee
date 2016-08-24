@@ -1,5 +1,6 @@
 async = require("async")
 pathUtil = require "path"
+childProcess = require('child_process')
 
 module.exports = (Bot, done) ->
   exports = {}
@@ -21,7 +22,7 @@ module.exports = (Bot, done) ->
 
   exports.coffee = (path, done) ->
     return done() if pathUtil.extname(path) != '.coffee'
-    exec "nice ./node_modules/coffeelint/bin/coffeelint --reporter raw #{path}", (err, content) ->
+    childProcess.exec "nice ./node_modules/coffeelint/bin/coffeelint --reporter raw #{path}", (err, content) ->
       # Just ignore any errors as any output is treated as an error here, including json report
       # return done(err) if err
       return done(null, {}) if content == ''

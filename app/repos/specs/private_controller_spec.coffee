@@ -4,25 +4,25 @@ fs = require "fs-extra"
 describe "Repos Private Controller", ->
   originalGitHub = null
   beforeEach (done) ->
-    originalGitHub = global.GitHub
-    global.GitHub = ->
-    global.GitHub.prototype.authenticate = ->
-    global.GitHub.prototype.repos = {}
-    global.GitHub.prototype.orgs = {}
-    global.GitHub.prototype.repos.getAll = (params, callback) ->
+    originalGitHub = Bot.GitHub
+    Bot.GitHub = ->
+    Bot.GitHub.prototype.authenticate = ->
+    Bot.GitHub.prototype.repos = {}
+    Bot.GitHub.prototype.orgs = {}
+    Bot.GitHub.prototype.repos.getAll = (params, callback) ->
       fs.readFile "#{Bot.root}/app/repos/specs/allRepos.json", (err, content) ->
         return done(err) if err
         callback(null, JSON.parse(content))
 
-    global.GitHub.prototype.repos.createHook = (params, callback) ->
+    Bot.GitHub.prototype.repos.createHook = (params, callback) ->
       callback(null, [])
-    global.GitHub.prototype.repos.getHooks = (args, callback) ->
+    Bot.GitHub.prototype.repos.getHooks = (args, callback) ->
       callback(null, [])
-    global.GitHub.prototype.repos.getFromUser = (args, callback) ->
+    Bot.GitHub.prototype.repos.getFromUser = (args, callback) ->
       callback(null, [])
-    global.GitHub.prototype.repos.getFromOrg = (args, callback) ->
+    Bot.GitHub.prototype.repos.getFromOrg = (args, callback) ->
       callback(null, [])
-    global.GitHub.prototype.orgs.getFromUser = (args, callback) ->
+    Bot.GitHub.prototype.orgs.getFromUser = (args, callback) ->
       callback(null, [])
 
     req.host = 'localhost'
@@ -38,12 +38,12 @@ describe "Repos Private Controller", ->
       done()
 
   afterEach (done) ->
-    global.GitHub = originalGitHub
+    Bot.GitHub = originalGitHub
     done()
 
   describe "index", ->
     it "should authentificate github request with user's accessToken", (done) ->
-      global.GitHub.prototype.authenticate = (args) ->
+      Bot.GitHub.prototype.authenticate = (args) ->
         args.type.should.eql 'oauth'
         args.token.should.eql '321'
         done()
@@ -51,13 +51,13 @@ describe "Repos Private Controller", ->
       Bot.apps.repos.controller.private.index req, res, next
 
     it "should list all repos belonged to the user sorted by 'updated' date", (done) ->
-      global.GitHub.prototype.repos.getAll = (args) ->
+      Bot.GitHub.prototype.repos.getAll = (args) ->
         args.sort.should.eql 'updated'
         done()
       Bot.apps.repos.controller.private.index req, res, next
 
     it "should list all organizations the user included in", (done) ->
-      global.GitHub.prototype.orgs.getFromUser = (args, callback) ->
+      Bot.GitHub.prototype.orgs.getFromUser = (args, callback) ->
         args.user.should.eql 'ghmonkey'
         callback(null, [{ login: 'monkeyOrg' }])
       res.render = (url, params) ->
@@ -67,7 +67,7 @@ describe "Repos Private Controller", ->
       Bot.apps.repos.controller.private.index req, res, next
 
     it "should mark all organizations as orgs and users as 'user'", (done) ->
-      global.GitHub.prototype.orgs.getFromUser = (args, callback) ->
+      Bot.GitHub.prototype.orgs.getFromUser = (args, callback) ->
         args.user.should.eql 'ghmonkey'
         callback(null, [{ login: 'monkeyOrg' }])
       res.render = (url, params) ->
@@ -80,7 +80,7 @@ describe "Repos Private Controller", ->
       Bot.db.repos.save { user: req.user._id, github: { name: 'bananas', owner: { login: 'monkey' }}, active: true }, (err) ->
         return done(err) if err
 
-        global.GitHub.prototype.repos.getAll = (args, callback) ->
+        Bot.GitHub.prototype.repos.getAll = (args, callback) ->
           callback(null, [{ name: 'bananas', owner: { login: 'monkey' }}])
 
         res.render = (template, params) ->
@@ -90,7 +90,7 @@ describe "Repos Private Controller", ->
         Bot.apps.repos.controller.private.index req, res, next
 
     it "should not mark repos of the user not stored in local db as those", (done) ->
-      global.GitHub.prototype.repos.getAll = (args, callback) ->
+      Bot.GitHub.prototype.repos.getAll = (args, callback) ->
         callback(null, [{ name: 'bananas', owner: { login: 'monkey' }}])
 
       res.render = (template, params) ->
@@ -107,11 +107,11 @@ describe "Repos Private Controller", ->
 
     describe 'search', ->
       it "should return all repos of a currently logged in user if no search params provided", (done) ->
-        global.GitHub.prototype.repos.getAll = (args, callback) ->
+        Bot.GitHub.prototype.repos.getAll = (args, callback) ->
           callback(null, [{ login: 'bananas' }])
-        global.GitHub.prototype.repos.getFromUser = (args, callback) ->
+        Bot.GitHub.prototype.repos.getFromUser = (args, callback) ->
           throw new Error('Only current user\'s repos should be requested')
-        global.GitHub.prototype.repos.getFromOrg = (args, callback) ->
+        Bot.GitHub.prototype.repos.getFromOrg = (args, callback) ->
           throw new Error('Only current user\'s repos should be requested')
 
         res.render = (template, params) ->
@@ -128,11 +128,11 @@ describe "Repos Private Controller", ->
 
       it "should return all repos by requested organization", (done) ->
         req.query.organization = 'superband'
-        global.GitHub.prototype.repos.getAll = (args, callback) ->
+        Bot.GitHub.prototype.repos.getAll = (args, callback) ->
           throw new Error('Only requested organization\'s repos should be requested')
-        global.GitHub.prototype.repos.getFromUser = (args, callback) ->
+        Bot.GitHub.prototype.repos.getFromUser = (args, callback) ->
           throw new Error('Only requested organization\'s repos should be requested')
-        global.GitHub.prototype.repos.getFromOrg = (args, callback) ->
+        Bot.GitHub.prototype.repos.getFromOrg = (args, callback) ->
           args.org.should.eql 'superband'
           callback(null, [{ login: 'monkeyrepo' }])
 
@@ -143,7 +143,7 @@ describe "Repos Private Controller", ->
 
       it "should return requested organization as selected account", (done) ->
         req.query.organization = 'superband'
-        global.GitHub.prototype.orgs.getFromUser = (args, callback) ->
+        Bot.GitHub.prototype.orgs.getFromUser = (args, callback) ->
           callback(null, [{ login: 'SuperBand' }])
         res.render = (template, params) ->
           params.selectedAccount.login.should.eql 'SuperBand'
@@ -159,7 +159,7 @@ describe "Repos Private Controller", ->
       done()
 
     it "should authorize on github", (done) ->
-      global.GitHub.prototype.authenticate = (args) ->
+      Bot.GitHub.prototype.authenticate = (args) ->
         args.type.should.eql 'oauth'
         args.token.should.eql '321'
         done()
@@ -167,7 +167,7 @@ describe "Repos Private Controller", ->
       Bot.apps.repos.controller.private.create req, res, next
 
     it "should create github hooks", (done) ->
-      global.GitHub.prototype.repos.createHook = (args, callback) ->
+      Bot.GitHub.prototype.repos.createHook = (args, callback) ->
         args.should.eql {
           user: 'monkeymaster'
           repo: 'awesome'
@@ -183,7 +183,7 @@ describe "Repos Private Controller", ->
       Bot.apps.repos.controller.private.create req, res, next
 
     it "should ignore 'hook already exists' message from github if any", (done) ->
-      global.GitHub.prototype.repos.createHook = (args, callback) ->
+      Bot.GitHub.prototype.repos.createHook = (args, callback) ->
         fs.readFile Bot.root + '/app/repos/specs/hookAlreadyExists.json', (err, content) ->
           return done(err) if err
           callback JSON.parse(content)
@@ -263,7 +263,7 @@ describe "Repos Private Controller", ->
         done()
 
     it "should authorize on github", (done) ->
-      global.GitHub.prototype.authenticate = (args) ->
+      Bot.GitHub.prototype.authenticate = (args) ->
         args.type.should.eql 'oauth'
         args.token.should.eql '321'
         done()
@@ -271,7 +271,7 @@ describe "Repos Private Controller", ->
       Bot.apps.repos.controller.private.delete req, res, next
 
     it "should request all hooks attached to the repo", (done) ->
-      global.GitHub.prototype.repos.getHooks = (args, callback) ->
+      Bot.GitHub.prototype.repos.getHooks = (args, callback) ->
         args.should.eql {
           user: 'monkey'
           repo: 'naggybot'
@@ -282,7 +282,7 @@ describe "Repos Private Controller", ->
       Bot.apps.repos.controller.private.delete req, res, next
 
     it "should remove all hooks created by naggybot", (done) ->
-      global.GitHub.prototype.repos.getHooks = (args, callback) ->
+      Bot.GitHub.prototype.repos.getHooks = (args, callback) ->
         callback(null, [
           { id: 321, config: url: 'http://localhost/pulls/github/callback' },
           { id: 654, config: url: 'http://othersite.com/pulls/github/callback' },
@@ -290,7 +290,7 @@ describe "Repos Private Controller", ->
         return null
 
       removedHooks = []
-      global.GitHub.prototype.repos.deleteHook = (args, callback) ->
+      Bot.GitHub.prototype.repos.deleteHook = (args, callback) ->
         removedHooks.push args.id
         callback()
 

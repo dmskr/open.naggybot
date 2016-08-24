@@ -1,9 +1,10 @@
 require "../../shared/specs/helpers"
+childProcess = require("child_process")
 
 describe "Adviser", ->
   describe 'lint', ->
     beforeEach (done) ->
-      nonmock.replace global, 'exec', (command, callback) -> callback null, JSON.stringify(filename: [command: command])
+      nonmock.replace childProcess, 'exec', (command, callback) -> callback null, JSON.stringify(filename: [command: command])
       done()
 
     it "should return no errors if no files were provided", (done) ->
@@ -31,7 +32,7 @@ describe "Adviser", ->
         'path/to/some.diff'
         'path/to/again.coffee'
       ]
-      global.exec = (command, callback) ->
+      childProcess.exec = (command, callback) ->
         command.should.match /^nice \.\/node_modules\/coffeelint\/bin\/coffeelint --reporter raw/
         callback null, JSON.stringify(filename: [command: command])
 
@@ -42,7 +43,7 @@ describe "Adviser", ->
 
     it "should ignore any errors returned by exec as coffeelint returns json to the stdout", (done) ->
       files = [ 'path/to/some.coffee' ]
-      global.exec = (command, callback) ->
+      childProcess.exec = (command, callback) ->
         callback new Error('Blah-Blah'), JSON.stringify(filename: [command: command])
       Bot.apps.reviews.adviser.lint files, (err, report) ->
         return done(err) if err
@@ -51,7 +52,7 @@ describe "Adviser", ->
 
     it "should convert lineNumber to line", (done) ->
       files = [ 'path/to/some.coffee' ]
-      global.exec = (command, callback) ->
+      childProcess.exec = (command, callback) ->
         callback new Error('Blah-Blah'), JSON.stringify(filename: [{ command: command, lineNumber: 101 }])
       Bot.apps.reviews.adviser.lint files, (err, report) ->
         return done(err) if err
@@ -61,7 +62,7 @@ describe "Adviser", ->
 
     it "should return empty object if file does not exist", (done) ->
       files = ['path/to/some.coffee']
-      global.exec = (command, callback) ->
+      childProcess.exec = (command, callback) ->
         callback null, ''
       Bot.apps.reviews.adviser.lint files, (err, report) ->
         return done(err) if err

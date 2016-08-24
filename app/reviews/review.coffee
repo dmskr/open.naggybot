@@ -1,6 +1,8 @@
 async = require "async"
 fs = require "fs-extra"
 pathUtil = require "path"
+childProcess = require('child_process')
+tmp = require 'tmp'
 
 ObjectId = require("mongodb").ObjectId
 module.exports = (Bot, done) ->
@@ -61,12 +63,12 @@ module.exports = (Bot, done) ->
                 done(err, review)
 
     download: (url, path, done) ->
-      exec "wget -O #{path} #{url}", (err, stdout, stderr) ->
+      childProcess.exec "wget -O #{path} #{url}", (err, stdout, stderr) ->
         return done(err) if err
         done()
 
     extract: (archive, path, done) ->
-      exec "tar -xf #{archive} -C #{path} --strip-components=1", (err, stdout, stderr) ->
+      childProcess.exec "tar -xf #{archive} -C #{path} --strip-components=1", (err, stdout, stderr) ->
         return done(err) if err
         done()
 
@@ -87,7 +89,7 @@ module.exports = (Bot, done) ->
         Bot.db.reviews.save review, (err) ->
           return done(err) if err
 
-          Bot.tmp.tmpName keep: false, (err, path) ->
+          tmp.tmpName keep: false, (err, path) ->
             return done(err) if err
 
             fs.mkdirs path, (err) ->
@@ -107,7 +109,7 @@ module.exports = (Bot, done) ->
                         Bot.db.reviews.extract review.pull.archive, review.pull.source, next
                         
                   (next) ->
-                    request {
+                    Bot.request {
                       headers: { 'Accept': 'application/vnd.github.diff', 'User-Agent': 'NodeJS HTTP Client' }
                       url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}?access_token=#{user.github.accessToken}"
                     }, (err, response, body) ->
@@ -118,7 +120,7 @@ module.exports = (Bot, done) ->
                         Bot.db.reviews.save review, next
 
                   (next) ->
-                    request url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}?access_token=#{user.github.accessToken}", (err, response, body) ->
+                    Bot.request url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}?access_token=#{user.github.accessToken}", (err, response, body) ->
                       return next(err) if err
                       try
                         review.github.pull_request = JSON.parse(body)
@@ -128,7 +130,7 @@ module.exports = (Bot, done) ->
                         next(null, review)
 
                   (next) ->
-                    request url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}/comments?access_token=#{user.github.accessToken}", (err, response, body) ->
+                    Bot.request url: "https://api.github.com/repos/#{repo.owner.login}/#{repo.name}/pulls/#{review.github.number}/comments?access_token=#{user.github.accessToken}", (err, response, body) ->
                       return next(err) if err
                       try
                         review.pull.comments = JSON.parse(body)
@@ -166,7 +168,7 @@ module.exports = (Bot, done) ->
                     done(null, review)
 
     push: (review, done) ->
-      github = new GitHub(version: "3.0.0")
+      github = new Bot.GitHub(version: "3.0.0")
       github.authenticate
         type: "oauth"
         token: review.github.accessToken
