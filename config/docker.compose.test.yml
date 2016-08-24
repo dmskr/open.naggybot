@@ -1,5 +1,5 @@
 mongo:
-  image: mongo:3.2.8
+  image: mongo:3.2
 naggy:
   build: ..
   command: npm start

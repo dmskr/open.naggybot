@@ -20,8 +20,8 @@ module.exports = (Bot, done) ->
     
     hashPassword: (password, done) ->
       return done(null, null) if !password || password.length == 0
-      bcrypt.genSalt 10, (err, salt) ->
-        bcrypt.hash password.toString(), salt, done
+      Bot.bcrypt.genSalt 10, (err, salt) ->
+        Bot.bcrypt.hash password.toString(), salt, done
 
     validate: (user, done) ->
       async.parallel {

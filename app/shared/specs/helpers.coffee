@@ -19,7 +19,7 @@ beforeEach (done) ->
   databaseCleaner.clean Bot.db, (err) ->
     return done(err) if(err)
 
-    request = global.request
+    request = Bot.request
     global.req =
       params: {}
       query: {}
@@ -38,7 +38,7 @@ beforeEach (done) ->
     done()
 
 afterEach (done) ->
-  global.request = request
+  Bot.request = request
   nonmock.restore()
   done()
 
