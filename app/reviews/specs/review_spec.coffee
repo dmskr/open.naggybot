@@ -164,7 +164,6 @@ describe "Review", ->
     it "should immediately change review status to completed after push stage is finished", (done) ->
       Bot.db.reviews.execute status: 'pending', (err, review) ->
         return done(err) if err
-        console.log JSON.stringify(review)
         Bot.db.reviews.findById review._id, (err, review) ->
           return done(err) if err
           review.status.should.eql 'completed'
