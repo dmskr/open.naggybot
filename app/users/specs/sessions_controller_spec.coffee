@@ -63,7 +63,7 @@ describe "Sessions Controller", ->
         it 'username', ->
           updated.github.username.should.eql 'naggybot'
         it 'emails', ->
-          updated.github.emails.should.eql []
+          updated.github.emails.should.eql ["the@naggybot.com"]
         it 'avatar_url', ->
           updated.github.avatar_url.should.eql 'https://avatars.githubusercontent.com/u/7523890?'
         it 'gravatar_id', ->
@@ -93,15 +93,15 @@ describe "Sessions Controller", ->
         should.exist returned._id
         returned.should.eql updated
 
-      describe "should savee", ->
-        it "github id", ->
+      describe "should save github internal", ->
+        it "id", ->
           updated.github.id.should.eql 123
         it "displayName", ->
           updated.github.displayName.should.eql 'Naggy Bot'
         it 'username', ->
           updated.github.username.should.eql 'naggybot'
         it 'emails', ->
-          updated.github.emails.should.eql []
+          updated.github.emails.should.eql ["the@naggybot.com"]
         it 'avatar_url', ->
           updated.github.avatar_url.should.eql 'https://avatars.githubusercontent.com/u/7523890?'
         it 'gravatar_id', ->
@@ -110,4 +110,12 @@ describe "Sessions Controller", ->
           updated.github.accessToken.should.eql accessToken
         it "refreshToken", ->
           updated.github.refreshToken.should.eql refreshToken
+
+      describe "should update user's", ->
+        it "displayName", ->
+          updated.displayName.should.eql 'Naggy Bot'
+        it "username", ->
+          updated.username.should.eql 'naggybot'
+        it "email", ->
+          updated.email.should.eql "the@naggybot.com"
 
