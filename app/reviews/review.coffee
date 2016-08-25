@@ -46,12 +46,18 @@ module.exports = (Bot, done) ->
         return done(err) if err
         async.mapSeries reviews, Bot.db.reviews.execute, done
 
-    execute: (review, done) ->
+    execute: (review, callback) ->
+      done = (err, result) ->
+        if err
+          review.error = err.stack || err
+          review.status = "error"
+          return Bot.db.reviews.save review, callback
+        return callback(err, result)
+
       # Change status to 'inprogress'
       review.status = 'inprogress'
       Bot.db.reviews.save review, (err) ->
         return done(err) if err
-        # Pull
         Bot.db.reviews.pull review, (err, review) ->
           return done(err) if err
           Bot.db.reviews.analyze review, (err, review) ->
