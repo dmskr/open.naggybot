@@ -47,6 +47,9 @@ module.exports = (Bot, done) ->
       user.github.gravatar_id = (profile._json || {}).gravatar_id
       user.github.accessToken = accessToken
       user.github.refreshToken = refreshToken
+      user.displayName ||= profile.displayName
+      user.username ||= profile.username
+      user.email ||= user.github.emails[0]
       Bot.db.users.save user, (err) ->
         return done(err, user)
 
