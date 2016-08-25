@@ -42,13 +42,6 @@ module.exports = (done) ->
     # Applications
     require("./config/applications") Bot, ->
       console.log("Init Complete")
-      ## Nodetime
-      #if process.env.NODE_ENV == 'production'
-        #require('nodetime').profile {
-          #accountKey: '99fb39f6d50c88ec2b03c1d18b428e45c58f5da1'
-          #appName: 'Node.js Application'
-        #}
-
       done(null, Bot)
 
 if require.main == module
@@ -59,10 +52,10 @@ if require.main == module
       console.log("Http server listening on http://0.0.0.0:#{Bot.express.settings.port}")
       console.log("NaggyBot App server started in #{env} environment")
 
-    #taskWorker = ->
-      #Bot.db.reviews.executeAll {}, (err) ->
-        #throw new Error(err) if err
-        #setTimeout(taskWorker, 2000)
+      taskWorker = ->
+        Bot.db.reviews.executeAll {}, (err) ->
+          throw new Error(err) if err
+          setTimeout(taskWorker, 2000)
 
-    #taskWorker() if Bot.express.settings.env == 'production'
+      taskWorker() if Bot.express.settings.env == 'production'
 

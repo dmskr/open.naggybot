@@ -164,9 +164,32 @@ describe "Review", ->
     it "should immediately change review status to completed after push stage is finished", (done) ->
       Bot.db.reviews.execute status: 'pending', (err, review) ->
         return done(err) if err
+        console.log JSON.stringify(review)
         Bot.db.reviews.findById review._id, (err, review) ->
+          return done(err) if err
           review.status.should.eql 'completed'
           done()
+
+    describe "error", ->
+      result = null
+      beforeEach (done) ->
+        nonmock.replace Bot.db.reviews, "push", (review, callback) ->
+          callback(new Error("Something goes wrong"))
+        Bot.db.reviews.execute status: 'pending', (err, review) ->
+          return done(err) if err # Still should not provide error here
+          Bot.db.reviews.findById review._id, (err, review) ->
+            return done(err) if err
+            result = review
+            done()
+
+      it "should be logged to the review with entire stack", ->
+        should.exist result.error
+        result.error.split("\n").should.have.length.above(1)
+        result.error.split("\n")[0].should.eql("Error: Something goes wrong")
+
+      it "should set review status to 'error'", ->
+        should.exist result.status
+        result.status.should.eql "error"
 
   describe "pull", ->
     [review] = [null]
