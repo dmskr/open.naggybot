@@ -9,6 +9,7 @@
     "body-parser": "^1.14.2",
     "byline": "^4.2.1",
     "coffee-script": "^1.10.0",
+    "coffeelint": "^1.15.7",
     "connect-flash": "^0.1.1",
     "connect-mongo": "^1.1.0",
     "connect-powered-by": "^0.1.0",
