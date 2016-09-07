@@ -66,3 +66,7 @@ describe "Reviews Service Controller", ->
         should.exist result.refid
         result.refid.should.eql "16423422"
 
+      it "should copy github link to the PR", ->
+        should.exist result.url
+        result.url.should.eql "https://api.github.com/repos/dmskr/naggybot/pulls/3"
+

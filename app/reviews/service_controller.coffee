@@ -9,6 +9,7 @@ module.exports = (Bot, done) ->
       title: payload.pull_request.title,
       username: payload.pull_request.user.login,
       refid: payload.pull_request.id.toString()
+      url: payload.pull_request.url,
       github: payload
     }
 
