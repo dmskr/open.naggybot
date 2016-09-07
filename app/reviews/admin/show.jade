@@ -21,7 +21,12 @@ block content
       .form-group
         label.col-sm-1.control-label Number:
         .col-sm-10
-          p.form-control-static= (review.github || {}).number
+          p.form-control-static= review.refid
+      .form-group
+        label.col-sm-1.control-label Url:
+        .col-sm-10
+          p.form-control-static
+            a(href=review.url, target='_blank')= review.url
       .form-group
         label.col-sm-1.control-label Status:
         .col-sm-10

@@ -97,6 +97,6 @@ module.exports = (Bot, done) ->
   exports.comments = (req, res, next) ->
     Bot.db.reviews.findById req.params.id, (err, review) ->
       return next(err) if err
-      res.send JSON.stringify((review.analyze || {}).report, null, 2)
+      res.json (review.analyze || {}).report
 
   done(null, exports)
