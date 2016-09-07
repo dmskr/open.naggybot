@@ -32,28 +32,37 @@ describe "Reviews Service Controller", ->
           done()
       Bot.apps.reviews.controller.service.create req, res, next
 
-    it "should create review in database", (done) ->
-      res.json = ->
-        Bot.db.reviews.find().limit(1).toArray (err, reviews)->
-          return done(err) if err
-          should.exist reviews
-          should.exist reviews.first()
-          done()
+    describe "result", ->
+      result = null
+      beforeEach (done) ->
+        res.json = ->
+          Bot.db.reviews.find().limit(1).toArray (err, reviews)->
+            return done(err) if err
+            result = reviews && reviews.first()
+            done()
 
-      Bot.apps.reviews.controller.service.create req, res, next
+        Bot.apps.reviews.controller.service.create req, res, next
 
-    it "should place everything received into the github property", (done) ->
-      res.json = ->
-        Bot.db.reviews.find().limit(1).toArray (err, reviews)->
-          return done(err) if err
-          should.exist reviews
-          should.exist reviews.first()
-          should.exist reviews.first().github
-          should.exist Object.select(reviews.first().github, 'action', 'number').should.eql {
-            action: 'synchronize'
-            number: 3
-          }
-          done()
 
-      Bot.apps.reviews.controller.service.create req, res, next
+      it "should exist in database", ->
+        should.exist result
+
+      it "should have everything received into the github property", ->
+        should.exist result.github
+        should.exist Object.select(result.github, 'action', 'number').should.eql {
+          action: 'synchronize'
+          number: 3
+        }
+
+      it "should copy title to the root review object", ->
+        should.exist result.title
+        result.title.should.eql "UniDiff parsing refactored a bit"
+
+      it "should copy username to the root review object", ->
+        should.exist result.username
+        result.username.should.eql "dmskr"
+
+      it "should copy github id to review's refid", ->
+        should.exist result.refid
+        result.refid.should.eql "16423422"
 
