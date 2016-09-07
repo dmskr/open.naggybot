@@ -25,6 +25,9 @@ block content
 					tr
 						th= 'ID'
 						th= 'Status'
+            th= 'RefID'
+            th= 'User'
+            th= 'Title'
 						th= 'Type'
 						th= 'Updated At'
 						th= 'Created At'
@@ -38,6 +41,9 @@ block content
 									= id.slice(0,2) + '..' + id.slice(-3)
 							td
 								= review.status || 'unknown'
+              td= review.refid
+              td= review.username
+              td= review.title
 							td
 								span= review.type
 							td= review.updatedAt && review.updatedAt.format('short') || 'never'
