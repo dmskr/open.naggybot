@@ -37,6 +37,7 @@
   },
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha --opts config/mocha.opts --timeout 4000",
+    "watch": "./node_modules/mocha/bin/mocha --opts config/mocha.opts --timeout 4000 --watch",
     "start": "./node_modules/coffee-script/bin/coffee server.coffee"
   },
   "repository": {

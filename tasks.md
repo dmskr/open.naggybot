@@ -1,13 +1,13 @@
 
 
-- [ ] Setup Servers
-- [ ] Make it working for its own codebase
+
+- [ ] Review page with diff mirror and all the comments applied
+- [ ] Set GitHub status for specific pull request
 
 
 - [ ] Add CSS lint to the hinting
 - [ ] Add JSHint to the linting
 
-- [ ] Set GitHub status for specific pull request
 
 - [ ] Add something like airbrake.io to the application to be notified with errors
 - [ ] Move the monitoring and restarting to monit, leaving upstart as a handy unitility

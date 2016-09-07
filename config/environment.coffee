@@ -17,7 +17,7 @@ module.exports = (Bot, initDone)->
   #Logger.setLevel('debug')
 
   db = if process.env.NODE_ENV == "test" then "/naggybot_test" else "/naggybot"
-  connection = process.env.MONGO_PORT.replace(/^tcp/i, 'mongodb') + db + "?auto_reconnect=true&safe=true&w=1"
+  connection = "#{process.env.MONGO_PORT.replace(/^tcp/i, 'mongodb')}#{db}?auto_reconnect=true&safe=true&w=1"
   mongo.connect connection, (err, db) ->
     return initDone(err) if err
     Bot.db = db
