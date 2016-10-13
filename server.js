@@ -20,7 +20,7 @@ module.exports = function(done) {
   Bot.server = require('http').createServer(Bot.express);
   Bot.isServer = true;
 
-  # Setup SMTP
+  // Setup SMTP
   Bot.express.settings.email = {
     auth: {
       host: "",
@@ -35,13 +35,13 @@ module.exports = function(done) {
 
   Bot.smtp = Bot.nodemailer.createTransport("SMTP", Bot.express.settings.email.auth);
 
-  # Cache timestamps
+  //Cache timestamps
   Bot.express.locals.tsjs = Bot.express.locals.tscss = Date.create().getTime();
 
-  # Environment
+  // Environment
   return require("./config/environment") (Bot, function() {
-    # Applications
-    return require("./config/applications") (Bot, funtion() {
+    // Applications
+    return require("./config/applications") (Bot, function() {
       console.log("Init Complete");
       return done(null, Bot);
     });
@@ -49,8 +49,8 @@ module.exports = function(done) {
 };
 
 if (require.main === module) {
-  module.exports (funtion (err, Bot) {
-    # Run the server
+  module.exports (function (err, Bot) {
+    // Run the server
     var env;
     env = (process.env.NODE_ENV || 'development').capitalize();
     return Bot.server.listen(Bot.express.settings.port, function() {
@@ -72,4 +72,4 @@ if (require.main === module) {
       }
     });
   });
-}
+};
