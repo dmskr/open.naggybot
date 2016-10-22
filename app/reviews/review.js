@@ -77,7 +77,7 @@ module.exports = function(Bot, done) {
     executeAll: function(options, done) {
       return collection.find({
         status: 'pending'
-      }).limit(options.limit || 0).toArray function(err, reviews) {
+      }).limit(options.limit || 0).toArray(function(err, reviews) {
         if (err) {
           return done(err);
         }
@@ -137,7 +137,7 @@ module.exports = function(Bot, done) {
         }
         return done();
       });
-    ),
+    },
 
     // Pull a tagbar of reviewes pull request and untar it
     pull: function(review, done) {
@@ -303,7 +303,7 @@ module.exports = function(Bot, done) {
                   }
                   review.analyze || (review.analyze = {});
                   review.analyze.report = result;
-                  return Bot.db.reviews.save(review, funtion(err) {
+                  return Bot.db.reviews.save(review, function(err) {
                     if (err) {
                       return done(err);
                     }
@@ -368,7 +368,7 @@ module.exports = function(Bot, done) {
         if(!range) {
           return null;
         }
-        line = range.lines.findAll(fanction(line) {
+        line = range.lines.findAll(function(line) {
           return line.action !== '-';
         })[comment.line - range.added.from + 1];
         if (!line || line.action !== "+") {

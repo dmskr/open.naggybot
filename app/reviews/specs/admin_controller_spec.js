@@ -60,7 +60,7 @@ describe("Reviews Admin Controller", function() {
     });
 
     action = "active";
-    beforeEach function(done) {
+    beforeEach(function(done) {
       return Bot.db.reviews.update ({}, {
         $set: {
           status: "inprogress"
@@ -209,7 +209,7 @@ describe("Reviews Admin Controller", function() {
 
     return it ("should only render reviews in error status", function(done) {
       return Bot.db.reviews.update ({}, {
-        $set:
+        $set: {
           status: "pending"
         }
       }, {
@@ -230,7 +230,7 @@ describe("Reviews Admin Controller", function() {
           if (err) {
             return done(err);
           }
-          res.render = fruction(template, params) {
+          res.render = function(template, params) {
             params.data.length.should.eql(1);
             params.data.first().title.should.eql(51);
             return done();
@@ -604,7 +604,7 @@ describe("Reviews Admin Controller", function() {
         return done();
       };
 
-      return Bot.apps.reviews.controller.admin.["delete"](req, res, next);
+      return Bot.apps.reviews.controller.admin["delete"](req, res, next);
     });
 
     it("should set successfull message", function(done) {
@@ -614,7 +614,7 @@ describe("Reviews Admin Controller", function() {
         return done();
       };
 
-      return Bot.apps.reviews.controller.admin.["delete"](req, res, next);
+      return Bot.apps.reviews.controller.admin["delete"](req, res, next);
     });
 
     return it("should remove the review", function(done) {

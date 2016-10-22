@@ -154,3 +154,4 @@ module.exports = function(Bot, done) {
     });
   };
   return done(null, exports);
+};
