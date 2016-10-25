@@ -4,5 +4,5 @@
 --growl
 --compilers coffee:coffee-script/register
 --timeout 2000
-app/**/specs/*_spec.coffee app/**/specs/**/*_spec.coffee
+app/**/specs/*_spec.coffee app/**/specs/**/*_spec.coffee app/**/specs/*_spec.js app/**/specs/**/*_spec.js
 
